@@ -29,10 +29,14 @@ import {
   useDisclosure,
   Spinner
 } from "@chakra-ui/core";
-import { AppContext } from "../utils";
+import { AppContext, useWebSockets } from "../utils";
 import { NavigationBar } from "../components";
 
-const MarketWithStat = ({ children, selected = false, onSelect }) => {
+const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
+  const { prices, percent } = useWebSockets(
+    `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`,
+    market.price_places
+  );
   return (
     <PseudoBox
       flexBasis={["40%", "40%", "30%", "20%"]}
@@ -49,12 +53,16 @@ const MarketWithStat = ({ children, selected = false, onSelect }) => {
       style={{ backgroundColor: selected ? "teal" : "inherit" }}
     >
       <Stat>
-        <StatLabel>Sent</StatLabel>
+        <StatLabel>
+          {prices === "Loading" ? "Loading Price" : "$" + prices}
+        </StatLabel>
         <StatNumber>{children}</StatNumber>
-        <StatHelpText>
-          <StatArrow type="increase" />
-          23.36%
-        </StatHelpText>
+        {percent ? (
+          <StatHelpText>
+            <StatArrow type={percent > 0 ? "increase" : "decrease"} />
+            {percent}%
+          </StatHelpText>
+        ) : null}
       </Stat>
     </PseudoBox>
   );
@@ -86,7 +94,7 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market }) => {
       finalFocusRef={btnRef}
     >
       <DrawerOverlay />
-      <DrawerContent>
+      <DrawerContent maxHeight="100vh" overflowY="scroll">
         <DrawerCloseButton />
         <DrawerHeader>
           {!market ? `Create new market` : `Edit ${market} market`}
@@ -232,16 +240,18 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market }) => {
 const MenuComponent = ({
   options = [],
   defaultText = "Menu",
-  buttonProps = {}
+  buttonProps = {},
+  menuProps = {},
+  onMenuItemClick = () => {}
 }) => {
   return (
     <Menu>
       <MenuButton as={Button} rightIcon="chevron-down" {...buttonProps}>
         {defaultText}
       </MenuButton>
-      <MenuList>
+      <MenuList {...menuProps}>
         {options.map(param => (
-          <MenuItem>{param}</MenuItem>
+          <MenuItem onClick={() => onMenuItemClick(param)}>{param}</MenuItem>
         ))}
       </MenuList>
     </Menu>
@@ -313,7 +323,8 @@ export function Market({ match }) {
             "ETH Markets",
             "BNB Markets"
           ]}
-          buttonProps={{ variantColor: "teal" }}
+          menuProps={{ background: "teal" }}
+          buttonProps={{ variantColor: "teal", variant: "solid" }}
         />
         <SidebarDrawer {...{ isOpen, onClose, btnRef, market: newEditItem }} />
       </NavigationBar>
@@ -342,11 +353,12 @@ export function Market({ match }) {
                 return (
                   <MarketWithStat
                     onSelect={() => {
-                      addOrRemoveMarkets(market);
+                      addOrRemoveMarkets(market.market_label());
                     }}
-                    selected={selectedMarkets.includes(market)}
+                    market={market}
+                    selected={selectedMarkets.includes(market.market_label())}
                   >
-                    {market}
+                    {market.market_label()}
                   </MarketWithStat>
                 );
               })}
