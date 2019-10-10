@@ -27,6 +27,8 @@ import {
   DrawerBody,
   DrawerFooter,
   useDisclosure,
+  RadioGroup,
+  Radio,
   Spinner
 } from "@chakra-ui/core";
 import { AppContext } from "../utils";
@@ -63,19 +65,21 @@ const MarketWithStat = ({ children, selected = false, onSelect }) => {
 const SidebarDrawer = ({ isOpen, onClose, btnRef, market }) => {
   const { configs, getMarketConfig } = useContext(AppContext);
 
-  console.log(market);
+  let [config, setConfig] = useState({
+    multiplier: " 56",
+    spread_multiplier: ""
+  });
 
-  let [config, setConfig] = useState({});
-  let [multiplier, setMutiplier] = useState();
-  let [spreadMultiplier, setSpreadMultiplier] = useState();
-  let [amount, setAmount] = useState("78");
+  console.log(config);
 
-  const handleConfigMultiplier = event => {
-    setMutiplier(event.target.value);
+  const handleChange = input => e => {
+    setConfig({ ...config, [input]: e.target.value });
   };
 
   function setState(key, value) {
-    let newConfig = { ...config, [key]: value };
+    // let newConfig = { ...config, [key]: value };
+    let newConfig = { [key]: value };
+
     setConfig(newConfig);
   }
   return (
@@ -86,7 +90,7 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market }) => {
       finalFocusRef={btnRef}
     >
       <DrawerOverlay />
-      <DrawerContent>
+      <DrawerContent overflow="scroll">
         <DrawerCloseButton />
         <DrawerHeader>
           {!market ? `Create new market` : `Edit ${market} market`}
@@ -103,118 +107,258 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market }) => {
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Multiplier</FormLabel>
               <Input
+                name="multiplier"
                 id="fname"
                 placeholder="Multiplier"
-                value={multiplier}
-                onChange={handleConfigMultiplier}
+                onChange={handleChange("multiplier")}
               />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Buy Amount</FormLabel>
-              <Input id="fname" placeholder="Buy Amount" value={amount} />
+              <Input
+                id="fname"
+                name="buy_amount"
+                placeholder="Buy Amount"
+                onChange={handleChange("buy_amount")}
+              />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Spread Multiplier</FormLabel>
               <Input
                 id="fname"
+                name="spread_multiplier"
                 placeholder="Spread Multiplier"
-                value={spreadMultiplier}
+                onChange={handleChange("spread_multiplier")}
               />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Equal </FormLabel>
-              <Input id="fname" placeholder="Equal" value={"quantity"} />
+              <Input
+                id="fname"
+                name="equal"
+                placeholder="Equal"
+                onChange={handleChange("equal")}
+              />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Coin </FormLabel>
-              <Input id="fname" placeholder="Coin" value={"LTC"} />
+              <Input
+                id="fname"
+                name="coin"
+                placeholder="Coin"
+                onChange={handleChange("coin")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Buy Market </FormLabel>
-              <Input id="fname" placeholder="Buy Market" value={"USDC"} />
+              <Input
+                id="fname"
+                name="buy_market"
+                placeholder="Buy Market"
+                value={"USDC"}
+                onChange={handleChange("buy_market")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Sell Market </FormLabel>
-              <Input id="fname" placeholder="Sell Market" value={"USDC"} />
+              <Input
+                id="fname"
+                name="sell_market"
+                placeholder="Sell Market"
+                value={"USDC"}
+                onChange={handleChange("sell_market")}
+              />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Sell Amount </FormLabel>
-              <Input id="fname" placeholder="Sell Amount" value={"10.1"} />
+              <Input
+                id="fname"
+                name="sell_amount"
+                placeholder="Sell Amount"
+                value={"10.1"}
+                onChange={handleChange("sell_amount")}
+              />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Budget </FormLabel>
-              <Input id="fname" placeholder="Budget" value={"65.25234943"} />
+              <Input
+                id="fname"
+                name="budget"
+                placeholder="Budget"
+                value={"65.25234943"}
+                onChange={handleChange("budget")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Purchased Price </FormLabel>
-              <Input id="fname" placeholder="Purchased Price" value={"100"} />
+              <Input
+                id="fname"
+                name="purchased_price"
+                placeholder="Purchased Price"
+                value={"100"}
+                onChange={handleChange("purchased_price")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Trades </FormLabel>
-              <Input id="fname" placeholder="Trades" value={"10"} />
+              <Input
+                id="fname"
+                name="trades"
+                placeholder="Trades"
+                value={"10"}
+                onChange={handleChange("trades")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Expected rise point </FormLabel>
               <Input
                 id="fname"
+                name="expected_rise_point"
                 placeholder="Expected rise point"
                 value={"150"}
+                onChange={handleChange("expected_rise_point")}
               />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Max trade count </FormLabel>
-              <Input id="fname" placeholder="Max trade count" value={"2"} />
+              <Input
+                id="fname"
+                name="max_trade_coount"
+                placeholder="Max trade count"
+                value={"2"}
+                onChange={handleChange("max_trade_coount")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Montly Profit </FormLabel>
-              <Input id="fname" placeholder="Montly Profit" value={"600"} />
+              <Input
+                id="fname"
+                name="montly_profit"
+                placeholder="Montly Profit"
+                value={"600"}
+                onChange={handleChange("montly_profit")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Marubozu length </FormLabel>
-              <Input id="fname" placeholder="Marubozu length" value={"300"} />
+              <Input
+                id="fname"
+                name="marubozu_lenght"
+                placeholder="Marubozu length"
+                value={"300"}
+                onChange={handleChange("marubozu_lenght")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Label </FormLabel>
-              <Input id="fname" placeholder="Label" value={"LTC"} />
+              <Input
+                id="fname"
+                name="label"
+                placeholder="Label"
+                value={"LTC"}
+                onChange={handleChange("label")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Decimal places </FormLabel>
-              <Input id="fname" placeholder="Decimal places" value={"%.5f"} />
+              <Input
+                id="fname"
+                name="decimal_places"
+                placeholder="Decimal places"
+                value={"%.5f"}
+                onChange={handleChange("decimal_places")}
+              />
             </FormControl>
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Price places </FormLabel>
-              <Input id="fname" placeholder="Price places" value={"%.2f"} />
+              <Input
+                id="fname"
+                name="price_places"
+                placeholder="Price places"
+                value={"%.2f"}
+                onChange={handleChange("price_places")}
+              />
             </FormControl>
 
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Spread </FormLabel>
-              <Input id="fname" placeholder="Spread" value={"0.43"} />
+              <Input
+                id="fname"
+                nam="spread"
+                placeholder="Spread"
+                value={"0.43"}
+                onChange={handleChange("spread")}
+              />
             </FormControl>
-            <FormControl mb={1} mx={3} isRequired>
+
+            <FormControl as="fieldset" mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">One way </FormLabel>
-              <Input id="fname" placeholder="One way" value={"True"} />
+              <RadioGroup
+                defaultValue="True"
+                display="inline-flex"
+                onChange={handleChange("one_way")}
+              >
+                <Radio mr={1} value="True">
+                  True
+                </Radio>
+                <Radio value="False">False</Radio>
+              </RadioGroup>
             </FormControl>
-            <FormControl mb={1} mx={3} isRequired>
+
+            <FormControl as="fieldset" mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Pause </FormLabel>
-              <Input id="fname" placeholder="Pause" value={"False"} />
+              <RadioGroup
+                defaultValue="False"
+                display="inline-flex"
+                onChange={handleChange("pause")}
+              >
+                <Radio mr={1} value="True">
+                  True
+                </Radio>
+                <Radio value="False">False</Radio>
+              </RadioGroup>
             </FormControl>
+
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Invest Value </FormLabel>
-              <Input id="fname" placeholder="Invest Value" value={"None"} />
+              <Input
+                id="fname"
+                name="invest_value"
+                placeholder="Invest Value"
+                value={"None"}
+                onChange={handleChange("invest_value")}
+              />
             </FormControl>
-            <FormControl mb={1} mx={3} isRequired>
+
+            <FormControl as="fieldset" mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Margin support </FormLabel>
-              <Input id="fname" placeholder="Margin support" value={"True"} />
+              <RadioGroup
+                defaultValue="True"
+                display="inline-flex"
+                onChange={handleChange("margin_support")}
+              >
+                <Radio mr={1} value="True">
+                  True
+                </Radio>
+                <Radio value="False">False</Radio>
+              </RadioGroup>
             </FormControl>
+
             <FormControl mb={1} mx={3} isRequired>
               <FormLabel htmlFor="fname">Margin market </FormLabel>
-              <Input id="fname" placeholder="Trades" value={"USDT"} />
+              <Input
+                id="fname"
+                name="margin_market"
+                placeholder="Margin market"
+                value={"USDT"}
+                onChange={handleChange("margin_market")}
+              />
             </FormControl>
           </Flex>
         </DrawerBody>
