@@ -117,6 +117,24 @@ const configs = [
     multiplier: 2,
     buy_amount: 10.1,
     price_places: ".2f"
+  },
+  {
+    id: 8,
+    coin: "LINK",
+    buy_market: "USDT",
+    spread: 10,
+    multiplier: 2,
+    buy_amount: 10.1,
+    price_places: ".4f"
+  },
+  {
+    id: 9,
+    coin: "MATIC",
+    buy_market: "USDT",
+    spread: 10,
+    multiplier: 2,
+    buy_amount: 10.1,
+    price_places: ".6f"
   }
 ];
 
@@ -126,7 +144,7 @@ const getAccounts = () => {
       id: 1,
       title: "Account 1",
       slug: "account-1",
-      market: [1, 2, 3, 4, 5, 6]
+      market: [1, 2, 3, 4, 5, 6, 8, 9]
     },
     {
       id: 2,
