@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-import ReactDOM from "react-dom";
 import {
   PseudoBox,
   Box,
