@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-import ReactDOM from "react-dom";
 import {
   PseudoBox,
   Box,
@@ -30,7 +29,7 @@ import {
   Spinner
 } from "@chakra-ui/core";
 import { AppContext, useWebSockets } from "../utils";
-import { NavigationBar } from "../components";
+import { NavigationBar, SubNavigationBar } from "../components";
 
 const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
   const { prices, percent } = useWebSockets(
@@ -291,7 +290,7 @@ function ConfigurationComponent({ params }) {
     </Flex>
   );
 }
-export function Market({ match }) {
+export function Market({ match, history }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
   const { markets, loading, getMarket } = useContext(AppContext);
@@ -312,6 +311,14 @@ export function Market({ match }) {
     getMarket(match.params.account);
   }, []);
   let params = ["multiplier", "spread multiplier", "buy amount", ""];
+  let routes = [
+    { name: "Home", path: "/" },
+    {
+      name: match.params.account,
+      path: `/${match.params.account}/markets`,
+      current: true
+    }
+  ];
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
@@ -328,6 +335,9 @@ export function Market({ match }) {
         />
         <SidebarDrawer {...{ isOpen, onClose, btnRef, market: newEditItem }} />
       </NavigationBar>
+      <Box px={6} pt={3}>
+        <SubNavigationBar routes={routes} />
+      </Box>
       {loading ? (
         <Box display="flex" justifyContent="center" height="20em">
           <Spinner alignSelf="center" />
@@ -352,6 +362,7 @@ export function Market({ match }) {
               {markets.map(market => {
                 return (
                   <MarketWithStat
+                    key={market.market_label()}
                     onSelect={() => {
                       addOrRemoveMarkets(market.market_label());
                     }}
@@ -367,12 +378,30 @@ export function Market({ match }) {
           {selectedMarkets.length > 1 ? (
             <ConfigurationComponent params={params} />
           ) : (
-            <ControlButton
-              onEdit={onOpen}
-              onAdd={onOpen}
-              btnRef={btnRef}
-              edit={selectedMarkets.length === 1}
-            />
+            <>
+              <ControlButton
+                btnRef={btnRef}
+                onClick={selectedMarkets.length === 1 ? onOpen : onOpen}
+                icon={selectedMarkets.length === 1 ? "edit" : "add"}
+                variantColor="pink"
+                style={{
+                  right: "2em",
+                  bottom: "2em"
+                }}
+              />
+              {selectedMarkets.length === 1 && (
+                <ControlButton
+                  btnRef={btnRef}
+                  onClick={selectedMarkets.length === 1 ? onOpen : onOpen}
+                  icon={"calendar"}
+                  variantColor="teal"
+                  style={{
+                    right: "6em",
+                    bottom: "2em"
+                  }}
+                />
+              )}
+            </>
           )}
           <Button
             position={["relative", "fixed"]}
@@ -390,20 +419,14 @@ export function Market({ match }) {
   );
 }
 
-const ControlButton = ({ edit, onEdit, onAdd, btnRef }) => {
+const ControlButton = ({ edit, onEdit, onAdd, btnRef, ...rest }) => {
   return (
     <IconButton
       size="lg"
-      variantColor="pink"
       position="fixed"
       ref={btnRef}
-      style={{
-        right: "2em",
-        bottom: "2em"
-      }}
-      onClick={edit ? onEdit : onAdd}
-      icon={edit ? "edit" : "add"}
       borderRadius="50%"
+      {...rest}
     />
   );
 };
