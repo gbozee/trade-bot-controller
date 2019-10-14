@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
 
+
 function App() {
   return (
     <BrowserRouter>
