@@ -172,16 +172,51 @@ const getAccounts = () => {
     }, 2000);
   });
 };
-
-function getMarketConfig(market) {
-  let y = configs
-    .filter(x => x.market === market)
-    .map(x => {
-      return x;
-    });
-  return y;
-}
-
+const supported_markets = [
+  "USDT",
+  "TUSD",
+  "BTC",
+  "BNB",
+  "ETH",
+  "USDC",
+  "PAX",
+  "BUSD",
+  "XRP",
+  "TRX"
+];
+let formFields = [
+  { name: "multiplier", label: "Multiplier", bulk: true },
+  { name: "buy_amount", label: "Buy Amount", bulk: true },
+  { name: "sell_amount", label: "Sell Amount", bulk: true },
+  { name: "spread_multiplier", label: "Spread Multiplier", bulk: true },
+  { name: "coin", label: "Coin" },
+  { name: "buy_market", label: "Buy Market", options: supported_markets },
+  { name: "sell_market", label: "Sell Market", options: supported_markets },
+  { name: "budget", label: "Budget" },
+  { name: "purchased_price", label: "Purchased Price" },
+  { name: "trades", label: "Trades" },
+  { name: "expected_rise_point", label: "Expected Rise Point" },
+  { name: "max_trade_count", label: "Max Trade Count", bulk: true },
+  { name: "monthly_profit", label: "Monthly Profit" },
+  { name: "decimal_places", label: "Decimal Places" },
+  { name: "price_places", label: "Price Places" },
+  { name: "spread", label: "Spread" },
+  { name: "one_way", label: "Is One Way", field_type: "radio" },
+  { name: "pause", label: "Pause Market", field_type: "radio", bulk: true },
+  { name: "invest_value", label: "Invest Value" },
+  {
+    name: "margin_support",
+    label: "Margin Support",
+    field_type: "radio",
+    bulk: true
+  },
+  {
+    name: "margin_market",
+    label: "Margin Market",
+    options: ["USDT", "BTC"],
+    bulk: true
+  }
+];
 export const AppProvider = ({ children }) => {
   let [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -217,14 +252,25 @@ export const AppProvider = ({ children }) => {
       return _markets;
     });
   }
-
+  function getMarketConfig(market) {
+    let foundMarketConfig = markets.find(x => x.market_label() === market);
+    return foundMarketConfig;
+  }
+  function getFormFields(isBulk) {
+    if (isBulk === "bulk") {
+      return formFields.filter(x => x.bulk);
+    }
+    return formFields;
+  }
   const appValue = {
     markets: markets,
     getMarket,
     loading,
     accounts,
     configs,
-    getMarketConfig
+    getMarketConfig,
+    supported_markets,
+    getFormFields
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

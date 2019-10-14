@@ -5,7 +5,8 @@ import {
   Breadcrumb,
   Icon,
   BreadcrumbItem,
-  BreadcrumbLink
+  BreadcrumbLink,
+  IconButton
 } from "@chakra-ui/core";
 import { Link } from "react-router-dom";
 export const NavigationBar = ({ title = "", children }) => {
@@ -40,5 +41,17 @@ export const SubNavigationBar = ({ routes, ...rest }) => {
         </BreadcrumbItem>
       ))}
     </Breadcrumb>
+  );
+};
+
+export const ControlButton = ({ edit, onEdit, onAdd, btnRef, ...rest }) => {
+  return (
+    <IconButton
+      size="lg"
+      position="fixed"
+      ref={btnRef}
+      borderRadius="50%"
+      {...rest}
+    />
   );
 };
