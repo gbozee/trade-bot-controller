@@ -190,8 +190,8 @@ export function Market({ match, history }) {
   const { markets, loading, getMarket, getFormFields } = useContext(AppContext);
 
   let [selectedMarkets, setSelectedMarkets] = useState([
-    "BTC/USDT",
-    "ETH/USDT"
+    // "BTC/USDT",
+    // "ETH/USDT"
   ]);
   let [newEditItem, setNewEditItem] = useState();
 
