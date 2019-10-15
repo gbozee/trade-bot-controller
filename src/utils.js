@@ -189,7 +189,7 @@ let formFields = [
   { name: "buy_amount", label: "Buy Amount", bulk: true },
   { name: "sell_amount", label: "Sell Amount", bulk: true },
   { name: "spread_multiplier", label: "Spread Multiplier", bulk: true },
-  { name: "coin", label: "Coin" },
+  { name: "coin", label: "Coin" ,forNew:true},
   { name: "buy_market", label: "Buy Market", options: supported_markets },
   { name: "sell_market", label: "Sell Market", options: supported_markets },
   { name: "budget", label: "Budget" },
@@ -252,6 +252,10 @@ export const AppProvider = ({ children }) => {
       return _markets;
     });
   }
+
+
+
+
   function getMarketConfig(market) {
     let foundMarketConfig = markets.find(x => x.market_label() === market);
     return foundMarketConfig;
@@ -262,6 +266,7 @@ export const AppProvider = ({ children }) => {
     }
     return formFields;
   }
+
   const appValue = {
     markets: markets,
     getMarket,

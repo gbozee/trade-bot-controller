@@ -38,8 +38,12 @@ function AccountItem({ account }) {
       as={Link}
       py="1em"
       px="1em"
+      mx="6em"
+      my="0.2em"
       border="1px solid"
-      _hover={{ cursor: "pointer", background: "gray" }}
+      boxShadow="md"
+      rounded="md"
+      _hover={{ cursor: "pointer", background: "teal" , color:"white", borderColor:"white" }}
       to={`/${account.slug}/markets`}
     >
       {account.title}

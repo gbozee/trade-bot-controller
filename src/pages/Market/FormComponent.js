@@ -24,8 +24,6 @@ export const FormComponent = ({
     }
   }, [market]);
 
-  console.log(config);
-
   const handleChange = input => e => {
     setConfig({ ...config, [input]: e.target.value });
   };
@@ -73,6 +71,9 @@ export const FormComponent = ({
               onChange={handleChange(field.name)}
             />
           );
+        }
+        if (market && field.name === "coin") {
+          return null;
         }
         return (
           <FormControl mb={1} mx={3} isRequired>

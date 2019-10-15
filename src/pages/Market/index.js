@@ -36,6 +36,7 @@ import {
 } from "../../components";
 import { FormComponent } from "./FormComponent";
 import { flex } from "styled-system";
+import { config } from "react-spring/renderprops";
 
 const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
   const { prices, percent } = useWebSockets(
@@ -190,10 +191,20 @@ export function Market({ match, history }) {
   const { markets, loading, getMarket, getFormFields } = useContext(AppContext);
 
   let [selectedMarkets, setSelectedMarkets] = useState([
-    "BTC/USDT",
-    "ETH/USDT"
+    // "BTC/USDT",
+    // "ETH/USDT"
   ]);
   let [newEditItem, setNewEditItem] = useState();
+  let [filteredItem, setFilteredItem] = useState(" ");
+
+  function getFilterItem(filteredItem) {
+    if (filteredItem === " ") {
+      return markets;
+    } else {
+      let filteredmarket = markets.filter(x => x.buy_market === filteredItem);
+      return filteredmarket;
+    }
+  }
 
   function addOrRemoveMarkets(_market) {
     if (selectedMarkets.includes(_market)) {
@@ -220,13 +231,11 @@ export function Market({ match, history }) {
       <NavigationBar title="Main Account Markets">
         <MenuComponent
           defaultText="Filter"
-          options={[
-            "All Markets",
-            "BTC Markets",
-            "USDT Markets",
-            "ETH Markets",
-            "BNB Markets"
-          ]}
+          options={["All", "BTC", "USDT", "ETH ", "BNB"]}
+          value={filteredItem}
+          onMenuItemClick={x => {
+            setFilteredItem(x);
+          }}
           menuProps={{ background: "teal" }}
           buttonProps={{ variantColor: "teal", variant: "solid" }}
         />
@@ -252,11 +261,13 @@ export function Market({ match, history }) {
           flexDirection="column"
           justifyContent={["space-between", "inherit"]}
           mx={3}
+         
           // width={['100%',"100%","80%"]}
           minHeight="90vh"
         >
           <Box pt={5}>
             <Stack
+            
               isInline
               spacing={8}
               justifyContent={["space-between", "space-between", "flex-start"]}
@@ -264,7 +275,7 @@ export function Market({ match, history }) {
               maxHeight="400px"
               overflowY="scroll"
             >
-              {markets.map(market => {
+              {getFilterItem(filteredItem).map(market => {
                 return (
                   <MarketWithStat
                     key={market.market_label()}
