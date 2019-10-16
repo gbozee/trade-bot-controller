@@ -34,7 +34,7 @@ import {
   SubNavigationBar,
   ControlButton
 } from "../../components";
-import { FormComponent } from "./FormComponent";
+import { FormComponent, FormSubmitHandler, useFormState } from "./FormComponent";
 import { flex } from "styled-system";
 import { config } from "react-spring/renderprops";
 
@@ -75,6 +75,9 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
 };
 
 const SidebarDrawer = ({ isOpen, onClose, btnRef, market, formFields }) => {
+  const {config, handleChange,onSaveHandler} = useFormState(market)
+  
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -89,24 +92,44 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market, formFields }) => {
           {!market ? `Create new market` : `Edit ${market} market`}
         </DrawerHeader>
 
-        <DrawerBody>
-          <Flex
-            justifyContent={["space-between", "space-between", "flex-start"]}
-            flexGrow={0.3}
-            flexDirection={["column"]}
-            // mx={3}
-            my={5}
-          >
-            <FormComponent market={market} formFields={formFields} />
-          </Flex>
-        </DrawerBody>
+        {/*<FormSubmitHandler market={market}
+          render={(onsaveHandler,config,handleChange) => {
+            return (
+            <>*/}
+                <DrawerBody>
+                  <Flex
+                    justifyContent={[
+                      "space-between",
+                      "space-between",
+                      "flex-start"
+                    ]}
+                    flexGrow={0.3}
+                    flexDirection={["column"]}
+                    // mx={3}
+                    my={5}
+                  >
+                    <FormComponent
+                      market={market}
+                      config={config}
+                      handleChange={handleChange}
+                      formFields={formFields}
+                      getData
+                    />
+                  </Flex>
+                </DrawerBody>
 
-        <DrawerFooter>
-          <Button variant="outline" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button color="blue">Save</Button>
-        </DrawerFooter>
+                <DrawerFooter>
+                  <Button variant="outline" mr={3} onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button color="blue" onClick={onSaveHandler}>
+                    Save
+                  </Button>
+                </DrawerFooter>
+              {/*</>
+            );
+          }}
+        />*/}
       </DrawerContent>
     </Drawer>
   );
@@ -147,6 +170,7 @@ const MenuComponent = ({
   );
 };
 function ConfigurationComponent({ params }) {
+  
   let [selectedFields, setSelectedFields] = useState([]);
   return (
     <Flex direction="column">
@@ -261,13 +285,11 @@ export function Market({ match, history }) {
           flexDirection="column"
           justifyContent={["space-between", "inherit"]}
           mx={3}
-         
           // width={['100%',"100%","80%"]}
           minHeight="90vh"
         >
           <Box pt={5}>
             <Stack
-            
               isInline
               spacing={8}
               justifyContent={["space-between", "space-between", "flex-start"]}

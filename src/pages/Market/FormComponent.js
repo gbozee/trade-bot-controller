@@ -9,25 +9,45 @@ import {
   Select
 } from "@chakra-ui/core";
 
-export const FormComponent = ({
-  market,
-  formFields = [],
-  componentProps = {}
-}) => {
+// export const FormSubmitHandler = ({render,market})=>{
+  
+//   const {config, handleChange,onSaveHandler} = useFormState(market)
+  
+//   return render(onSaveHandler,config,handleChange)
+// }
+export const useFormState = (market)=>{
   const { getMarketConfig, supported_markets } = useContext(AppContext);
-
+  
   let [config, setConfig] = useState({});
+  
+  
+   
+  
+  
   useEffect(() => {
     if (market) {
       let configuration = getMarketConfig(market);
       setConfig(configuration);
-    }
+         }
   }, [market]);
-
+  function onSaveHandler(){
+    console.log(config);
+  }
+  
   const handleChange = input => e => {
-    setConfig({ ...config, [input]: e.target.value });
+    let newConfig = { ...config, [input]: e.target.value }
+    setConfig(newConfig);
+    // onSubmit(newConfig)
   };
-
+  return {config,handleChange,onSaveHandler}
+}
+export const FormComponent = ({
+  market,
+  formFields = [],
+  componentProps = {},
+  handleChange=()=>{},
+  config={}
+}) => {
   return (
     <>
       {formFields.map(field => {
