@@ -89,7 +89,7 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market, formFields }) => {
       <DrawerContent maxHeight="100vh" overflowY="scroll">
         <DrawerCloseButton />
         <DrawerHeader>
-          {!market ? `Create new market` : `Edit ${market} market`}
+         {!market ? `Create new market` : `Edit ${market} market`}
         </DrawerHeader>
 
         {/*<FormSubmitHandler market={market}

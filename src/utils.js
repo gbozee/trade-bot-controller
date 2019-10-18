@@ -62,7 +62,8 @@ const configs = [
     spread: 7,
     multiplier: 2,
     buy_amount: 10.1,
-    price_places: ".2f"
+    price_places: ".2f",
+    pause: "true"
   },
   {
     id: 2,
@@ -184,6 +185,13 @@ const supported_markets = [
   "XRP",
   "TRX"
 ];
+
+const number_grades = ["0","1", "2", "3", "4"," 5", "6", "7", "8", "9"];
+
+
+
+
+
 let formFields = [
   { name: "multiplier", label: "Multiplier", bulk: true },
   { name: "buy_amount", label: "Buy Amount", bulk: true },
@@ -198,8 +206,8 @@ let formFields = [
   { name: "expected_rise_point", label: "Expected Rise Point" },
   { name: "max_trade_count", label: "Max Trade Count", bulk: true },
   { name: "monthly_profit", label: "Monthly Profit" },
-  { name: "decimal_places", label: "Decimal Places" },
-  { name: "price_places", label: "Price Places" },
+  { name: "decimal_places", label: "Decimal Places", options: number_grades },
+  { name: "price_places", label: "Price Places", options: number_grades },
   { name: "spread", label: "Spread" },
   { name: "one_way", label: "Is One Way", field_type: "radio" },
   { name: "pause", label: "Pause Market", field_type: "radio", bulk: true },

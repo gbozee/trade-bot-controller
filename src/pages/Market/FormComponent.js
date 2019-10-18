@@ -10,43 +10,52 @@ import {
 } from "@chakra-ui/core";
 
 // export const FormSubmitHandler = ({render,market})=>{
-  
+
 //   const {config, handleChange,onSaveHandler} = useFormState(market)
-  
+
 //   return render(onSaveHandler,config,handleChange)
 // }
-export const useFormState = (market)=>{
+export const useFormState = market => {
   const { getMarketConfig, supported_markets } = useContext(AppContext);
-  
+
   let [config, setConfig] = useState({});
-  
-  
-   
-  
-  
+
   useEffect(() => {
     if (market) {
       let configuration = getMarketConfig(market);
       setConfig(configuration);
-         }
+    }
   }, [market]);
-  function onSaveHandler(){
+
+  function onSaveHandler(event) {
+    event.preventDefault();
+
     console.log(config);
   }
-  
+
+  function getDecimalformat(numPlace) {
+    let a = `%${numPlace / 10}f`;
+    return a;
+  }
+
   const handleChange = input => e => {
-    let newConfig = { ...config, [input]: e.target.value }
+    let value = e.target.value;
+    if (input === "decimal_places" || input === "price_places") {
+      value = getDecimalformat(value);
+    }
+    let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
+    console.log(newConfig);
     // onSubmit(newConfig)
   };
-  return {config,handleChange,onSaveHandler}
-}
+  return { config, handleChange, onSaveHandler };
+};
 export const FormComponent = ({
   market,
   formFields = [],
   componentProps = {},
-  handleChange=()=>{},
-  config={}
+  handleChange = () => {},
+  config = {}
 }) => {
   return (
     <>
@@ -56,14 +65,15 @@ export const FormComponent = ({
           actualField = (
             <RadioGroup
               {...componentProps}
-              defaultValue={!!config[field.name]}
+              defaultValue={market ? !!config[field.name] : "false"}
+              value={config[field.name]}
               display="inline-flex"
-              onChange={handleChange(config[field.name])}
+              onChange={handleChange(field.name)}
             >
-              <Radio mr={1} value={true}>
+              <Radio mr={1} value="true">
                 True
               </Radio>
-              <Radio value={false}>False</Radio>
+              <Radio value="false">False</Radio>
             </RadioGroup>
           );
         } else if (Array.isArray(field.options)) {
@@ -72,6 +82,9 @@ export const FormComponent = ({
               {...componentProps}
               id={field.name}
               placeholder={field.label}
+              // value={config[field.name]}
+
+              onChange={handleChange(field.name)}
             >
               {field.options.map(option => (
                 <option key={option} value={option}>
