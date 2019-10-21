@@ -34,7 +34,11 @@ import {
   SubNavigationBar,
   ControlButton
 } from "../../components";
-import { FormComponent, FormSubmitHandler, useFormState } from "./FormComponent";
+import {
+  FormComponent,
+  FormSubmitHandler,
+  useFormState
+} from "./FormComponent";
 import { flex } from "styled-system";
 import { config } from "react-spring/renderprops";
 
@@ -74,9 +78,18 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
   );
 };
 
-const SidebarDrawer = ({ isOpen, onClose, btnRef, market, formFields }) => {
-  const {config, handleChange,onSaveHandler} = useFormState(market)
-  
+const SidebarDrawer = ({
+  isOpen,
+  onClose,
+  btnRef,
+  market,
+  formFields,
+  onSubmit
+}) => {
+  const { config, handleChange, onSaveHandler } = useFormState(
+    market,
+    onSubmit
+  );
 
   return (
     <Drawer
@@ -89,44 +102,40 @@ const SidebarDrawer = ({ isOpen, onClose, btnRef, market, formFields }) => {
       <DrawerContent maxHeight="100vh" overflowY="scroll">
         <DrawerCloseButton />
         <DrawerHeader>
-         {!market ? `Create new market` : `Edit ${market} market`}
+          {!market ? `Create new market` : `Edit ${market} market`}
         </DrawerHeader>
 
         {/*<FormSubmitHandler market={market}
           render={(onsaveHandler,config,handleChange) => {
             return (
             <>*/}
-                <DrawerBody>
-                  <Flex
-                    justifyContent={[
-                      "space-between",
-                      "space-between",
-                      "flex-start"
-                    ]}
-                    flexGrow={0.3}
-                    flexDirection={["column"]}
-                    // mx={3}
-                    my={5}
-                  >
-                    <FormComponent
-                      market={market}
-                      config={config}
-                      handleChange={handleChange}
-                      formFields={formFields}
-                      getData
-                    />
-                  </Flex>
-                </DrawerBody>
+        <DrawerBody>
+          <Flex
+            justifyContent={["space-between", "space-between", "flex-start"]}
+            flexGrow={0.3}
+            flexDirection={["column"]}
+            // mx={3}
+            my={5}
+          >
+            <FormComponent
+              market={market}
+              config={config}
+              handleChange={handleChange}
+              formFields={formFields}
+              getData
+            />
+          </Flex>
+        </DrawerBody>
 
-                <DrawerFooter>
-                  <Button variant="outline" mr={3} onClick={onClose}>
-                    Cancel
-                  </Button>
-                  <Button color="blue" onClick={onSaveHandler}>
-                    Save
-                  </Button>
-                </DrawerFooter>
-              {/*</>
+        <DrawerFooter>
+          <Button variant="outline" mr={3} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button color="blue" onClick={onSaveHandler}>
+            Save
+          </Button>
+        </DrawerFooter>
+        {/*</>
             );
           }}
         />*/}
@@ -170,7 +179,6 @@ const MenuComponent = ({
   );
 };
 function ConfigurationComponent({ params }) {
-  
   let [selectedFields, setSelectedFields] = useState([]);
   return (
     <Flex direction="column">
@@ -212,7 +220,13 @@ function ConfigurationComponent({ params }) {
 export function Market({ match, history }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
-  const { markets, loading, getMarket, getFormFields } = useContext(AppContext);
+  const {
+    markets,
+    loading,
+    getMarket,
+    getFormFields,
+    getFormResult
+  } = useContext(AppContext);
 
   let [selectedMarkets, setSelectedMarkets] = useState([
     // "BTC/USDT",
@@ -240,8 +254,17 @@ export function Market({ match, history }) {
     }
   }
   useEffect(() => {
-    getMarket(match.params.account);
+    getMarkets();
   }, []);
+  function getMarkets() {
+    getMarket(match.params.account);
+  }
+  function onSubmit(config) {
+    return getFormResult(config, match.params.account).then(() => {
+      getMarkets();
+      return {};
+    });
+  }
   let routes = [
     { name: "Home", path: "/" },
     {
@@ -269,7 +292,8 @@ export function Market({ match, history }) {
             onClose,
             btnRef,
             market: newEditItem,
-            formFields: getFormFields()
+            formFields: getFormFields(),
+            onSubmit
           }}
         />
       </NavigationBar>
