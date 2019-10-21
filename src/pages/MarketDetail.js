@@ -282,10 +282,10 @@ export const MarketDetail = ({ match }) => {
         Header: "Date",
         accessor: "date"
       },
-      // {
-      //   Header: "Market",
-      //   accessor: "market"
-      // },
+      {
+        Header: "Market",
+        accessor: "market"
+      },
       {
         Header: "Amount",
         accessor: "amount"
