@@ -272,6 +272,15 @@ export const AppProvider = ({ children }) => {
     return formFields;
   }
 
+
+
+  function getFormResult(config){
+    console.log(config)
+    return new Promise((resolve,reject) =>{
+      resolve()
+    })
+  }
+
   const appValue = {
     markets: markets,
     getMarket,
@@ -280,7 +289,8 @@ export const AppProvider = ({ children }) => {
     configs,
     getMarketConfig,
     supported_markets,
-    getFormFields
+    getFormFields,
+    getFormResult
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

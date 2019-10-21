@@ -16,7 +16,7 @@ import {
 //   return render(onSaveHandler,config,handleChange)
 // }
 export const useFormState = market => {
-  const { getMarketConfig, supported_markets } = useContext(AppContext);
+  const { getMarketConfig, supported_markets,getFormResult } = useContext(AppContext);
 
   let [config, setConfig] = useState({});
 
@@ -27,10 +27,17 @@ export const useFormState = market => {
     }
   }, [market]);
 
+
+
+
   function onSaveHandler(event) {
     event.preventDefault();
+    getFormResult(config).then(()=>{
+      setConfig({})
+    }).catch((e)=>{
+      
+    })
 
-    console.log(config);
   }
 
   function getDecimalformat(numPlace) {
@@ -45,7 +52,7 @@ export const useFormState = market => {
     }
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
-    console.log(newConfig);
+    // console.log(newConfig);
     // onSubmit(newConfig)
   };
   return { config, handleChange, onSaveHandler };
