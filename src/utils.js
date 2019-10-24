@@ -57,13 +57,13 @@ export function useWebSockets(market, price_places = ".0f", currency) {
 export const AppProvider = ({ children }) => {
   let [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [markets, setMarkets] = useState([]);
+  // const [markets, setMarkets] = useState([]);
   const [uniqueId, setUniqueId] = useState();
-  const [allMarkets, setAllMarkets] = useState([]);
+  const [allMarkets, setAllMarkets] = useState(configs);
 
   useEffect(() => {
-    loadAccounts();
     setAllMarkets(configs);
+    loadAccounts();
   }, []);
 
   function loadAccounts() {
@@ -91,7 +91,7 @@ export const AppProvider = ({ children }) => {
             return `${x.coin}/${x.buy_market}`;
           }
         }));
-      setMarkets(_markets);
+      // setMarkets(_markets);
       setLoading(false);
       return _markets;
     });
@@ -102,10 +102,10 @@ export const AppProvider = ({ children }) => {
     setUniqueId(lastId);
     return lastId;
   }
-  function getMarketConfig(market) {
-    let foundMarketConfig = markets.find(x => x.market_label() === market);
-    return foundMarketConfig;
-  }
+  // function getMarketConfig(market) {
+  //   let foundMarketConfig = markets.find(x => x.market_label() === market);
+  //   return foundMarketConfig;
+  // }
   function getFormFields(isBulk) {
     if (isBulk === "bulk") {
       return formFields.filter(x => x.bulk);
@@ -114,7 +114,7 @@ export const AppProvider = ({ children }) => {
   }
 
   function getFormResult(config, account) {
-    console.log(config);
+    // console.log(config);
     let id = getUniqueId();
     let dataToSave = {
       id: id,
@@ -136,17 +136,19 @@ export const AppProvider = ({ children }) => {
         return acc;
       });
       setAccounts(newAccounts);
-      resolve();
+      resolve({...dataToSave,market_label: () => {
+        return `${dataToSave.coin}/${dataToSave.buy_market}`;
+      }});
     });
   }
 
   const appValue = {
-    markets: markets,
+    // markets: markets,
     getMarket,
     loading,
     accounts,
     configs,
-    getMarketConfig,
+    // getMarketConfig,
     supported_markets,
     getFormFields,
     getFormResult

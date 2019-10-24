@@ -6,7 +6,10 @@ import {
   Input,
   Radio,
   RadioGroup,
-  Select
+  Select,
+  InputGroup,
+  Button,
+  InputRightElement
 } from "@chakra-ui/core";
 
 // export const FormSubmitHandler = ({render,market})=>{
@@ -15,27 +18,39 @@ import {
 
 //   return render(onSaveHandler,config,handleChange)
 // }
-export const useFormState = (market, onSubmit) => {
+export const useFormState = (defaultconfig = {}, onSubmit) => {
   const { getMarketConfig, supported_markets } = useContext(AppContext);
 
-  let [config, setConfig] = useState({});
+  let [config, setConfig] = useState(defaultconfig);
 
   useEffect(() => {
-    if (market) {
-      let configuration = getMarketConfig(market);
-      setConfig(configuration);
-    }
-  }, [market]);
+    setConfig(defaultconfig);
+  }, [defaultconfig]);
 
   function onSaveHandler(event) {
     event.preventDefault();
     onSubmit(config)
-      // getFormResult(config, account)
-      .then(() => {
-        setConfig({});
+    // getFormResult(config, account)
+    .then(() => {
+      setConfig({});
+      // console.log(config)
       })
       .catch(e => {});
   }
+
+
+//   function isNumberKey(evt){
+//     var charCode = (evt.which) ? evt.which : event.keyCode
+//     if (charCode > 31 && (charCode < 48 || charCode > 57))
+//         return false;
+//     return true;
+// } 
+
+
+
+
+
+
 
   function getDecimalformat(numPlace) {
     let a = `%${numPlace / 10}f`;
@@ -44,7 +59,9 @@ export const useFormState = (market, onSubmit) => {
 
   const handleChange = input => e => {
     let value = e.target.value;
-    if (input === "decimal_places" || input === "price_places") {
+    if (e.target.type === "radio") {
+      value = value === "true";
+    } else if (input === "decimal_places" || input === "price_places") {
       value = getDecimalformat(value);
     }
     let newConfig = { ...config, [input]: value };
@@ -61,6 +78,33 @@ export const FormComponent = ({
   handleChange = () => {},
   config = {}
 }) => {
+  function getRadioValue(val) {
+    if (val) {
+      // console.log(val);
+      if (typeof val === "boolean") {
+        return val.toString();
+      }
+      return val;
+    }
+    return "false";
+  }
+  function getSelectValue(val) {
+    if (["price_places", "decimal_places"].includes(val)) {
+      let pp = config[val];
+      if (pp) {
+        if (pp.includes("f")) {
+          let newpp = pp
+            .replace("%", "")
+            .replace(".", "")
+            .replace("0", "")
+            .replace("f", "");
+          // console.log(newpp);
+          return newpp;
+        }
+      }
+    }
+    return config[val];
+  }
   return (
     <>
       {formFields.map(field => {
@@ -69,8 +113,8 @@ export const FormComponent = ({
           actualField = (
             <RadioGroup
               {...componentProps}
-              defaultValue={market ? !!config[field.name] : "false"}
-              value={config[field.name]}
+              // defaultValue={market ? !!config[field.name] : "false"}
+              value={getRadioValue(config[field.name])}
               display="inline-flex"
               onChange={handleChange(field.name)}
             >
@@ -86,8 +130,7 @@ export const FormComponent = ({
               {...componentProps}
               id={field.name}
               placeholder={field.label}
-              // value={config[field.name]}
-
+              value={getSelectValue(field.name)}
               onChange={handleChange(field.name)}
             >
               {field.options.map(option => (
@@ -99,13 +142,10 @@ export const FormComponent = ({
           );
         } else {
           actualField = (
-            <Input
-              {...componentProps}
-              name={field.name}
-              id={field.name}
-              value={config[field.name]}
-              placeholder={field.label}
-              onChange={handleChange(field.name)}
+            <InputComponent
+              field={field}
+              config={config}
+              handleChange={handleChange}
             />
           );
         }
@@ -113,12 +153,72 @@ export const FormComponent = ({
           return null;
         }
         return (
-          <FormControl mb={1} mx={3} isRequired>
+          <FormControl key={field.name} mb={1} mx={3} isRequired>
             <FormLabel htmlFor={field.name}>{field.label}</FormLabel>
             {actualField}
           </FormControl>
         );
       })}
+    </>
+  );
+};
+
+
+
+
+const InputComponent = ({
+  componentProps = {},
+  config = {},
+  handleChange = {},
+  field = {}
+}) => {
+  const [show, setShow] = React.useState(false);
+    function getValue() {}
+  if (field.name === "spread_multiplier") {
+    return (
+      <>
+        <InputGroup size="md">
+          <Input  
+          {...componentProps}
+          name={field.name}
+        id={field.name}
+          onChange={handleChange(field.name)}
+          placeholder={field.label} />
+          <InputRightElement>
+            <Button size="sm" onClick={getValue}>
+              get
+            </Button>
+          </InputRightElement>
+        </InputGroup>
+      </>
+    );
+  }else if(field.name === ("multiplier" ||"buy_amount" ||  "sell_amount" || "margin_multiplier" )){
+    return (
+      <>
+        <Input
+          {...componentProps}
+          name={field.name}
+          id={field.name}
+          value={config[field.name]}
+          placeholder={field.label}
+          onChange={handleChange(field.name)}
+          type="number"
+        />
+      </>
+    );
+
+
+  }
+  return (
+    <>
+      <Input
+        {...componentProps}
+        name={field.name}
+        id={field.name}
+        value={config[field.name]}
+        placeholder={field.label}
+        onChange={handleChange(field.name)}
+      />
     </>
   );
 };

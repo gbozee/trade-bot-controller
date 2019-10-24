@@ -7,7 +7,7 @@ export const configs = [
     multiplier: 2,
     buy_amount: 10.1,
     price_places: ".2f",
-    pause: "true"
+    pause: true
   },
   {
     id: 2,
@@ -131,9 +131,11 @@ export const supported_markets = [
 ];
 
 const number_grades = ["0", "1", "2", "3", "4", " 5", "6", "7", "8", "9"];
+const max_trade_count = ["1", "2", "3", "4", " 5"];
 
 export let formFields = [
   { name: "multiplier", label: "Multiplier", bulk: true },
+  { name: "market_type", label: "Market Type", options: supported_markets },
   { name: "buy_amount", label: "Buy Amount", bulk: true },
   { name: "sell_amount", label: "Sell Amount", bulk: true },
   { name: "spread_multiplier", label: "Spread Multiplier", bulk: true },
@@ -141,17 +143,25 @@ export let formFields = [
   { name: "buy_market", label: "Buy Market", options: supported_markets },
   { name: "sell_market", label: "Sell Market", options: supported_markets },
   { name: "budget", label: "Budget" },
-  { name: "purchased_price", label: "Purchased Price" },
-  { name: "trades", label: "Trades" },
-  { name: "expected_rise_point", label: "Expected Rise Point" },
-  { name: "max_trade_count", label: "Max Trade Count", bulk: true },
+  // { name: "purchased_price", label: "Purchased Price" },
+  // { name: "trades", label: "Trades" },
+  // { name: "expected_rise_point", label: "Expected Rise Point" },
+  { name: "max_trade_count", label: "Max Trade Count", bulk: true ,options:max_trade_count},
   { name: "monthly_profit", label: "Monthly Profit" },
   { name: "decimal_places", label: "Decimal Places", options: number_grades },
   { name: "price_places", label: "Price Places", options: number_grades },
+  { name: "profit_value", label: "Profit Value" },
+  {
+    name: "take_profits",
+    label: "Take Proft",
+    field_type: "radio",
+    bulk: true
+  },
   { name: "spread", label: "Spread" },
-  { name: "one_way", label: "Is One Way", field_type: "radio" },
+  // { name: "one_way", label: "Is One Way", field_type: "radio" },
   { name: "pause", label: "Pause Market", field_type: "radio", bulk: true },
-  { name: "invest_value", label: "Invest Value" },
+  // { name: "invest_value", label: "Invest Value" },
+  { name: "margin_multiplier", label: "Margin Multiplier" },
   {
     name: "margin_support",
     label: "Margin Support",

@@ -83,14 +83,14 @@ const SidebarDrawer = ({
   onClose,
   btnRef,
   market,
+  marketInfo = {},
   formFields,
   onSubmit
 }) => {
   const { config, handleChange, onSaveHandler } = useFormState(
-    market,
+    marketInfo,
     onSubmit
   );
-
   return (
     <Drawer
       isOpen={isOpen}
@@ -221,13 +221,13 @@ export function Market({ match, history }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
   const {
-    markets,
+    // markets,
     loading,
     getMarket,
     getFormFields,
     getFormResult
   } = useContext(AppContext);
-
+  const [markets, setMarkets] = useState([]);
   let [selectedMarkets, setSelectedMarkets] = useState([
     // "BTC/USDT",
     // "ETH/USDT"
@@ -257,11 +257,13 @@ export function Market({ match, history }) {
     getMarkets();
   }, []);
   function getMarkets() {
-    getMarket(match.params.account);
+    getMarket(match.params.account).then(mk => {
+      setMarkets(mk);
+    });
   }
   function onSubmit(config) {
-    return getFormResult(config, match.params.account).then(() => {
-      getMarkets();
+    return getFormResult(config, match.params.account).then(fetchedMarket => {
+      setMarkets([...markets, fetchedMarket]);
       return {};
     });
   }
@@ -292,6 +294,10 @@ export function Market({ match, history }) {
             onClose,
             btnRef,
             market: newEditItem,
+            marketInfo: newEditItem
+              ? markets.find(x => x.market_label() === newEditItem)
+              : undefined,
+            // marketInfo: markets.find(x=>x => x.market_label() === newEditItem),
             formFields: getFormFields(),
             onSubmit
           }}
