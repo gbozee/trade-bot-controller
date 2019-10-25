@@ -130,8 +130,11 @@ export const supported_markets = [
   "TRX"
 ];
 
+
+
+
 const number_grades = ["0", "1", "2", "3", "4", " 5", "6", "7", "8", "9"];
-const max_trade_count = ["1", "2", "3", "4", " 5"];
+
 
 export let formFields = [
   { name: "multiplier", label: "Multiplier", bulk: true },
@@ -146,14 +149,24 @@ export let formFields = [
   // { name: "purchased_price", label: "Purchased Price" },
   // { name: "trades", label: "Trades" },
   // { name: "expected_rise_point", label: "Expected Rise Point" },
-  { name: "max_trade_count", label: "Max Trade Count", bulk: true ,options:max_trade_count},
+  {
+    name: "max_trade_count",
+    label: "Max Trade Count",
+    bulk: true,
+    options: ["1", "2", "3", "4", " 5"]
+  },
   { name: "monthly_profit", label: "Monthly Profit" },
   { name: "decimal_places", label: "Decimal Places", options: number_grades },
+  {
+    name: "time_interval",
+    label: "Time Interval",
+    options: ["Hourly", "Daily" ]
+  },
   { name: "price_places", label: "Price Places", options: number_grades },
   { name: "profit_value", label: "Profit Value" },
   {
     name: "take_profits",
-    label: "Take Proft",
+    label: "Take Profits",
     field_type: "radio",
     bulk: true
   },

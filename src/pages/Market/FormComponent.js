@@ -18,6 +18,12 @@ import {
 
 //   return render(onSaveHandler,config,handleChange)
 // }
+
+function convertToNumber(val) {
+  let toNum = parseInt(val);
+  return toNum;
+}
+
 export const useFormState = (defaultconfig = {}, onSubmit) => {
   const { getMarketConfig, supported_markets } = useContext(AppContext);
 
@@ -30,31 +36,35 @@ export const useFormState = (defaultconfig = {}, onSubmit) => {
   function onSaveHandler(event) {
     event.preventDefault();
     onSubmit(config)
-    // getFormResult(config, account)
-    .then(() => {
-      setConfig({});
-      // console.log(config)
+      // getFormResult(config, account)
+      .then(() => {
+        setConfig({});
+        console.log(config);
       })
       .catch(e => {});
   }
 
+  //   function isNumberKey(evt){
+  //     var charCode = (evt.which) ? evt.which : event.keyCode
+  //     if (charCode > 31 && (charCode < 48 || charCode > 57))
+  //         return false;
+  //     return true;
+  // }
 
-//   function isNumberKey(evt){
-//     var charCode = (evt.which) ? evt.which : event.keyCode
-//     if (charCode > 31 && (charCode < 48 || charCode > 57))
-//         return false;
-//     return true;
-// } 
-
-
-
-
-
-
+  function convertToNumer(val) {
+    let toNum = parseInt(val);
+    return toNum;
+  }
 
   function getDecimalformat(numPlace) {
     let a = `%${numPlace / 10}f`;
     return a;
+  }
+
+  function getTimeInterval(val) {
+    let newpp = val.replace("Hourly", "h").replace("Daily", "d");
+    return newpp;
+    //   });
   }
 
   const handleChange = input => e => {
@@ -63,10 +73,15 @@ export const useFormState = (defaultconfig = {}, onSubmit) => {
       value = value === "true";
     } else if (input === "decimal_places" || input === "price_places") {
       value = getDecimalformat(value);
+    } else if (input === "time_interval") {
+      value = getTimeInterval(value);
+    } else if (e.target.type === "number") {
+      value = parseFloat(value);
     }
+
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
-    // console.log(newConfig);
+    console.log(newConfig);
     // onSubmit(newConfig)
   };
   return { config, handleChange, onSaveHandler };
@@ -79,8 +94,9 @@ export const FormComponent = ({
   config = {}
 }) => {
   function getRadioValue(val) {
+    // console.log(val);
+
     if (val) {
-      // console.log(val);
       if (typeof val === "boolean") {
         return val.toString();
       }
@@ -88,6 +104,7 @@ export const FormComponent = ({
     }
     return "false";
   }
+
   function getSelectValue(val) {
     if (["price_places", "decimal_places"].includes(val)) {
       let pp = config[val];
@@ -101,6 +118,12 @@ export const FormComponent = ({
           // console.log(newpp);
           return newpp;
         }
+      }
+    } else if ("time_interval".includes(val)) {
+      let pp = config[val];
+      if (pp) {
+        let newpp = pp.replace("h", "Hourly").replace("d", "Daily");
+        return newpp;
       }
     }
     return config[val];
@@ -163,27 +186,27 @@ export const FormComponent = ({
   );
 };
 
-
-
-
-const InputComponent = ({
+export const InputComponent = ({
   componentProps = {},
   config = {},
   handleChange = {},
   field = {}
 }) => {
-  const [show, setShow] = React.useState(false);
-    function getValue() {}
+  const [show, setShow] = useState(false);
+  function getValue() {}
   if (field.name === "spread_multiplier") {
     return (
       <>
         <InputGroup size="md">
-          <Input  
-          {...componentProps}
-          name={field.name}
-        id={field.name}
-          onChange={handleChange(field.name)}
-          placeholder={field.label} />
+          <Input
+            {...componentProps}
+            name={field.name}
+            id={field.name}
+            value={config[field.name]}
+            placeholder={field.label}
+            onChange={handleChange(field.name)}
+            type="number"
+          />
           <InputRightElement>
             <Button size="sm" onClick={getValue}>
               get
@@ -192,7 +215,7 @@ const InputComponent = ({
         </InputGroup>
       </>
     );
-  }else if(field.name === ("multiplier" ||"buy_amount" ||  "sell_amount" || "margin_multiplier" )){
+  } else if (field.name === "coin") {
     return (
       <>
         <Input
@@ -202,12 +225,9 @@ const InputComponent = ({
           value={config[field.name]}
           placeholder={field.label}
           onChange={handleChange(field.name)}
-          type="number"
         />
       </>
     );
-
-
   }
   return (
     <>
@@ -218,6 +238,7 @@ const InputComponent = ({
         value={config[field.name]}
         placeholder={field.label}
         onChange={handleChange(field.name)}
+        type="number"
       />
     </>
   );
