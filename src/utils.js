@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { getAccounts, configs, supported_markets, formFields } from "./data";
+import { getAccounts, configs, supported_markets, formFields,hiddenFields } from "./data";
 export const AppContext = React.createContext();
 
 export function useWebSockets(market, price_places = ".0f", currency) {
@@ -148,6 +148,7 @@ export const AppProvider = ({ children }) => {
     loading,
     accounts,
     configs,
+    hiddenFields,
     // getMarketConfig,
     supported_markets,
     getFormFields,

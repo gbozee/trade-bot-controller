@@ -12,13 +12,6 @@ import {
   InputRightElement
 } from "@chakra-ui/core";
 
-// export const FormSubmitHandler = ({render,market})=>{
-
-//   const {config, handleChange,onSaveHandler} = useFormState(market)
-
-//   return render(onSaveHandler,config,handleChange)
-// }
-
 function convertToNumber(val) {
   let toNum = parseInt(val);
   return toNum;
@@ -26,13 +19,13 @@ function convertToNumber(val) {
 
 export const useFormState = (defaultconfig, onSubmit) => {
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
-  let [oldConfig, setOldConfig] = useState(defaultconfig)
-  let [config, setConfig] = useState({});
+  let [oldConfig, setOldConfig] = useState(defaultconfig);
+  let [formErrors, setFormErrors] = useState({});
+  let [config, setConfig] = useState({ max_trade_count: 1 });
 
   useEffect(() => {
-    
-    setConfig(defaultconfig);
-  }, [defaultconfig]);
+    setConfig({ max_trade_count: 1, ...defaultconfig });
+  }, []);
 
   function onSaveHandler(event) {
     event.preventDefault();
@@ -79,20 +72,39 @@ export const useFormState = (defaultconfig, onSubmit) => {
     } else if (e.target.type === "number") {
       value = parseFloat(value);
     }
-  
+
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
     console.log(newConfig);
     // onSubmit(newConfig)
   };
-  return { config, handleChange, onSaveHandler };
+  function getSpreadForMarket() {
+    return new Promise((resolve, reject) => resolve(0.003));
+  }
+  function onSpreadSubmit() {
+    if (config.coin && config.buy_market) {
+      getSpreadForMarket({ coin: config.coin, market: config.buy_market }).then(
+        value => {
+          setConfig({ ...config, spread: value });
+          setFormErrors({ ...formErrors, spread: false });
+        }
+      );
+    } else {
+      setFormErrors({ ...formErrors, spread: true });
+    }
+    // setConfig({...config,spread:value})
+  }
+  return { config, handleChange, onSaveHandler, onSpreadSubmit, formErrors };
 };
 export const FormComponent = ({
   market,
   formFields = [],
+  hiddenFields = [],
   componentProps = {},
   handleChange = () => {},
-  config = {}
+  config = {},
+  onSpreadSubmit,
+  formErrors = {}
 }) => {
   function getRadioValue(val) {
     // console.log(val);
@@ -129,18 +141,36 @@ export const FormComponent = ({
     }
     return config[val];
   }
+
+  let extraArray = ["profit_value", "pause"];
+  if (config.take_profits) {
+    extraArray = extraArray.filter(x => x !== "profit_value");
+  }
+  if (market) {
+    extraArray = extraArray.filter(x => x !== "pause");
+  }
+  let numberFields = [
+    "spread_multiplier",
+    "buy_amount",
+    "sell_amount",
+    "budget"
+  ];
   return (
     <>
       {formFields.map(field => {
         let actualField;
+        if (market && field.name === "coin") {
+          extraArray.push("coin");
+        }
+
         if (field.field_type === "radio") {
           actualField = (
             <RadioGroup
               {...componentProps}
               // defaultValue={market ? !!config[field.name] : "false"}
               value={getRadioValue(config[field.name])}
-              display="inline-flex"
               onChange={handleChange(field.name)}
+              display={extraArray.includes(field.name) ? "none" : "inline-flex"}
             >
               <Radio mr={1} value="true">
                 True
@@ -156,6 +186,7 @@ export const FormComponent = ({
               placeholder={field.label}
               value={getSelectValue(field.name)}
               onChange={handleChange(field.name)}
+              display={hiddenFields.includes(field.name) ? "none" : "inherit"}
             >
               {field.options.map(option => (
                 <option key={option} value={option}>
@@ -165,20 +196,24 @@ export const FormComponent = ({
             </Select>
           );
         } else {
+          // actualField =
           actualField = (
             <InputComponent
+              hiddenFields={[...hiddenFields, ...extraArray]}
+              numberFields={numberFields}
               field={field}
               config={config}
+              onSpreadSubmit={onSpreadSubmit}
+              isInvalid={formErrors[field.name]}
               handleChange={handleChange}
             />
           );
         }
-        if (market && field.name === "coin") {
-          return null;
-        }
         return (
           <FormControl key={field.name} mb={1} mx={3} isRequired>
-            <FormLabel htmlFor={field.name}>{field.label}</FormLabel>
+            {![...hiddenFields, ...extraArray].includes(field.name) && (
+              <FormLabel htmlFor={field.name}>{field.label}</FormLabel>
+            )}
             {actualField}
           </FormControl>
         );
@@ -187,60 +222,40 @@ export const FormComponent = ({
   );
 };
 
-export const InputComponent = ({
-  componentProps = {},
-  config = {},
-  handleChange = {},
-  field = {}
-}) => {
-  const [show, setShow] = useState(false);
-  function getValue() {}
-  if (field.name === "spread_multiplier") {
-    return (
-      <>
-        <InputGroup size="md">
-          <Input
-            {...componentProps}
-            name={field.name}
-            id={field.name}
-            value={config[field.name]}
-            placeholder={field.label}
-            onBlur={handleChange(field.name)}
-            type="number"
-          />
-          <InputRightElement>
-            <Button size="sm" onClick={getValue}>
-              get
-            </Button>
-          </InputRightElement>
-        </InputGroup>
-      </>
-    );
-  } else if (field.name === "coin") {
-    return (
-      <>
-        <Input
-          {...componentProps}
-          name={field.name}
-          id={field.name}
-          value={config[field.name]}
-          placeholder={field.label}
-          onBlur={handleChange(field.name)}
-        />
-      </>
-    );
-  }
+const SpreadInput = ({ onSpreadSubmit, config, ...props }) => {
   return (
-    <>
-      <Input
-        {...componentProps}
-        name={field.name}
-        id={field.name}
-        value={config[field.name]}
-        placeholder={field.label}
-        onBlur={handleChange(field.name)}
-        type="number"
-      />
-    </>
+    <InputGroup size="md">
+      <Input {...props} type="number" />
+      <InputRightElement>
+        <Button size="sm" onClick={onSpreadSubmit}>
+          get
+        </Button>
+      </InputRightElement>
+    </InputGroup>
+  );
+};
+export const InputComponent = ({
+  config = {},
+  hiddenFields = [],
+  numberFields = [],
+  handleChange = {},
+  field = {},
+  onSpreadSubmit,
+  ...componentProps
+}) => {
+  let C = field.name === "spread" ? SpreadInput : Input;
+  return (
+    <C
+      {...componentProps}
+      onSpreadSubmit={onSpreadSubmit}
+      config={config}
+      name={field.name}
+      id={field.name}
+      value={config[field.name]}
+      placeholder={field.label}
+      onBlur={handleChange(field.name)}
+      type={numberFields.includes(field.name) ? "number" : "text"}
+      display={hiddenFields.includes(field.name) ? "none" : "inherit"}
+    />
   );
 };

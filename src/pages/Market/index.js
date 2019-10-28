@@ -84,13 +84,11 @@ const SidebarDrawer = ({
   btnRef,
   market,
   marketInfo = {},
+  hiddenFields = [],
   formFields,
   onSubmit
 }) => {
-  const { config, handleChange, onSaveHandler } = useFormState(
-    marketInfo,
-    onSubmit
-  );
+  const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
   return (
     <Drawer
       isOpen={isOpen}
@@ -118,10 +116,8 @@ const SidebarDrawer = ({
             my={5}
           >
             <FormComponent
-              market={market}
-              config={config}
-              handleChange={handleChange}
-              formFields={formFields}
+              {...formParams}
+              {...{ formFields, hiddenFields }}
               getData
             />
           </Flex>
@@ -224,6 +220,7 @@ export function Market({ match, history }) {
     // markets,
     loading,
     getMarket,
+    hiddenFields,
     getFormFields,
     getFormResult
   } = useContext(AppContext);
@@ -288,18 +285,21 @@ export function Market({ match, history }) {
           menuProps={{ background: "teal" }}
           buttonProps={{ variantColor: "teal", variant: "solid" }}
         />
-        <SidebarDrawer
-          {...{
-            isOpen,
-            onClose,
-            btnRef,
-            market: newEditItem,
-            marketInfo: markets.find(x => x.market_label() === newEditItem),
-            // marketInfo: markets.find(x=>x => x.market_label() === newEditItem),
-            formFields: getFormFields(),
-            onSubmit
-          }}
-        />
+        {isOpen && (
+          <SidebarDrawer
+            {...{
+              isOpen,
+              onClose,
+              btnRef,
+              hiddenFields,
+              market: newEditItem,
+              marketInfo: markets.find(x => x.market_label() === newEditItem),
+              // marketInfo: markets.find(x=>x => x.market_label() === newEditItem),
+              formFields: getFormFields(),
+              onSubmit
+            }}
+          />
+        )}
       </NavigationBar>
       <Box px={6} pt={3}>
         <SubNavigationBar routes={routes} />
