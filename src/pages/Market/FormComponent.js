@@ -24,12 +24,13 @@ function convertToNumber(val) {
   return toNum;
 }
 
-export const useFormState = (defaultconfig = {}, onSubmit) => {
-  const { getMarketConfig, supported_markets } = useContext(AppContext);
-
-  let [config, setConfig] = useState(defaultconfig);
+export const useFormState = (defaultconfig, onSubmit) => {
+  // const { getMarketConfig, supported_markets } = useContext(AppContext);
+  let [oldConfig, setOldConfig] = useState(defaultconfig)
+  let [config, setConfig] = useState({});
 
   useEffect(() => {
+    
     setConfig(defaultconfig);
   }, [defaultconfig]);
 
@@ -78,7 +79,7 @@ export const useFormState = (defaultconfig = {}, onSubmit) => {
     } else if (e.target.type === "number") {
       value = parseFloat(value);
     }
-
+  
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
     console.log(newConfig);
@@ -204,7 +205,7 @@ export const InputComponent = ({
             id={field.name}
             value={config[field.name]}
             placeholder={field.label}
-            onChange={handleChange(field.name)}
+            onBlur={handleChange(field.name)}
             type="number"
           />
           <InputRightElement>
@@ -224,7 +225,7 @@ export const InputComponent = ({
           id={field.name}
           value={config[field.name]}
           placeholder={field.label}
-          onChange={handleChange(field.name)}
+          onBlur={handleChange(field.name)}
         />
       </>
     );
@@ -237,7 +238,7 @@ export const InputComponent = ({
         id={field.name}
         value={config[field.name]}
         placeholder={field.label}
-        onChange={handleChange(field.name)}
+        onBlur={handleChange(field.name)}
         type="number"
       />
     </>

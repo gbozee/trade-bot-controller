@@ -294,9 +294,7 @@ export function Market({ match, history }) {
             onClose,
             btnRef,
             market: newEditItem,
-            marketInfo: newEditItem
-              ? markets.find(x => x.market_label() === newEditItem)
-              : markets,
+            marketInfo: markets.find(x => x.market_label() === newEditItem),
             // marketInfo: markets.find(x=>x => x.market_label() === newEditItem),
             formFields: getFormFields(),
             onSubmit
