@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { getAccounts, configs, supported_markets, formFields,hiddenFields } from "./data";
+import {
+  getAccounts,
+  configs,
+  supported_markets,
+  formFields,
+  hiddenFields
+} from "./data";
 export const AppContext = React.createContext();
 
 export function useWebSockets(market, price_places = ".0f", currency) {
@@ -112,9 +118,7 @@ export const AppProvider = ({ children }) => {
     }
     return formFields;
   }
-
-  function getFormResult(config, account) {
-    // console.log(config);
+  function addNewMarket(config, account) {
     let id = getUniqueId();
     let dataToSave = {
       id: id,
@@ -136,9 +140,22 @@ export const AppProvider = ({ children }) => {
         return acc;
       });
       setAccounts(newAccounts);
-      resolve({...dataToSave,market_label: () => {
-        return `${dataToSave.coin}/${dataToSave.buy_market}`;
-      }});
+      resolve({
+        ...dataToSave,
+        market_label: () => {
+          return `${dataToSave.coin}/${dataToSave.buy_market}`;
+        }
+      });
+    });
+  }
+  function getFormResult(config, account, markets) {
+    // console.log(config);
+
+    return addNewMarket(config, account);
+  }
+  function bulkUpdateMarkets(markets, account) {
+    return new Promise((resolve, reject) => {
+      resolve();
     });
   }
 
@@ -152,7 +169,8 @@ export const AppProvider = ({ children }) => {
     // getMarketConfig,
     supported_markets,
     getFormFields,
-    getFormResult
+    getFormResult,
+    bulkUpdateMarkets
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

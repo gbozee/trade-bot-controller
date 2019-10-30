@@ -141,7 +141,7 @@ export const hiddenFields = [
   "expected_rise_point",
   "decimal_places",
   "price_places",
-  "margin_market",
+  "margin_market"
   // "market_condition"
 ];
 export let formFields = [
@@ -149,8 +149,8 @@ export let formFields = [
   { name: "buy_market", label: "Buy Market", options: supported_markets },
   { name: "sell_market", label: "Sell Market", options: supported_markets },
   { name: "budget", label: "Budget" },
-  { name: "buy_amount", label: "Buy Amount", bulk: true },
-  { name: "sell_amount", label: "Sell Amount", bulk: true },
+  { name: "buy_amount", label: "Buy Amount" },
+  { name: "sell_amount", label: "Sell Amount" },
   { name: "multiplier", label: "Multiplier", bulk: true },
   {
     name: "max_trade_count",
@@ -175,7 +175,7 @@ export let formFields = [
     field_type: "radio",
     bulk: true
   },
-  { name: "profit_value", label: "Profit Value" },
+  { name: "profit_value", label: "Profit Value", bulk: true },
   // { name: "one_way", label: "Is One Way", field_type: "radio" },
   { name: "pause", label: "Pause Market", field_type: "radio", bulk: true },
   // { name: "invest_value", label: "Invest Value" },
@@ -194,6 +194,7 @@ export let formFields = [
   },
   {
     name: "market_condition",
+    bulk: true,
     options: ["bull", "bear"],
     label: "Market Conditions"
   }

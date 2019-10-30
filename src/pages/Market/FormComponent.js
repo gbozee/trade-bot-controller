@@ -1,5 +1,4 @@
 import React, { useEffect, useContext, useState } from "react";
-import { AppContext } from "../../utils";
 import {
   FormControl,
   FormLabel,
@@ -12,32 +11,53 @@ import {
   InputRightElement
 } from "@chakra-ui/core";
 
-
-export const useFormState = (defaultconfig, onSubmit) => {
+export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
-  let [oldConfig, setOldConfig] = useState(defaultconfig);
+  let compulsoryFields = ["coin", "buy_amount", "buy_market", "spread"];
   let [formErrors, setFormErrors] = useState({});
-  let defaultformvalues={ max_trade_count: 1,market_condition:"bear"}
+  let defaultformvalues = is_new
+    ? { max_trade_count: 1, market_condition: "bear" }
+    : {};
   let [config, setConfig] = useState(defaultformvalues);
 
   useEffect(() => {
-    setConfig({ defaultformvalues, ...defaultconfig });
+    setConfig({ ...defaultformvalues, ...defaultconfig }); //
   }, []);
 
+  function validateForm(configuration) {
+    let results = compulsoryFields.map(x => !!configuration[x]);
+    let errors = {};
+    compulsoryFields.forEach((x, i) => {
+      let r = results[i];
+      errors[x] = !r;
+    });
+    setFormErrors({ ...formErrors, ...errors });
+    return results.every(x => x);
+  }
 
-
-function onSaveHandler(event) {
-    event.preventDefault();
-    let sameValues={sell_amount: config.buy_amount,sell_market:config.buy_market}
-    let newConfig = { ...config, ...sameValues};
-    setConfig(newConfig);
-    onSubmit(newConfig)
-      // getFormResult(config, account)
-      .then(() => {
-        setConfig({});
-        console.log(newConfig);
-      })
-      .catch(e => {});
+  function onSaveHandler(event) {
+    // event.preventDefault();
+    let sameValues = is_new
+      ? {
+          sell_amount: config.buy_amount,
+          sell_market: config.buy_market
+        }
+      : {};
+    let newConfig = { ...config, ...sameValues };
+    if (validateForm(newConfig)) {
+      setConfig(newConfig);
+      console.log(newConfig);
+      onSubmit(newConfig)
+        // getFormResult(config, account)
+        .then(() => {
+          setConfig({});
+          console.log(newConfig);
+        })
+        .catch(e => {
+          //e == ['coin','buy_market']
+        });
+    } else {
+    }
   }
 
   //   function isNumberKey(evt){
@@ -74,11 +94,9 @@ function onSaveHandler(event) {
     } else if (e.target.type === "number") {
       value = parseFloat(value);
     }
-        
-    
+
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
-    console.log(newConfig);
     // onSubmit(newConfig)
   };
   function getSpreadForMarket() {
@@ -97,7 +115,14 @@ function onSaveHandler(event) {
     }
     // setConfig({...config,spread:value})
   }
-  return { config, handleChange, onSaveHandler, onSpreadSubmit, formErrors };
+  return {
+    config,
+    handleChange,
+    onSaveHandler,
+    onSpreadSubmit,
+    formErrors,
+    validateForm
+  };
 };
 export const FormComponent = ({
   market,
@@ -107,7 +132,9 @@ export const FormComponent = ({
   handleChange = () => {},
   config = {},
   onSpreadSubmit,
-  formErrors = {}
+  formErrors = {},
+  fieldsToUnhide = [],
+  validateForm
 }) => {
   function getRadioValue(val) {
     // console.log(val);
@@ -145,7 +172,8 @@ export const FormComponent = ({
     return config[val];
   }
 
-  let extraArray = ["profit_value", "pause","margin_multiplier"];
+  let extraArray = ["profit_value", "pause", "margin_multiplier"];
+  extraArray = extraArray.filter(x => !fieldsToUnhide.includes(x));
   if (config.take_profits) {
     extraArray = extraArray.filter(x => x !== "profit_value");
     hiddenFields.push("market_condition");
@@ -154,11 +182,10 @@ export const FormComponent = ({
   if (market) {
     extraArray = extraArray.filter(x => x !== "pause");
   }
-  if(config.margin_support){
+  if (config.margin_support) {
     extraArray = extraArray.filter(x => x !== "margin_multiplier");
     hiddenFields = hiddenFields.filter(x => x !== "margin_market");
     // hiddenFields.push("margin_market");
-    
   }
   let numberFields = [
     "spread_multiplier",
@@ -179,6 +206,7 @@ export const FormComponent = ({
           actualField = (
             <RadioGroup
               {...componentProps}
+              zIndex="1"
               // defaultValue={market ? !!config[field.name] : "false"}
               value={getRadioValue(config[field.name])}
               onChange={handleChange(field.name)}
@@ -194,6 +222,8 @@ export const FormComponent = ({
           actualField = (
             <Select
               {...componentProps}
+              zIndex="1"
+              isInvalid={formErrors[field.name]}
               id={field.name}
               placeholder={field.label}
               value={getSelectValue(field.name)}
@@ -211,6 +241,7 @@ export const FormComponent = ({
           // actualField =
           actualField = (
             <InputComponent
+              zIndex="1"
               hiddenFields={[...hiddenFields, ...extraArray]}
               numberFields={numberFields}
               field={field}
@@ -218,6 +249,9 @@ export const FormComponent = ({
               onSpreadSubmit={onSpreadSubmit}
               isInvalid={formErrors[field.name]}
               handleChange={handleChange}
+              onBlur={() => {
+                validateForm(config);
+              }}
             />
           );
         }
@@ -265,7 +299,7 @@ export const InputComponent = ({
       id={field.name}
       value={config[field.name]}
       placeholder={field.label}
-      onBlur={handleChange(field.name)}
+      onChange={handleChange(field.name)}
       type={numberFields.includes(field.name) ? "number" : "text"}
       display={hiddenFields.includes(field.name) ? "none" : "inherit"}
     />
