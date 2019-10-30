@@ -12,28 +12,30 @@ import {
   InputRightElement
 } from "@chakra-ui/core";
 
-function convertToNumber(val) {
-  let toNum = parseInt(val);
-  return toNum;
-}
 
 export const useFormState = (defaultconfig, onSubmit) => {
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
   let [oldConfig, setOldConfig] = useState(defaultconfig);
   let [formErrors, setFormErrors] = useState({});
-  let [config, setConfig] = useState({ max_trade_count: 1 });
+  let defaultformvalues={ max_trade_count: 1,market_condition:"bear"}
+  let [config, setConfig] = useState(defaultformvalues);
 
   useEffect(() => {
-    setConfig({ max_trade_count: 1, ...defaultconfig });
+    setConfig({ defaultformvalues, ...defaultconfig });
   }, []);
 
-  function onSaveHandler(event) {
+
+
+function onSaveHandler(event) {
     event.preventDefault();
-    onSubmit(config)
+    let sameValues={sell_amount: config.buy_amount,sell_market:config.buy_market}
+    let newConfig = { ...config, ...sameValues};
+    setConfig(newConfig);
+    onSubmit(newConfig)
       // getFormResult(config, account)
       .then(() => {
         setConfig({});
-        console.log(config);
+        console.log(newConfig);
       })
       .catch(e => {});
   }
@@ -72,7 +74,8 @@ export const useFormState = (defaultconfig, onSubmit) => {
     } else if (e.target.type === "number") {
       value = parseFloat(value);
     }
-
+        
+    
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
     console.log(newConfig);
@@ -142,12 +145,20 @@ export const FormComponent = ({
     return config[val];
   }
 
-  let extraArray = ["profit_value", "pause"];
+  let extraArray = ["profit_value", "pause","margin_multiplier"];
   if (config.take_profits) {
     extraArray = extraArray.filter(x => x !== "profit_value");
+    hiddenFields.push("market_condition");
+    hiddenFields = hiddenFields.filter(x => x !== "market_conditions");
   }
   if (market) {
     extraArray = extraArray.filter(x => x !== "pause");
+  }
+  if(config.margin_support){
+    extraArray = extraArray.filter(x => x !== "margin_multiplier");
+    hiddenFields = hiddenFields.filter(x => x !== "margin_market");
+    // hiddenFields.push("margin_market");
+    
   }
   let numberFields = [
     "spread_multiplier",
@@ -155,6 +166,7 @@ export const FormComponent = ({
     "sell_amount",
     "budget"
   ];
+
   return (
     <>
       {formFields.map(field => {

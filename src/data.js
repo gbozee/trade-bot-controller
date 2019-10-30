@@ -140,7 +140,9 @@ export const hiddenFields = [
   "trades",
   "expected_rise_point",
   "decimal_places",
-  "price_places"
+  "price_places",
+  "margin_market",
+  // "market_condition"
 ];
 export let formFields = [
   { name: "coin", label: "Coin", forNew: true },
