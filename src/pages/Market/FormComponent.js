@@ -21,7 +21,7 @@ export const useFormState = (defaultconfig, onSubmit) => {
   let [config, setConfig] = useState(defaultformvalues);
 
   useEffect(() => {
-    setConfig({ defaultformvalues, ...defaultconfig });
+    setConfig({ ...defaultformvalues, ...defaultconfig });
   }, []);
 
 
