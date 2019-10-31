@@ -3,9 +3,6 @@ import {
   PseudoBox,
   Box,
   Flex,
-  FormControl,
-  FormLabel,
-  Input,
   Button,
   Stack,
   Menu,
@@ -26,7 +23,8 @@ import {
   DrawerFooter,
   useDisclosure,
   Spinner,
-  Checkbox
+  Checkbox,
+  useToast
 } from "@chakra-ui/core";
 import { AppContext, useWebSockets } from "../../utils";
 import {
@@ -34,13 +32,7 @@ import {
   SubNavigationBar,
   ControlButton
 } from "../../components";
-import {
-  FormComponent,
-  FormSubmitHandler,
-  useFormState
-} from "./FormComponent";
-import { flex } from "styled-system";
-import { config } from "react-spring/renderprops";
+import { FormComponent, useFormState } from "./FormComponent";
 
 const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
   const { prices, percent } = useWebSockets(
@@ -93,20 +85,15 @@ const SidebarDrawer = ({
     <Drawer
       isOpen={isOpen}
       placement="right"
-      onClose={onClose}
+      // onClose={onClose}
       finalFocusRef={btnRef}
     >
       <DrawerOverlay />
       <DrawerContent maxHeight="100vh" overflowY="scroll">
-        <DrawerCloseButton />
+        <DrawerCloseButton onClick={onClose} />
         <DrawerHeader>
           {!market ? `Create new market` : `Edit ${market} market`}
         </DrawerHeader>
-
-        {/*<FormSubmitHandler market={market}
-          render={(onsaveHandler,config,handleChange) => {
-            return (
-            <>*/}
         <DrawerBody>
           <Flex
             justifyContent={["space-between", "space-between", "flex-start"]}
@@ -117,8 +104,8 @@ const SidebarDrawer = ({
           >
             <FormComponent
               {...formParams}
-              {...{ formFields, hiddenFields }}
-              getData
+              {...{ formFields, hiddenFields, market }}
+              // getData
             />
           </Flex>
         </DrawerBody>
@@ -131,10 +118,6 @@ const SidebarDrawer = ({
             Save
           </Button>
         </DrawerFooter>
-        {/*</>
-            );
-          }}
-        />*/}
       </DrawerContent>
     </Drawer>
   );
@@ -174,61 +157,80 @@ const MenuComponent = ({
     </Menu>
   );
 };
-function ConfigurationComponent({ params }) {
+function ConfigurationComponent({ params, onSubmit }) {
   let [selectedFields, setSelectedFields] = useState([]);
+  const { onSaveHandler, ...formParams } = useFormState(
+    undefined,
+    onSubmit,
+    false
+  );
   return (
-    <Flex direction="column">
-      <Flex mt={5} mx={3}>
-        <MenuComponent
-          withCheckbox
-          menuProps={{ display: "flex", flexDirection: "column" }}
-          defaultText="Configurations"
-          onMenuItemClick={item => {
-            if (selectedFields.includes(item.value)) {
-              setSelectedFields(selectedFields.filter(x => x !== item.value));
-            } else {
-              setSelectedFields([...selectedFields, item.value]);
-            }
-          }}
-          options={params.map(x => ({ name: x.label, value: x.name }))}
-          renderItem={x => x.name}
-          isSelected={item => {
-            return selectedFields.includes(item.value);
-          }}
-        />
+    <>
+      <Flex direction="column">
+        <Flex mt={5} mx={3}>
+          <MenuComponent
+            withCheckbox
+            menuProps={{ display: "flex", flexDirection: "column" }}
+            defaultText="Configurations"
+            onMenuItemClick={item => {
+              if (selectedFields.includes(item.value)) {
+                setSelectedFields(selectedFields.filter(x => x !== item.value));
+              } else {
+                setSelectedFields([...selectedFields, item.value]);
+              }
+            }}
+            options={params.map(x => ({ name: x.label, value: x.name }))}
+            renderItem={x => x.name}
+            isSelected={item => {
+              return selectedFields.includes(item.value);
+            }}
+          />
+        </Flex>
+        <Flex
+          justifyContent={["space-between", "space-between", "flex-start"]}
+          flexGrow={0.3}
+          flexDirection={["column", "row"]}
+          // mx={3}
+          flexWrap="wrap"
+          my={5}
+        >
+          <FormComponent
+            componentProps={{ mb: 4 }}
+            formFields={params.filter(x => selectedFields.includes(x.name))}
+            {...formParams}
+            fieldsToUnhide={["pause"]}
+          />
+        </Flex>
+        <Button
+          position={["relative", "fixed"]}
+          style={{ bottom: "2em" }}
+          mt={["2em", "inherit"]}
+          variantColor="blue"
+          width="50%"
+          onClick={onSaveHandler}
+          mb={3}
+        >
+          Submit
+        </Button>
       </Flex>
-      <Flex
-        justifyContent={["space-between", "space-between", "flex-start"]}
-        flexGrow={0.3}
-        flexDirection={["column", "row"]}
-        // mx={3}
-        flexWrap="wrap"
-        my={5}
-      >
-        <FormComponent
-          componentProps={{ mb: 4 }}
-          formFields={params.filter(x => selectedFields.includes(x.name))}
-        />
-      </Flex>
-    </Flex>
+    </>
   );
 }
 export function Market({ match, history }) {
+  const toast = useToast();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
   const {
-    // markets,
     loading,
     getMarket,
     hiddenFields,
     getFormFields,
-    getFormResult
+    getFormResult,
+    bulkUpdateMarkets
   } = useContext(AppContext);
   const [markets, setMarkets] = useState([]);
-  let [selectedMarkets, setSelectedMarkets] = useState([
-    // "BTC/USDT",
-    // "ETH/USDT"
-  ]);
+  let [selectedMarkets, setSelectedMarkets] = useState([]);
   let [newEditItem, setNewEditItem] = useState();
   let [filteredItem, setFilteredItem] = useState(" ");
 
@@ -243,13 +245,21 @@ export function Market({ match, history }) {
 
   function addOrRemoveMarkets(_market) {
     if (selectedMarkets.includes(_market)) {
-      setSelectedMarkets(selectedMarkets.filter(x => x !== _market));
-      setNewEditItem(undefined);
+      let filtered = selectedMarkets.filter(x => x !== _market);
+      setSelectedMarkets(filtered);
+      if (filtered.length === 1) {
+        setNewEditItem(filtered[0]);
+      } else {
+        setNewEditItem(undefined);
+      }
     } else {
       setSelectedMarkets([...selectedMarkets, _market]);
       setNewEditItem(_market);
     }
   }
+  useEffect(() => {
+    console.log(isOpen);
+  });
   useEffect(() => {
     getMarkets();
   }, []);
@@ -258,11 +268,40 @@ export function Market({ match, history }) {
       setMarkets(mk);
     });
   }
-  function onSubmit(config) {
-    return getFormResult(config, match.params.account).then(fetchedMarket => {
-      setMarkets([...markets, fetchedMarket]);
-      return {};
+  function displayToast(description) {
+    toast({
+      title: "Markets saved",
+      description,
+      status: "success",
+      duration: 3000,
+      isClosable: true
     });
+  }
+  function onSubmit(config) {
+    console.log(config);
+    if (selectedMarkets.length > 0) {
+      let foundMarkets = markets.map(x => {
+        if (selectedMarkets.includes(x.market_label())) {
+          return { ...x, ...config };
+        }
+        return x;
+      });
+      return bulkUpdateMarkets(foundMarkets, match.params.account).then(() => {
+        setMarkets(foundMarkets);
+        onClose();
+        displayToast("The markets have been saved");
+      });
+    } else {
+      /**
+       * return new Promise((resovle,reject)=>reject(["coin",'market']))
+       */
+      return getFormResult(config, match.params.account).then(fetchedMarket => {
+        setMarkets([...markets, fetchedMarket]);
+        displayToast(`${fetchedMarket.market_label()} has been saved`);
+        onClose();
+        return {};
+      });
+    }
   }
   let routes = [
     { name: "Home", path: "/" },
@@ -294,7 +333,6 @@ export function Market({ match, history }) {
               hiddenFields,
               market: newEditItem,
               marketInfo: markets.find(x => x.market_label() === newEditItem),
-              // marketInfo: markets.find(x=>x => x.market_label() === newEditItem),
               formFields: getFormFields(),
               onSubmit
             }}
@@ -313,7 +351,6 @@ export function Market({ match, history }) {
           flexDirection="column"
           justifyContent={["space-between", "inherit"]}
           mx={3}
-          // width={['100%',"100%","80%"]}
           minHeight="90vh"
         >
           <Box pt={5}>
@@ -342,7 +379,10 @@ export function Market({ match, history }) {
             </Stack>
           </Box>
           {selectedMarkets.length > 1 ? (
-            <ConfigurationComponent params={getFormFields("bulk")} />
+            <ConfigurationComponent
+              params={getFormFields("bulk")}
+              onSubmit={onSubmit}
+            />
           ) : (
             <>
               <ControlButton
@@ -369,16 +409,6 @@ export function Market({ match, history }) {
               )}
             </>
           )}
-          <Button
-            position={["relative", "fixed"]}
-            style={{ bottom: "2em" }}
-            mt={["2em", "inherit"]}
-            variantColor="blue"
-            width="50%"
-            mb={3}
-          >
-            Submit
-          </Button>
         </Flex>
       )}
     </Box>
