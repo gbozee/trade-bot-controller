@@ -159,11 +159,13 @@ const MenuComponent = ({
 };
 function ConfigurationComponent({ params, onSubmit }) {
   let [selectedFields, setSelectedFields] = useState([]);
-  const { onSaveHandler, ...formParams } = useFormState(
+  const {displayText,setDisplayText, onSaveHandler, ...formParams } = useFormState(
     undefined,
     onSubmit,
-    false
+    false,
+
   );
+  
   return (
     <>
       <Flex direction="column">
@@ -173,6 +175,7 @@ function ConfigurationComponent({ params, onSubmit }) {
             menuProps={{ display: "flex", flexDirection: "column" }}
             defaultText="Configurations"
             onMenuItemClick={item => {
+              setDisplayText(false);
               if (selectedFields.includes(item.value)) {
                 setSelectedFields(selectedFields.filter(x => x !== item.value));
               } else {
@@ -198,9 +201,17 @@ function ConfigurationComponent({ params, onSubmit }) {
             componentProps={{ mb: 4 }}
             formFields={params.filter(x => selectedFields.includes(x.name))}
             {...formParams}
-            fieldsToUnhide={["pause"]}
-          />
+            fieldsToUnhide={["pause","profit_value"]}/>
         </Flex>
+        {displayText ? 
+         ( <Box bg="tomato" w="50%" p={4} color="teal.900" 
+            ml={40} textAlign="center" fontWeight="semibold"
+          
+          >
+          Set values from the configurations
+          </Box> ): null
+        }
+        
         <Button
           position={["relative", "fixed"]}
           style={{ bottom: "2em" }}
@@ -208,8 +219,8 @@ function ConfigurationComponent({ params, onSubmit }) {
           variantColor="blue"
           width="50%"
           onClick={onSaveHandler}
-          mb={3}
-        >
+            mb={3}
+                 >
           Submit
         </Button>
       </Flex>
@@ -258,7 +269,7 @@ export function Market({ match, history }) {
     }
   }
   useEffect(() => {
-    console.log(isOpen);
+    // console.log(isOpen);
   });
   useEffect(() => {
     getMarkets();

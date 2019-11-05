@@ -10,11 +10,15 @@ import {
   Button,
   InputRightElement
 } from "@chakra-ui/core";
+import { conditionalExpression } from "@babel/types";
+import { isNull } from "util";
 
 export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
   let compulsoryFields = ["coin", "buy_amount", "buy_market", "spread"];
+  let [displayText, setDisplayText] = useState(false);
   let [formErrors, setFormErrors] = useState({});
+
   let defaultformvalues = is_new
     ? { max_trade_count: 1, market_condition: "bear" }
     : {};
@@ -57,6 +61,21 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
           //e == ['coin','buy_market']
         });
     } else {
+      let isMyObjectEmpty = !Object.keys(newConfig).length;
+      if (isMyObjectEmpty) {
+        setDisplayText(true);
+        console.log(newConfig);
+      } else {
+        console.log(newConfig);
+        setDisplayText(false);
+        setConfig({});
+        console.log(displayText);
+      }
+
+      // onsubmit(newConfig);console.log(isNull(newConfig));
+
+      // (onSubmit()) {
+      //   setDisplayText(true)
     }
   }
 
@@ -66,11 +85,6 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
   //         return false;
   //     return true;
   // }
-
-  function convertToNumer(val) {
-    let toNum = parseInt(val);
-    return toNum;
-  }
 
   function getDecimalformat(numPlace) {
     let a = `%${numPlace / 10}f`;
@@ -121,7 +135,9 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
     onSaveHandler,
     onSpreadSubmit,
     formErrors,
-    validateForm
+    validateForm,
+    displayText,
+    setDisplayText
   };
 };
 export const FormComponent = ({
@@ -177,7 +193,10 @@ export const FormComponent = ({
   if (config.take_profits) {
     extraArray = extraArray.filter(x => x !== "profit_value");
     hiddenFields.push("market_condition");
-    hiddenFields = hiddenFields.filter(x => x !== "market_conditions");
+  }
+  else{
+    hiddenFields = hiddenFields.filter(x => x !== "market_condition");
+
   }
   if (market) {
     extraArray = extraArray.filter(x => x !== "pause");
