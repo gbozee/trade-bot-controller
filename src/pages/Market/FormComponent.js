@@ -14,6 +14,7 @@ import { conditionalExpression } from "@babel/types";
 import { isNull } from "util";
 
 export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
+  // Create a red toast that shows the error when the market already exists. Assignment 1.
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
   let compulsoryFields = ["coin", "buy_amount", "buy_market", "spread"];
   let [displayText, setDisplayText] = useState(false);
@@ -58,6 +59,7 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
           console.log(newConfig);
         })
         .catch(e => {
+          console.log(e);
           //e == ['coin','buy_market']
         });
     } else {
@@ -193,10 +195,8 @@ export const FormComponent = ({
   if (config.take_profits) {
     extraArray = extraArray.filter(x => x !== "profit_value");
     hiddenFields.push("market_condition");
-  }
-  else{
+  } else {
     hiddenFields = hiddenFields.filter(x => x !== "market_condition");
-
   }
   if (market) {
     extraArray = extraArray.filter(x => x !== "pause");
@@ -225,7 +225,7 @@ export const FormComponent = ({
           actualField = (
             <RadioGroup
               {...componentProps}
-              zIndex="1"
+              tabIndex="1"
               // defaultValue={market ? !!config[field.name] : "false"}
               value={getRadioValue(config[field.name])}
               onChange={handleChange(field.name)}
@@ -241,7 +241,7 @@ export const FormComponent = ({
           actualField = (
             <Select
               {...componentProps}
-              zIndex="1"
+              tabIndex="1"
               isInvalid={formErrors[field.name]}
               id={field.name}
               placeholder={field.label}
@@ -260,7 +260,7 @@ export const FormComponent = ({
           // actualField =
           actualField = (
             <InputComponent
-              zIndex="1"
+              tabIndex="1"
               hiddenFields={[...hiddenFields, ...extraArray]}
               numberFields={numberFields}
               field={field}
@@ -309,7 +309,7 @@ export const InputComponent = ({
   ...componentProps
 }) => {
   let C = field.name === "spread" ? SpreadInput : Input;
-  return (
+  return hiddenFields.includes(field.name) ? null : (
     <C
       {...componentProps}
       onSpreadSubmit={onSpreadSubmit}

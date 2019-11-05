@@ -35,10 +35,62 @@ import {
 import { FormComponent, useFormState } from "./FormComponent";
 
 const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
+  let [coinValue, setCoinValue] = useState();
+  let [tradeInfo, setTradeInfo] = useState({});
+  let [loaded, setLoaded] = useState(false);
+  let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
+  let places = 2; //Assignment 2: replace with the decimal places from the market.
   const { prices, percent } = useWebSockets(
-    `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`,
+    `${full_market}`,
     market.price_places
   );
+  useEffect(() => {
+    if (prices !== "Loading") {
+      getTradeInfoFormMarket(full_market, prices).then(
+        ({ coinValue, tradeValue }) => {
+          setCoinValue(coinValue);
+          setTradeInfo(tradeValue);
+          setLoaded(true);
+        }
+      );
+    }
+    function getTradeInfoFormMarket(market_name, _prices) {
+      return new Promise((resolve, reject) => {
+        let result = determineSellValue(_prices);
+        resolve({
+          coinValue: 24,
+          tradeValue: {
+            buy_amount: _prices,
+            sell_amount: result.price.toFixed(places),
+            buy_value: (market.buy_amount * market.multiplier).toFixed(places),
+            sell_value: result.value.toFixed(places)
+          }
+        });
+      });
+    }
+    function determineSellValue(currentPrice) {
+      let workingSpread = market.spread * (market.spread_multiplier || 1);
+      let buy_amount = (market.buy_amount || 10.1) * (market.multiplier || 1);
+      let currentQuantity = buy_amount / parseFloat(currentPrice);
+      let sellPrice = parseFloat(currentPrice) + workingSpread;
+      // console.log({ workingSpread, buy_amount, currentQuantity, sellPrice });
+      let sellValue = currentQuantity * sellPrice;
+      return { price: sellPrice, value: sellValue };
+    }
+  }, [prices, full_market, market, places]);
+  function _format(value) {
+    if (value) {
+      return value.toLocaleString();
+    }
+    return value;
+  }
+  let info = {
+    buy_amount: tradeInfo.buy_amount,
+    sell_amount: tradeInfo.sell_amount,
+    buy_value: tradeInfo.buy_value,
+    sell_value: tradeInfo.sell_value,
+    coin_value: coinValue
+  };
   return (
     <PseudoBox
       flexBasis={["40%", "40%", "30%", "20%"]}
@@ -55,16 +107,41 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
       style={{ backgroundColor: selected ? "teal" : "inherit" }}
     >
       <Stat>
-        <StatLabel>
-          {prices === "Loading" ? "Loading Price" : "$" + prices}
-        </StatLabel>
-        <StatNumber>{children}</StatNumber>
-        {percent ? (
-          <StatHelpText>
-            <StatArrow type={percent > 0 ? "increase" : "decrease"} />
-            {percent}%
-          </StatHelpText>
-        ) : null}
+        <Flex justifyContent="space-between">
+          <StatLabel>
+            {prices === "Loading" ? "Loading" : "$" + prices}
+          </StatLabel>
+          {loaded && (
+            <>
+              <StatLabel>B-${_format(info.buy_amount)}</StatLabel>
+              <StatLabel>S-${_format(info.sell_amount)}</StatLabel>
+            </>
+          )}
+        </Flex>
+        <Flex justifyContent="space-between" alignSelf="flex-end">
+          <StatNumber>{children}</StatNumber>
+          {percent ? (
+            <StatHelpText alignSelf="flex-end">
+              <StatArrow type={percent > 0 ? "increase" : "decrease"} />
+              {percent}%
+            </StatHelpText>
+          ) : null}
+        </Flex>
+        {loaded && (
+          <Flex justifyContent="space-between">
+            <StatLabel textAlign="center">
+              {prices !== "Loading" && coinValue ? (
+                <StatLabel>
+                  {info.coin_value}/{(info.coin_value * prices).toFixed(places)}
+                </StatLabel>
+              ) : (
+                "..."
+              )}
+            </StatLabel>
+            <StatLabel>B-${info.buy_value}</StatLabel>
+            <StatLabel>S-${info.sell_value}</StatLabel>
+          </Flex>
+        )}
       </Stat>
     </PseudoBox>
   );
@@ -85,7 +162,7 @@ const SidebarDrawer = ({
     <Drawer
       isOpen={isOpen}
       placement="right"
-      // onClose={onClose}
+      onClose={onClose}
       finalFocusRef={btnRef}
     >
       <DrawerOverlay />
@@ -138,15 +215,15 @@ const MenuComponent = ({
         {defaultText}
       </MenuButton>
       <MenuList {...menuProps}>
-        {options.map(param => {
+        {options.map((param, index) => {
           let child = (
-            <MenuItem onClick={() => onMenuItemClick(param)}>
+            <MenuItem key={index} onClick={() => onMenuItemClick(param)}>
               {renderItem(param)}
             </MenuItem>
           );
           if (withCheckbox) {
             return (
-              <Checkbox defaultIsChecked={isSelected(param)} ml={3}>
+              <Checkbox key={index} defaultIsChecked={isSelected(param)} ml={3}>
                 {child}
               </Checkbox>
             );
@@ -159,13 +236,13 @@ const MenuComponent = ({
 };
 function ConfigurationComponent({ params, onSubmit }) {
   let [selectedFields, setSelectedFields] = useState([]);
-  const {displayText,setDisplayText, onSaveHandler, ...formParams } = useFormState(
-    undefined,
-    onSubmit,
-    false,
+  const {
+    displayText,
+    setDisplayText,
+    onSaveHandler,
+    ...formParams
+  } = useFormState(undefined, onSubmit, false);
 
-  );
-  
   return (
     <>
       <Flex direction="column">
@@ -201,17 +278,23 @@ function ConfigurationComponent({ params, onSubmit }) {
             componentProps={{ mb: 4 }}
             formFields={params.filter(x => selectedFields.includes(x.name))}
             {...formParams}
-            fieldsToUnhide={["pause","profit_value"]}/>
+            fieldsToUnhide={["pause", "profit_value"]}
+          />
         </Flex>
-        {displayText ? 
-         ( <Box bg="tomato" w="50%" p={4} color="teal.900" 
-            ml={40} textAlign="center" fontWeight="semibold"
-          
+        {displayText ? (
+          <Box
+            bg="tomato"
+            w="50%"
+            p={4}
+            color="teal.900"
+            ml={40}
+            textAlign="center"
+            fontWeight="semibold"
           >
-          Set values from the configurations
-          </Box> ): null
-        }
-        
+            Set values from the configurations
+          </Box>
+        ) : null}
+
         <Button
           position={["relative", "fixed"]}
           style={{ bottom: "2em" }}
@@ -219,8 +302,8 @@ function ConfigurationComponent({ params, onSubmit }) {
           variantColor="blue"
           width="50%"
           onClick={onSaveHandler}
-            mb={3}
-                 >
+          mb={3}
+        >
           Submit
         </Button>
       </Flex>

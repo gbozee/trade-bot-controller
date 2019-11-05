@@ -132,20 +132,31 @@ export const AppProvider = ({ children }) => {
     };
 
     return new Promise((resolve, reject) => {
-      setAllMarkets([...allMarkets, dataToSave]);
-      let newAccounts = accounts.map(acc => {
-        if (acc.slug === account) {
-          return { ...acc, market: [...acc.market, id] };
-        }
-        return acc;
-      });
-      setAccounts(newAccounts);
-      resolve({
-        ...dataToSave,
-        market_label: () => {
-          return `${dataToSave.coin}/${dataToSave.buy_market}`;
-        }
-      });
+      let transformed = allMarkets.map(
+        x => `${x.coin.toLowerCase()}/${x.buy_market.toLowerCase()}`
+      );
+      if (
+        !transformed.includes(
+          `${dataToSave.coin.toLowerCase()}/${dataToSave.buy_market.toLowerCase()}`
+        )
+      ) {
+        setAllMarkets([...allMarkets, dataToSave]);
+        let newAccounts = accounts.map(acc => {
+          if (acc.slug === account) {
+            return { ...acc, market: [...acc.market, id] };
+          }
+          return acc;
+        });
+        setAccounts(newAccounts);
+        resolve({
+          ...dataToSave,
+          market_label: () => {
+            return `${dataToSave.coin}/${dataToSave.buy_market}`;
+          }
+        });
+      } else {
+        reject(`${dataToSave.coin}/${dataToSave.buy_market} already exists`);
+      }
     });
   }
   function getFormResult(config, account, markets) {
@@ -155,6 +166,14 @@ export const AppProvider = ({ children }) => {
   }
   function bulkUpdateMarkets(markets, account) {
     return new Promise((resolve, reject) => {
+      let updatedMarkets = allMarkets.map(_market => {
+        let exists = markets.find(m => m.slug === _market.slug);
+        if (exists) {
+          return exists;
+        }
+        return _market;
+      });
+      setAllMarkets(updatedMarkets);
       resolve();
     });
   }
