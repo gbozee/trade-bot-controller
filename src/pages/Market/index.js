@@ -1,19 +1,12 @@
 import React, { useState, useContext, useEffect } from "react";
 import {
-  PseudoBox,
   Box,
   Flex,
   Button,
-  Stack,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Stat,
-  StatLabel,
-  StatHelpText,
-  StatArrow,
-  StatNumber,
   Drawer,
   DrawerOverlay,
   DrawerContent,
@@ -24,85 +17,17 @@ import {
   useDisclosure,
   Spinner,
   Checkbox,
-  useToast
+  useToast,
+  Grid
 } from "@chakra-ui/core";
-import { AppContext, useWebSockets, useMarketData } from "../../utils";
+import { AppContext } from "../../utils";
 import {
   NavigationBar,
   SubNavigationBar,
   ControlButton
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
-
-const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
-  let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
-  let places = market.price_places;
-  const { prices, percent } = useWebSockets(`${full_market}`,market.price_places);
-  const { info, loaded } = useMarketData(prices, market,full_market);
-
-  function _format(value) {
-    if (value) {
-      return value.toLocaleString();
-    }
-    return value;
-  }
-
-
-  return (
-    <PseudoBox
-      flexBasis={["40%", "40%", "30%", "20%"]}
-      my={[3, 1, 3]}
-      textAlign="center"
-      mx={3}
-      py={1}
-      tabIndex={0}
-      height={["6em"]}
-      borderWidth="3px"
-      onClick={onSelect}
-      _hover={{ cursor: "pointer" }}
-      _focus={{ boxShadow: "outline" }}
-      style={{ backgroundColor: selected ? "teal" : "inherit" }}
-    >
-      <Stat>
-        <Flex justifyContent="space-between">
-          <StatLabel>
-            {prices === "Loading" ? "Loading" : "$" + prices}
-          </StatLabel>
-          {loaded && (
-            <>
-              <StatLabel>B-${_format(info.buy_amount)}</StatLabel>
-              <StatLabel>S-${_format(info.sell_amount)}</StatLabel>
-            </>
-          )}
-        </Flex>
-        <Flex justifyContent="space-between" alignSelf="flex-end">
-          <StatNumber>{children}</StatNumber>
-          {percent ? (
-            <StatHelpText alignSelf="flex-end">
-              <StatArrow type={percent > 0 ? "increase" : "decrease"} />
-              {percent}%
-            </StatHelpText>
-          ) : null}
-        </Flex>
-        {loaded && (
-          <Flex justifyContent="space-between">
-            <StatLabel textAlign="center">
-              {prices !== "Loading" && info.coinValue ? (
-                <StatLabel>
-                  {info.coin_value}/{(info.coin_value * prices).toFixed(places)}
-                </StatLabel>
-              ) : (
-                "..."
-              )}
-            </StatLabel>
-            <StatLabel>B-${info.buy_value}</StatLabel>
-            <StatLabel>S-${info.sell_value}</StatLabel>
-          </Flex>
-        )}
-      </Stat>
-    </PseudoBox>
-  );
-};
+import { MarketWithStat } from "./Components";
 
 const SidebarDrawer = ({
   isOpen,
@@ -267,6 +192,59 @@ function ConfigurationComponent({ params, onSubmit }) {
     </>
   );
 }
+function GridLayout({ items, onSelect, selectedMarkets = [] }) {
+  return (
+    <>
+      <Grid
+        pt={5}
+        templateColumns={["repeat(2, 1fr)", "repeat(3,1fr)", "repeat(4,1fr)"]}
+        gap={[1, 2, 3]}
+        maxHeight="400px"
+        overflowY="scroll"
+      >
+        {items.map(market => {
+          return (
+            <MarketWithStat
+              key={market.market_label()}
+              onSelect={() => {
+                onSelect(market.market_label());
+              }}
+              market={market}
+              selected={selectedMarkets.includes(market.market_label())}
+            >
+              {market.market_label()}
+            </MarketWithStat>
+          );
+        })}
+      </Grid>
+      {/* <Box pt={5}>
+        <Stack
+          isInline
+          spacing={8}
+          justifyContent={["space-between", "space-between", "flex-start"]}
+          flexWrap="wrap"
+          maxHeight="400px"
+          overflowY="scroll"
+        >
+          {items.map(market => {
+            return (
+              <MarketWithStat
+                key={market.market_label()}
+                onSelect={() => {
+                  onSelect(market.market_label());
+                }}
+                market={market}
+                selected={selectedMarkets.includes(market.market_label())}
+              >
+                {market.market_label()}
+              </MarketWithStat>
+            );
+          })}
+        </Stack>
+      </Box> */}
+    </>
+  );
+}
 export function Market({ match, history }) {
   const toast = useToast();
 
@@ -404,31 +382,13 @@ export function Market({ match, history }) {
           mx={3}
           minHeight="90vh"
         >
-          <Box pt={5}>
-            <Stack
-              isInline
-              spacing={8}
-              justifyContent={["space-between", "space-between", "flex-start"]}
-              flexWrap="wrap"
-              maxHeight="400px"
-              overflowY="scroll"
-            >
-              {getFilterItem(filteredItem).map(market => {
-                return (
-                  <MarketWithStat
-                    key={market.market_label()}
-                    onSelect={() => {
-                      addOrRemoveMarkets(market.market_label());
-                    }}
-                    market={market}
-                    selected={selectedMarkets.includes(market.market_label())}
-                  >
-                    {market.market_label()}
-                  </MarketWithStat>
-                );
-              })}
-            </Stack>
-          </Box>
+          {/*Grid layout for markets */}
+          <GridLayout
+            items={getFilterItem(filteredItem)}
+            onSelect={addOrRemoveMarkets}
+            selectedMarkets={selectedMarkets}
+          />
+
           {selectedMarkets.length > 1 ? (
             <ConfigurationComponent
               params={getFormFields("bulk")}

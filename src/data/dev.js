@@ -1,4 +1,4 @@
-export const configs = [
+export let configs = [
   {
     id: 1,
     coin: "BTC",
@@ -83,39 +83,44 @@ export const configs = [
   }
 ];
 
-export const getAccounts = () => {
-  let accounts = [
-    {
-      id: 1,
-      title: "Account 1",
-      slug: "account-1",
-      market: [1, 2, 3, 4, 5, 6, 8, 9]
-    },
-    {
-      id: 2,
-      title: "Account 2",
-      slug: "account-2",
-      market: [2, 3, 4, 5, 6]
-    },
-    {
-      id: 3,
-      title: "Account 3",
-      slug: "account-3",
-      market: [1, 2, 5, 6]
-    },
-    {
-      id: 4,
-      slug: "account-4",
-      title: "Account 4",
-      market: [1, 2, 6, 7]
-    }
-  ];
-
+let accounts = [
+  {
+    id: 1,
+    title: "Account 1",
+    slug: "account-1",
+    market: [1, 2, 3, 4, 5, 6, 8, 9]
+  },
+  {
+    id: 2,
+    title: "Account 2",
+    slug: "account-2",
+    market: [2, 3, 4, 5, 6]
+  },
+  {
+    id: 3,
+    title: "Account 3",
+    slug: "account-3",
+    market: [1, 2, 5, 6]
+  },
+  {
+    id: 4,
+    slug: "account-4",
+    title: "Account 4",
+    market: [1, 2, 6, 7]
+  }
+];
+const _getAccounts = () => {
   return new Promise((reslove, reject) => {
     setTimeout(() => {
-      reslove(accounts);
+      reslove({ data: accounts, markets: configs });
     }, 2000);
   });
+};
+function toTitle(slug) {
+  return slug.replace("_", " ");
+}
+export const getAccounts = (kind = "dev") => {
+  return _getAccounts();
 };
 export const supported_markets = [
   "USDT",
@@ -199,3 +204,55 @@ export let formFields = [
     label: "Market Conditions"
   }
 ];
+function getMarket(account_id) {
+  return getAccounts().then(({ data, markets }) => {
+    let acc = data.find(x => x.slug === account_id);
+    let _markets = acc.market.map(mk => markets.find(x => x.id === mk));
+
+    return _markets;
+  });
+}
+function addNewMarket(config, account, id) {
+  let dataToSave = {
+    id: id,
+    coin: config.coin,
+    buy_market: config.buy_market || "USDT",
+    spread: config.spread || 3.28,
+    multiplier: config.multiplier || 1,
+    buy_amount: config.buy_amount || 10.1,
+    price_places: config.price_places || "%.2f",
+    pause: config.pause || false
+  };
+
+  return new Promise((resolve, reject) => {
+    let transformed = configs.map(
+      x => `${x.coin.toLowerCase()}/${x.buy_market.toLowerCase()}`
+    );
+    if (
+      !transformed.includes(
+        `${dataToSave.coin.toLowerCase()}/${dataToSave.buy_market.toLowerCase()}`
+      )
+    ) {
+      configs = [...configs, dataToSave];
+      let newAccounts = accounts.map(acc => {
+        if (acc.slug === account) {
+          return { ...acc, market: [...acc.market, id] };
+        }
+        return acc;
+      });
+      accounts = newAccounts;
+      resolve({
+        dataToSave: {
+          ...dataToSave,
+          market_label: () => {
+            return `${dataToSave.coin}/${dataToSave.buy_market}`;
+          }
+        },
+        accounts
+      });
+    } else {
+      reject(`${dataToSave.coin}/${dataToSave.buy_market} already exists`);
+    }
+  });
+}
+export const adapter = { getAccounts, getMarket, addNewMarket };
