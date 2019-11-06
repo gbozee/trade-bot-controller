@@ -38,7 +38,7 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
   let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
   let places = market.price_places;
   const { prices, percent } = useWebSockets(`${full_market}`,market.price_places);
-  const { coinValue, tradeInfo, loaded } = useMarketData(prices, market,full_market);
+  const { info, loaded } = useMarketData(prices, market,full_market);
 
   function _format(value) {
     if (value) {
@@ -46,13 +46,8 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
     }
     return value;
   }
-  let info = {
-    buy_amount: tradeInfo.buy_amount,
-    sell_amount: tradeInfo.sell_amount,
-    buy_value: tradeInfo.buy_value,
-    sell_value: tradeInfo.sell_value,
-    coin_value: coinValue
-  };
+
+
   return (
     <PseudoBox
       flexBasis={["40%", "40%", "30%", "20%"]}
@@ -92,7 +87,7 @@ const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
         {loaded && (
           <Flex justifyContent="space-between">
             <StatLabel textAlign="center">
-              {prices !== "Loading" && coinValue ? (
+              {prices !== "Loading" && info.coinValue ? (
                 <StatLabel>
                   {info.coin_value}/{(info.coin_value * prices).toFixed(places)}
                 </StatLabel>

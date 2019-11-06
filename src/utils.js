@@ -110,10 +110,21 @@ export function useMarketData(prices, market, full_market) {
       return { price: sellPrice, value: sellValue };
     }
   }, [prices, full_market, market, places]);
+  let info = {
+    buy_amount: tradeInfo.buy_amount,
+    sell_amount: tradeInfo.sell_amount,
+    buy_value: tradeInfo.buy_value,
+    sell_value: tradeInfo.sell_value,
+    coin_value: coinValue
+  };
+
+
+
+
+
   return {
-    coinValue,
-    tradeInfo,
-    loaded
+   info,
+   loaded
   };
 }
 
