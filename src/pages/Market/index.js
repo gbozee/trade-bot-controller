@@ -26,7 +26,7 @@ import {
   Checkbox,
   useToast
 } from "@chakra-ui/core";
-import { AppContext, useWebSockets } from "../../utils";
+import { AppContext, useWebSockets, useMarketData } from "../../utils";
 import {
   NavigationBar,
   SubNavigationBar,
@@ -35,49 +35,11 @@ import {
 import { FormComponent, useFormState } from "./FormComponent";
 
 const MarketWithStat = ({ children, selected = false, onSelect, market }) => {
-  let [coinValue, setCoinValue] = useState();
-  let [tradeInfo, setTradeInfo] = useState({});
-  let [loaded, setLoaded] = useState(false);
   let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
-  let places = 2; //Assignment 2: replace with the decimal places from the market.
-  const { prices, percent } = useWebSockets(
-    `${full_market}`,
-    market.price_places
-  );
-  useEffect(() => {
-    if (prices !== "Loading") {
-      getTradeInfoFormMarket(full_market, prices).then(
-        ({ coinValue, tradeValue }) => {
-          setCoinValue(coinValue);
-          setTradeInfo(tradeValue);
-          setLoaded(true);
-        }
-      );
-    }
-    function getTradeInfoFormMarket(market_name, _prices) {
-      return new Promise((resolve, reject) => {
-        let result = determineSellValue(_prices);
-        resolve({
-          coinValue: 24,
-          tradeValue: {
-            buy_amount: _prices,
-            sell_amount: result.price.toFixed(places),
-            buy_value: (market.buy_amount * market.multiplier).toFixed(places),
-            sell_value: result.value.toFixed(places)
-          }
-        });
-      });
-    }
-    function determineSellValue(currentPrice) {
-      let workingSpread = market.spread * (market.spread_multiplier || 1);
-      let buy_amount = (market.buy_amount || 10.1) * (market.multiplier || 1);
-      let currentQuantity = buy_amount / parseFloat(currentPrice);
-      let sellPrice = parseFloat(currentPrice) + workingSpread;
-      // console.log({ workingSpread, buy_amount, currentQuantity, sellPrice });
-      let sellValue = currentQuantity * sellPrice;
-      return { price: sellPrice, value: sellValue };
-    }
-  }, [prices, full_market, market, places]);
+  let places = market.price_places;
+  const { prices, percent } = useWebSockets(`${full_market}`,market.price_places);
+  const { coinValue, tradeInfo, loaded } = useMarketData(prices, market,full_market);
+
   function _format(value) {
     if (value) {
       return value.toLocaleString();

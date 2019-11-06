@@ -8,12 +8,14 @@ import {
   Select,
   InputGroup,
   Button,
-  InputRightElement
+  InputRightElement,
+  useToast
 } from "@chakra-ui/core";
 import { conditionalExpression } from "@babel/types";
 import { isNull } from "util";
 
 export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
+  const toast = useToast();
   // Create a red toast that shows the error when the market already exists. Assignment 1.
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
   let compulsoryFields = ["coin", "buy_amount", "buy_market", "spread"];
@@ -28,6 +30,25 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
   useEffect(() => {
     setConfig({ ...defaultformvalues, ...defaultconfig }); //
   }, []);
+
+
+  function displayToast(description) {
+    toast({
+      title: "Markets saved",
+      description,
+      status: "success",
+      duration: 5000,
+      isClosable: true
+    });
+  }
+
+
+
+
+
+
+
+
 
   function validateForm(configuration) {
     let results = compulsoryFields.map(x => !!configuration[x]);
@@ -60,6 +81,7 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
         })
         .catch(e => {
           console.log(e);
+          displayToast(e);
           //e == ['coin','buy_market']
         });
     } else {
@@ -225,7 +247,7 @@ export const FormComponent = ({
           actualField = (
             <RadioGroup
               {...componentProps}
-              tabIndex="1"
+              // tabIndex="1"
               // defaultValue={market ? !!config[field.name] : "false"}
               value={getRadioValue(config[field.name])}
               onChange={handleChange(field.name)}
@@ -241,7 +263,7 @@ export const FormComponent = ({
           actualField = (
             <Select
               {...componentProps}
-              tabIndex="1"
+              // tabIndex="1"
               isInvalid={formErrors[field.name]}
               id={field.name}
               placeholder={field.label}
@@ -260,7 +282,7 @@ export const FormComponent = ({
           // actualField =
           actualField = (
             <InputComponent
-              tabIndex="1"
+              // tabIndex="1"
               hiddenFields={[...hiddenFields, ...extraArray]}
               numberFields={numberFields}
               field={field}

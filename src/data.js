@@ -16,7 +16,7 @@ export const configs = [
     spread: 4,
     multiplier: 3,
     buy_amount: 10.1,
-    price_places: ".2f"
+    price_places: ".1f"
   },
   {
     id: 3,
@@ -25,7 +25,7 @@ export const configs = [
     spread: 7,
     multiplier: 2,
     buy_amount: 10.1,
-    price_places: ".2f"
+    price_places: ".3f"
   },
   {
     id: 4,
