@@ -28,6 +28,7 @@ import {
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
 import { MarketWithStat } from "./Components";
+import { Link } from "react-router-dom";
 
 const SidebarDrawer = ({
   isOpen,
@@ -49,7 +50,7 @@ const SidebarDrawer = ({
     >
       <DrawerOverlay />
       <DrawerContent maxHeight="100vh" overflowY="scroll">
-        <DrawerCloseButton onClick={onClose} />
+        {/* <DrawerCloseButton /> */}
         <DrawerHeader>
           {!market ? `Create new market` : `Edit ${market} market`}
         </DrawerHeader>
@@ -408,8 +409,14 @@ export function Market({ match, history }) {
               />
               {selectedMarkets.length === 1 && (
                 <ControlButton
+                  as={Link}
+                  to={{
+                    pathname: `/markets/${selectedMarkets[0]
+                      .toLowerCase()
+                      .replace("/", "")}`,
+                    state: { account_id: match.params.account }
+                  }}
                   btnRef={btnRef}
-                  onClick={selectedMarkets.length === 1 ? onOpen : onOpen}
                   icon={"calendar"}
                   variantColor="teal"
                   style={{

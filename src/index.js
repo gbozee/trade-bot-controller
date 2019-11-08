@@ -7,7 +7,7 @@ import { devAdapter, prodAdapter } from "./data";
 const rootElement = document.getElementById("root");
 //Documentation for the styling library is located at https://chakra-ui.com/button
 ReactDOM.render(
-  <AppProvider adapter={prodAdapter}>
+  <AppProvider adapter={devAdapter}>
     <ThemeProvider>
       <CSSReset />
       <App />
