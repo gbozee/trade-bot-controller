@@ -1,16 +1,13 @@
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 import { Box, Flex, Spinner, PseudoBox } from "@chakra-ui/core";
 import { NavigationBar } from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
 
-
-
-
-export function Home({history}) {
-//   const loading = false;
-//   const accounts = ["Account 1", "Account 2", "Account 3"];
-  let {accounts, loading} = useContext(AppContext)
+export function Home({ history }) {
+  //   const loading = false;
+  //   const accounts = ["Account 1", "Account 2", "Account 3"];
+  let { accounts = [], loading } = useContext(AppContext);
   return (
     <Box className="App">
       <NavigationBar title="Accounts" />
@@ -21,11 +18,8 @@ export function Home({history}) {
       ) : (
         <Flex flexDirection="column">
           {accounts.map(account => {
-            return(
-                <AccountItem
-                account={account}
-                />
-          )})}
+            return <AccountItem account={account} />;
+          })}
         </Flex>
       )}
     </Box>
@@ -43,7 +37,12 @@ function AccountItem({ account }) {
       border="1px solid"
       boxShadow="md"
       rounded="md"
-      _hover={{ cursor: "pointer", background: "teal" , color:"white", borderColor:"white" }}
+      _hover={{
+        cursor: "pointer",
+        background: "teal",
+        color: "white",
+        borderColor: "white"
+      }}
       to={`/${account.slug}/markets`}
     >
       {account.title}

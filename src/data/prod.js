@@ -180,9 +180,35 @@ export let formFields = [
   }
 ];
 function getMarket(account_id) {
-  return getAccounts().then(({ data }) => {
+  return getAccounts().then(data => {
     let acc = data.find(x => x.slug === account_id);
     return acc.markets;
   });
 }
-export const adapter = { getAccounts, getMarket };
+function addNewMarket(config, account, id) {
+  let dataToSave = {
+    id: id,
+    coin: config.coin,
+    buy_market: config.buy_market || "USDT",
+    spread: config.spread || 3.28,
+    multiplier: config.multiplier || 1,
+    buy_amount: config.buy_amount || 10.1,
+    price_places: config.price_places || "%.2f",
+    pause: config.pause || false
+  };
+
+  return new Promise((resolve, reject) => {
+    let transformed = configs.map(
+      x => `${x.coin.toLowerCase()}/${x.buy_market.toLowerCase()}`
+    );
+    if (
+      !transformed.includes(
+        `${dataToSave.coin.toLowerCase()}/${dataToSave.buy_market.toLowerCase()}`
+      )
+    ) {
+    } else {
+      reject(`${dataToSave.coin}/${dataToSave.buy_market} already exists`);
+    }
+  });
+}
+export const adapter = { getAccounts, getMarket, addNewMarket };
