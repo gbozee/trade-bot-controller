@@ -119,11 +119,12 @@ const MenuComponent = ({
 function ConfigurationComponent({ params, onSubmit }) {
   let [selectedFields, setSelectedFields] = useState([]);
   const {
+  
     displayText,
     setDisplayText,
     onSaveHandler,
     ...formParams
-  } = useFormState(undefined, onSubmit, false);
+  } = useFormState(undefined, onSubmit, false,true);
 
   return (
     <>
@@ -160,7 +161,9 @@ function ConfigurationComponent({ params, onSubmit }) {
             componentProps={{ mb: 4 }}
             formFields={params.filter(x => selectedFields.includes(x.name))}
             {...formParams}
+         
             fieldsToUnhide={["pause", "profit_value"]}
+        
           />
         </Flex>
         {displayText ? (

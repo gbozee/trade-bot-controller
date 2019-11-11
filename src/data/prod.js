@@ -94,6 +94,8 @@ const _getProductionAccounts = async () => {
     return { ...j, id: i + 1, slug: j.name, title: toTitle(j.name) };
   });
 };
+
+
 export const getAccounts = (kind = "dev") => {
   return _getProductionAccounts();
 };
@@ -185,4 +187,60 @@ function getMarket(account_id) {
     return acc.markets;
   });
 }
+
+// function addNewMarket(account,id){
+//   let dataToSave = {
+//     id: id,
+//     coin: coin,
+//     buy_market:buy_market || "USDT",
+//     spread: spread || 3.28,
+//     multiplier: multiplier || 1,
+//     buy_amount: buy_amount || 10.1,
+//     price_places: price_places || "%.2f",
+//     pause: pause || false
+//   };
+//   return new Promise((resolve, reject) => {
+//     let transformed = configs.map(
+//       x => `${x.coin.toLowerCase()}/${x.buy_market.toLowerCase()}`
+//     );
+//     if (
+//       !transformed.includes(
+//         `${dataToSave.coin.toLowerCase()}/${dataToSave.buy_market.toLowerCase()}`
+//       )
+//     ) {
+//       configs = [...configs, dataToSave];
+//       let newAccounts = accounts.map(acc => {
+//         if (acc.slug === account) {
+//           return { ...acc, market: [...acc.market, id] };
+//         }
+//         return acc;
+//       });
+//       accounts = newAccounts;
+//       resolve({
+//         dataToSave: {
+//           ...dataToSave,
+//           market_label: () => {
+//             return `${dataToSave.coin}/${dataToSave.buy_market}`;
+//           }
+//         },
+//         accounts
+//       });
+//     } else {
+//       reject(`${dataToSave.coin}/${dataToSave.buy_market} already exists`);
+//     }
+//   });
+// }
+
+
+// }
+
+
+
+
+
+
+
+
+
+
 export const adapter = { getAccounts, getMarket };

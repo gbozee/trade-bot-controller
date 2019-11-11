@@ -112,10 +112,11 @@ export const MarketWithStat = ({
           {loaded && (
             <Flex justifyContent="space-between">
               <StatLabel textAlign="center">
-                {prices !== "Loading" && info.coinValue ? (
+                {prices !== "Loading" && info.coin_value ? (
                   <StatLabel>
                     {info.coin_value}/
-                    {(info.coin_value * prices).toFixed(places)}
+                  
+                 {(info.coin_value * prices).toFixed(places)}  
                   </StatLabel>
                 ) : (
                   "..."

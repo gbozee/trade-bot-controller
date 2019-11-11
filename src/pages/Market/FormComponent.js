@@ -14,7 +14,7 @@ import {
 import { conditionalExpression } from "@babel/types";
 import { isNull } from "util";
 
-export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
+export const useFormState = (defaultconfig, onSubmit, is_new = true,bulk=true) => {
   const toast = useToast();
   // Create a red toast that shows the error when the market already exists. Assignment 1.
   // const { getMarketConfig, supported_markets } = useContext(AppContext);
@@ -22,10 +22,20 @@ export const useFormState = (defaultconfig, onSubmit, is_new = true) => {
   let [displayText, setDisplayText] = useState(false);
   let [formErrors, setFormErrors] = useState({});
 
-  let defaultformvalues = is_new
-    ? { max_trade_count: 1, market_condition: "bear" }
+  // todays works starts from here
+
+  let defaultInputValues =  { max_trade_count: 1, market_condition: "bear" }
+
+
+
+
+
+
+  let defaultformvalues = is_new || bulk
+    ? defaultInputValues
     : {};
   let [config, setConfig] = useState(defaultformvalues);
+
 
   useEffect(() => {
     setConfig({ ...defaultformvalues, ...defaultconfig }); //

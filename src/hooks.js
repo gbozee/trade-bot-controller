@@ -110,7 +110,8 @@ export function useMarketData(prices, market, full_market) {
     buy_value: tradeInfo.buy_value,
     sell_value: tradeInfo.sell_value,
     coin_value: coinValue,
-    spread: market.spread * (market.spread_multiplier || 1)
+    spread: market.spread * (market.spread_multiplier || 1),
+ 
   };
 
   return {

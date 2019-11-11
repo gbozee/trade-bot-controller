@@ -11,6 +11,7 @@ export function Home({history}) {
 //   const loading = false;
 //   const accounts = ["Account 1", "Account 2", "Account 3"];
   let {accounts, loading} = useContext(AppContext)
+  console.log("this is "+ accounts)
   return (
     <Box className="App">
       <NavigationBar title="Accounts" />
