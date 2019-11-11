@@ -24,7 +24,7 @@ export const AppProvider = ({ children, adapter }) => {
     // }
     setLoading(true);
     return adapter.getAccounts().then(data => {
-      setAccounts(data.data);
+      setAccounts(data);
       // setAllMarkets(data.markets);
       setLoading(false);
       return data;

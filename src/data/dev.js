@@ -112,7 +112,7 @@ let accounts = [
 const _getAccounts = () => {
   return new Promise((reslove, reject) => {
     setTimeout(() => {
-      reslove({ data: accounts, markets: configs });
+      reslove(accounts);
     }, 2000);
   });
 };
@@ -205,9 +205,9 @@ export let formFields = [
   }
 ];
 function getMarket(account_id) {
-  return getAccounts().then(({ data, markets }) => {
+  return getAccounts().then(data => {
     let acc = data.find(x => x.slug === account_id);
-    let _markets = acc.market.map(mk => markets.find(x => x.id === mk));
+    let _markets = acc.market.map(mk => configs.find(x => x.id === mk));
 
     return _markets;
   });

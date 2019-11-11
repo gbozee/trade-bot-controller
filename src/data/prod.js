@@ -182,7 +182,7 @@ export let formFields = [
   }
 ];
 function getMarket(account_id) {
-  return getAccounts().then(({ data }) => {
+  return getAccounts().then(data => {
     let acc = data.find(x => x.slug === account_id);
     return acc.markets;
   });

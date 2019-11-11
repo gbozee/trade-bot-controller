@@ -28,9 +28,7 @@ function MarketPopover({ children, items = [] }) {
   return (
     <Popover trigger="hover">
       <PopoverTrigger>
-        <Link _hover={{ outline: "none" }} href="#">
-          {children}
-        </Link>
+        <Link _hover={{ outline: "none" }}>{children}</Link>
       </PopoverTrigger>
 
       <PopoverContent border="0" zIndex={4} width="400px">

@@ -24,6 +24,7 @@ import {
   useRowSelect
 } from "react-table";
 import matchSorter from "match-sorter";
+import { useNotification } from "../hooks";
 
 // Create an editable cell renderer
 
@@ -72,7 +73,7 @@ function Table({ columns, data, updateMyData, disablePageResetOnDataChange }) {
 
   // Render the UI for your table
   return (
-    <Box width={["100%", "100%", "50%"]}>
+    <Box width={["100%", "100%"]}>
       <Box as="table" borderTop="1px solid" width={"100%"} {...getTableProps()}>
         <thead>
           {headerGroups.map(headerGroup => (
@@ -186,14 +187,14 @@ function Table({ columns, data, updateMyData, disablePageResetOnDataChange }) {
           </select>
         </Box>
       </Flex>
-      <pre>
+      {/* <pre>
         <code>
           {JSON.stringify(
             {
               pageIndex,
               pageSize,
               pageCount,
-              canNextPage,
+              // canNextPage,
               canPreviousPage,
               groupBy,
               expanded,
@@ -204,7 +205,7 @@ function Table({ columns, data, updateMyData, disablePageResetOnDataChange }) {
             2
           )}
         </code>
-      </pre>
+      </pre> */}
     </Box>
   );
 }
@@ -249,10 +250,15 @@ Proposed Budget\n
 
 Fees in $\n
 0.08734`;
-export const MarketDetail = ({ match }) => {
+export const MarketDetail = ({ match, location }) => {
+  let { messages } = useNotification();
   let { market } = match.params;
   let routes = [
     { name: "Home", path: "/" },
+    {
+      name: "Account",
+      path: `/${(location.state || {}).account_id}/markets`
+    },
     {
       name: market,
       path: `/markets/${market}`,
@@ -332,7 +338,31 @@ export const MarketDetail = ({ match }) => {
           <IconButton alignSelf="flex-end" size="sm" icon="search" />
         </Box>
         <Flex justifyContent="space-between">
-          <Table columns={columns} data={data} />
+          <Flex direction="column" flex={1} mr={2}>
+            <Table columns={columns} data={data} />
+
+            <Code
+              flex={1}
+              width={"100%"}
+              maxHeight={"450px"}
+              height={400}
+              overflowY="scroll"
+              pl={2}
+              py={4}
+            >
+              {messages.map(text => {
+                if (text.msg) {
+                  return (
+                    <>
+                      {text.msg}
+                      <br />
+                    </>
+                  );
+                }
+                return "";
+              })}
+            </Code>
+          </Flex>
           <Box display="flex" flex={0.95} flexDirection="column">
             <Box flexWrap="wrap" display="flex">
               <FormControl width="42%" mb={1} mx={3} isRequired>

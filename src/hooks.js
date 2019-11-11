@@ -1,5 +1,49 @@
 import React, { useState, useEffect, useRef } from "react";
 
+export function useNotification() {
+  let [messages, setMessages] = useState([]);
+  const connections = useRef({});
+  function _disconnectSocketStreams(streams) {
+    // streams = streams.join("/");
+    let connection = btoa(streams);
+    // console.log(connections.current[connection].readyState)
+    // console.log(WebSocket.OPEN)
+    if (connections.current[connection].readyState === WebSocket.OPEN) {
+      connections.current[connection].close();
+    }
+  }
+  useEffect(() => {
+    function _connectSocketStreams(streams) {
+      // streams = streams.join("/");
+      let connection = btoa(streams);
+      console.log(connection);
+      connections.current[connection] = new WebSocket(
+        ` wss://tuteria.ngrok.io/redis`
+        // `wss://stream.binance.com:9443/stream?streams=${streams}`
+        // `wss://stream.binance.com:9443/stream?streams=${streams}`
+      );
+      connections.current[connection].onmessage = evt => {
+        let result = JSON.parse(evt.data);
+        console.log(result);
+        if (messages.length < 20) {
+          setMessages([...messages, result]);
+        } else {
+          setMessages([result]);
+        }
+        // addPrice(result);
+      };
+      connections.current[connection].onerror = evt => {
+        console.error(evt);
+      };
+    }
+    _connectSocketStreams("sample");
+    return () => {
+      _disconnectSocketStreams("sample");
+    };
+  });
+  return { messages };
+}
+
 export function useWebSockets(market, price_places = ".0f", currency) {
   let places = price_places.replace(".", "").replace("f", "");
   const connections = useRef({});
