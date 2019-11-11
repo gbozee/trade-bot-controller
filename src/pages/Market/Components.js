@@ -25,21 +25,22 @@ function PopItem({ name, value }) {
   );
 }
 function MarketPopover({ children, items = [] }) {
-  return (
-    <Popover trigger="hover">
-      <PopoverTrigger>
-        <Link _hover={{ outline: "none" }}>{children}</Link>
-      </PopoverTrigger>
+  return <>{children}</>
+  // return (
+  //   <Popover trigger="hover">
+  //     <PopoverTrigger>
+  //       <Link _hover={{ outline: "none" }}>{children}</Link>
+  //     </PopoverTrigger>
 
-      <PopoverContent border="0" zIndex={4} width="400px">
-        <Box p={5}>
-          {items.map(item => (
-            <PopItem key={item.name} name={item.name} value={item.value} />
-          ))}
-        </Box>
-      </PopoverContent>
-    </Popover>
-  );
+  //     <PopoverContent border="0" zIndex={4} width="400px">
+  //       <Box p={5}>
+  //         {items.map(item => (
+  //           <PopItem key={item.name} name={item.name} value={item.value} />
+  //         ))}
+  //       </Box>
+  //     </PopoverContent>
+  //   </Popover>
+  // );
 }
 
 export const MarketWithStat = ({

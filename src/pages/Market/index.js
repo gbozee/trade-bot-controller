@@ -18,7 +18,14 @@ import {
   Spinner,
   Checkbox,
   useToast,
-  Grid
+  Grid,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter
 } from "@chakra-ui/core";
 import { AppContext } from "../../utils";
 import {
@@ -41,20 +48,14 @@ const SidebarDrawer = ({
   onSubmit
 }) => {
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
+
   return (
-    <Drawer
-      isOpen={isOpen}
-      placement="right"
-      onClose={onClose}
-      finalFocusRef={btnRef}
-    >
-      <DrawerOverlay />
-      <DrawerContent maxHeight="100vh" overflowY="scroll">
-        {/* <DrawerCloseButton /> */}
-        <DrawerHeader>
-          {!market ? `Create new market` : `Edit ${market} market`}
-        </DrawerHeader>
-        <DrawerBody>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Modal Title</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
           <Flex
             justifyContent={["space-between", "space-between", "flex-start"]}
             flexGrow={0.3}
@@ -68,20 +69,73 @@ const SidebarDrawer = ({
               // getData
             />
           </Flex>
-        </DrawerBody>
+        </ModalBody>
 
-        <DrawerFooter>
-          <Button variant="outline" mr={3} onClick={onClose}>
-            Cancel
+        <ModalFooter>
+          <Button variant="ghost" mr={3} onClick={onClose}>
+            Close
           </Button>
-          <Button color="blue" onClick={onSaveHandler}>
-            Save
+          <Button onClick={onSaveHandler} variantColor="blue">
+            Submit
           </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
+
+// const SidebarDrawer = ({
+//   isOpen,
+//   onClose,
+//   btnRef,
+//   market,
+//   marketInfo = {},
+//   hiddenFields = [],
+//   formFields,
+//   onSubmit
+// }) => {
+//   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
+//   return (
+//     <Drawer
+//       isOpen={isOpen}
+//       placement="right"
+//       // onClose={onClose}
+//       finalFocusRef={btnRef}
+//     >
+//       <DrawerOverlay />
+//       <DrawerContent maxHeight="100vh" overflowY="scroll">
+//         {/* <DrawerCloseButton /> */}
+//         <DrawerHeader>
+//           {!market ? `Create new market` : `Edit ${market} market`}
+//         </DrawerHeader>
+//         <DrawerBody>
+//           <Flex
+//             justifyContent={["space-between", "space-between", "flex-start"]}
+//             flexGrow={0.3}
+//             flexDirection={["column"]}
+//             // mx={3}
+//             my={5}
+//           >
+//             <FormComponent
+//               {...formParams}
+//               {...{ formFields, hiddenFields, market }}
+//               // getData
+//             />
+//           </Flex>
+//         </DrawerBody>
+
+//         <DrawerFooter>
+//           <Button variant="outline" mr={3} onClick={onClose}>
+//             Cancel
+//           </Button>
+//           <Button color="blue" onClick={onSaveHandler}>
+//             Save
+//           </Button>
+//         </DrawerFooter>
+//       </DrawerContent>
+//     </Drawer>
+//   );
+// };
 const MenuComponent = ({
   options = [],
   defaultText = "Menu",
@@ -120,12 +174,11 @@ const MenuComponent = ({
 function ConfigurationComponent({ params, onSubmit }) {
   let [selectedFields, setSelectedFields] = useState([]);
   const {
-  
     displayText,
     setDisplayText,
     onSaveHandler,
     ...formParams
-  } = useFormState(undefined, onSubmit, false,true);
+  } = useFormState(undefined, onSubmit, false, true);
 
   return (
     <>
@@ -162,9 +215,7 @@ function ConfigurationComponent({ params, onSubmit }) {
             componentProps={{ mb: 4 }}
             formFields={params.filter(x => selectedFields.includes(x.name))}
             {...formParams}
-         
             fieldsToUnhide={["pause", "profit_value"]}
-        
           />
         </Flex>
         {displayText ? (

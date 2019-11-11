@@ -62,7 +62,7 @@ export const AppProvider = ({ children, adapter }) => {
     return adapter
       .addNewMarket(config, account, getUniqueId())
       .then(({ accounts, dataToSave }) => {
-        setAccounts(account);
+        setAccounts(accounts);
         return {
           ...dataToSave,
           market_label: () => {
