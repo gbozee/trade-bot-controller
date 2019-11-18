@@ -154,12 +154,40 @@ export function useMarketData(prices, market, full_market) {
     buy_value: tradeInfo.buy_value,
     sell_value: tradeInfo.sell_value,
     coin_value: coinValue,
-    spread: market.spread * (market.spread_multiplier || 1),
- 
+    spread: market.spread * (market.spread_multiplier || 1)
   };
 
   return {
     info,
     loaded
   };
+}
+export function useGetData(market) {
+  let [data, setData] = useState([]);
+  useEffect(() => {
+    getData(market).then(result => {
+      setData(result);
+    });
+  }, [market]);
+  function getData(mk) {
+    return new Promise((resolve, reject) => {
+      resolve([
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
+        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 }
+      ]);
+    });
+  }
+  return data;
 }

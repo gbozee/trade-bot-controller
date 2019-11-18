@@ -15,8 +15,46 @@ import {
   useGroupBy,
   useRowSelect
 } from "react-table";
-function Table({ columns, data, updateMyData, disablePageResetOnDataChange }) {
+function Table({ data, updateMyData, disablePageResetOnDataChange }) {
   // Use the state and functions returned from useTable to build your UI
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "selection",
+        // The header can use the table's getToggleAllRowsSelectedProps method
+        // to render a checkbox
+        Header: ({ getToggleAllRowsSelectedProps }) => (
+          <div>
+            <input type="checkbox" {...getToggleAllRowsSelectedProps()} />
+          </div>
+        ),
+        // The cell can use the individual row's getToggleRowSelectedProps method
+        // to the render a checkbox
+        Cell: ({ row }) => (
+          <div>
+            <input type="checkbox" {...row.getToggleRowSelectedProps()} />
+          </div>
+        )
+      },
+      {
+        Header: "Date",
+        accessor: "date"
+      },
+      {
+        Header: "Market",
+        accessor: "market"
+      },
+      {
+        Header: "Amount",
+        accessor: "amount"
+      },
+      {
+        Header: "Profit",
+        accessor: "profit"
+      }
+    ],
+    []
+  );
   const {
     getTableProps,
     getTableBodyProps,

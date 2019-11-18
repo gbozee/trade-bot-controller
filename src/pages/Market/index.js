@@ -300,20 +300,76 @@ function GridLayout({ items, onSelect, selectedMarkets = [] }) {
     </>
   );
 }
-export function Market({ match, history }) {
-  const toast = useToast();
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const btnRef = React.useRef();
+function useGetMarkets(account) {
+  const [markets, setMarkets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState();
   const {
-    loading,
     getMarket,
     hiddenFields,
     getFormFields,
     getFormResult,
+    storage,
     bulkUpdateMarkets
   } = useContext(AppContext);
-  const [markets, setMarkets] = useState([]);
+  useEffect(() => {
+    getSavedMarkets(refresh);
+  }, [refresh]);
+  function getSavedMarkets(forced) {
+    if (forced) {
+      getMarkets();
+    } else {
+      let markets = storage.get(account) || [];
+      if (markets.length > 0) {
+        setLoading(false);
+        setMarkets(markets);
+        setRefresh(false);
+      } else {
+        getMarkets();
+      }
+    }
+  }
+  function getMarkets() {
+    setLoading(true);
+    getMarket(account).then(mk => {
+      storage.set(account, mk);
+      getSavedMarkets(false);
+    });
+  }
+  function refreshLoader() {
+    setRefresh(true);
+  }
+  return {
+    markets: markets.map(x => ({
+      ...x,
+      market_label: () => {
+        return `${x.coin}/${x.buy_market}`;
+      }
+    })),
+    getFormResult,
+    hiddenFields,
+    getFormFields,
+    setMarkets,
+    loading,
+    bulkUpdateMarkets,
+    setRefresh: refreshLoader
+  };
+}
+export function Market({ match, history }) {
+  const toast = useToast();
+  const {
+    markets,
+    loading,
+    bulkUpdateMarkets,
+    getFormResult,
+    setMarkets,
+    hiddenFields,
+    getFormFields,
+    setRefresh
+  } = useGetMarkets(match.params.account);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const btnRef = React.useRef();
+  // const [markets, setMarkets] = useState([]);
   let [selectedMarkets, setSelectedMarkets] = useState([]);
   let [newEditItem, setNewEditItem] = useState();
   let [filteredItem, setFilteredItem] = useState(" ");
@@ -326,7 +382,6 @@ export function Market({ match, history }) {
       return filteredmarket;
     }
   }
-
   function addOrRemoveMarkets(_market) {
     if (selectedMarkets.includes(_market)) {
       let filtered = selectedMarkets.filter(x => x !== _market);
@@ -340,17 +395,6 @@ export function Market({ match, history }) {
       setSelectedMarkets([...selectedMarkets, _market]);
       setNewEditItem(_market);
     }
-  }
-  useEffect(() => {
-    // console.log(isOpen);
-  });
-  useEffect(() => {
-    getMarkets();
-  }, []);
-  function getMarkets() {
-    getMarket(match.params.account).then(mk => {
-      setMarkets(mk);
-    });
   }
   function displayToast(description) {
     toast({
@@ -395,6 +439,7 @@ export function Market({ match, history }) {
       current: true
     }
   ];
+  console.log(markets);
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
@@ -464,12 +509,11 @@ export function Market({ match, history }) {
               {selectedMarkets.length === 1 && (
                 <ControlButton
                   as={Link}
-                  to={{
-                    pathname: `/markets/${selectedMarkets[0]
-                      .toLowerCase()
-                      .replace("/", "")}`,
-                    state: { account_id: match.params.account }
-                  }}
+                  to={`/${
+                    match.params.account
+                  }/markets/${selectedMarkets[0]
+                    .toLowerCase()
+                    .replace("/", "")}`}
                   btnRef={btnRef}
                   icon={"calendar"}
                   variantColor="teal"
@@ -479,6 +523,16 @@ export function Market({ match, history }) {
                   }}
                 />
               )}
+              <ControlButton
+                btnRef={btnRef}
+                onClick={setRefresh}
+                icon={"spinner"}
+                variantColor="red"
+                style={{
+                  right: "10em",
+                  bottom: "2em"
+                }}
+              />
             </>
           )}
         </Flex>

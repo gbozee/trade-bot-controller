@@ -13,8 +13,50 @@ import {
   Text,
   Button
 } from "@chakra-ui/core";
+let textBlob = `------------Profit per trade ---------------\n
+0.042083333333333334\n
+Buy Trades\n
 
-export function MarketAnalyzer({ textBlob }) {
+Price: 0.3532   Q:0.31147       Dollar:0.11\n
+Price: 0.3001   Q:0.36652       Dollar:0.11\n
+Price: 0.2471   Q:0.4452        Dollar:0.11\n
+
+
+Sell Trades\n
+
+Price: 0.4592   Q:0.31147       Dollar:0.143\n
+Price: 0.5123   Q:0.36652       Dollar:0.1878\n
+Price: 0.5653   Q:0.4452        Dollar:0.2517\n
+
+
+Config\n\n
+
+buy_amount: 0.11\n
+sell_amount: 0.11\n
+minimum_trades: 10\n
+pair: 3\n
+multiplier: 1\n
+spread_multiplier: 40\n
+_range: 0.001326\n
+equal: quantity\n
+price_places: %.4f\n
+decimal_places: %.5f\n
+
+
+Profit for 3 pairs\n
+0.12625\n
+
+Trades to Complete\n
+397\n
+
+Proposed Budget\n
+43.67\n
+
+Fees in $\n
+0.08734`;
+
+export function MarketAnalyzer({}) {
+  let markets = ["usdt", "tusd", "busd", "usdc", "usds"];
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
@@ -61,3 +103,16 @@ export function MarketAnalyzer({ textBlob }) {
     </Box>
   );
 }
+
+/**
+ * should resturn results as {
+	"coin":"BTC",
+	"market":"USDT",
+	"buy_amount": 10.1,
+	"budget": 200,
+	"spread_multiplier": 1,
+	"multiplier": 1,
+	"profit": 10,
+	"interval": "1d"
+}
+ */
