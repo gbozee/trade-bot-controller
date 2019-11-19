@@ -96,7 +96,7 @@ export function MarketAnalyzer({ market }) {
     console.log(newConfig);
   }
 
-  let markets = ["usdt", "tusd", "busd", "usdc", "usds"];
+  let markets = ["usdt", "tusd", "busd", "usdc", "usds","btc"];
   function getCoin(market, markets) {
     let foundMarket = markets.find(x => {
       let b = market.includes(x);
