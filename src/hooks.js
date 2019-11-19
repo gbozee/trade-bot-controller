@@ -109,7 +109,7 @@ export function useMarketData(prices, market, full_market) {
           setCoinValue(coinValue);
           setTradeInfo(tradeValue);
           setLoaded(true);
-          console.log(market);
+   
         }
       );
     }

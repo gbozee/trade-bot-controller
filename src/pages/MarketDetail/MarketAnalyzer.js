@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Input,
@@ -13,6 +13,7 @@ import {
   Text,
   Button
 } from "@chakra-ui/core";
+import { checkPropTypes } from "prop-types";
 let textBlob = `------------Profit per trade ---------------\n
 0.042083333333333334\n
 Buy Trades\n
@@ -55,8 +56,60 @@ Proposed Budget\n
 Fees in $\n
 0.08734`;
 
-export function MarketAnalyzer({}) {
+let configs = {
+  coin: "BTC",
+  market: "USDT",
+  buy_amount: 10.1,
+  budget: 200,
+  spread_multiplier: 1,
+  multiplier: 1,
+  profit: 10,
+  interval: "1d"
+};
+
+export function MarketAnalyzer({ market }) {
+  // let [config, setConfig] = useState({});
+  let [config, setConfig] = useState(configs);
+
+  console.log("this is the first" + config);
+  //  console.log(buy_amount);
+
+  const handleChange = input => e => {
+    if (input === "multiplier || spread_multiplier") {
+      // value= x;
+    }
+    let value = e.target.value;
+    console.log(value);
+    // value=value;
+    let newConfig = { ...config, [input]: value };
+    setConfig(newConfig);
+  };
+  const updateRange = input => x => {
+    let newConfig = { ...config, [input]: x };
+    setConfig(newConfig);
+  };
+
+  function onSaveHandler(event) {
+    let defaultCoin = { coin: getCoin(market, markets) };
+    let newConfig = { ...config, ...defaultCoin };
+    setConfig(newConfig);
+    console.log(newConfig);
+  }
+
   let markets = ["usdt", "tusd", "busd", "usdc", "usds"];
+  function getCoin(market, markets) {
+    let foundMarket = markets.find(x => {
+      let b = market.includes(x);
+      return b;
+    });
+    if (foundMarket) {
+      let coin = market.slice(0, -foundMarket.length);
+      return coin;
+    } else {
+      return undefined;
+    }
+  }
+
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
@@ -67,30 +120,69 @@ export function MarketAnalyzer({}) {
           </Select>
         </FormControl>
         <FormControl mb={1} width="42%" mx={3} isRequired>
-          <FormLabel htmlFor="market">Buy Amount</FormLabel>
-          <Input />
+          <FormLabel htmlFor="buy_amount">Buy Amount</FormLabel>
+          <Input
+            value={config.buy_amount}
+            onChange={handleChange("buy_amount")}
+            type="number"
+            name="buy_amount"
+          />
+        </FormControl>
+        <FormControl width="42%" mb={1} mx={3} isRequired display="none">
+          <FormLabel htmlFor="interval">Interval</FormLabel>
+          <Select>
+            <option>1d</option>
+          </Select>
+        </FormControl>
+        <FormControl mb={1} width="42%" mx={3} isRequired display="none">
+          <FormLabel htmlFor="budget">Budget</FormLabel>
+          <Input
+            value={config.buy_amount}
+            onChange={handleChange("budget")}
+            type="number"
+          />
+        </FormControl>
+        <FormControl mb={1} width="42%" mx={3} isRequired display="none">
+          <FormLabel htmlFor="coin">Coin</FormLabel>
+          <Input value={getCoin(market, markets)} name="coin" />
+        </FormControl>
+        <FormControl mb={1} width="42%" mx={3} isRequired display="none">
+          <FormLabel htmlFor="buy_amount">Profit</FormLabel>
+          <Input onChange={handleChange("profit")} type="number" />
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="market">Multiplier</FormLabel>
-          <Slider defaultValue={30}>
+          <FormLabel htmlFor="multiplier">Multiplier</FormLabel>
+          <Slider
+            defaultValue={config.multiplier}
+            onChange={updateRange("multiplier")}
+          >
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb size={6}>
-              <Box color="tomato" as={Text} children={4} />
+              <Box color="tomato" as={Text} children={config.multiplier} />
             </SliderThumb>
           </Slider>
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="market">Spread Multiplier</FormLabel>
-          <Slider defaultValue={30}>
+          <FormLabel htmlFor="spread_multiplier">Spread Multiplier</FormLabel>
+          <Slider
+            defaultValue={config.multiplier}
+            onChange={updateRange("spread_multiplier")}
+          >
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb size={6}>
-              <Box color="tomato" as={Text} children={4} />
+              <Box
+                color="tomato"
+                as={Text}
+                children={config.spread_multiplier}
+              />
             </SliderThumb>
           </Slider>
         </FormControl>
-        <Button mb={5}>Submit</Button>
+        <Button mb={5} onClick={onSaveHandler}>
+          Submit
+        </Button>
       </Box>
       <Code maxHeight={"500px"} overflowY="scroll" pl={2} py={4}>
         {textBlob.split("\n").map(text => {

@@ -32,6 +32,7 @@ export const MarketDetail = ({ match, location }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
+ 
 
   return (
     <Box className="App">
@@ -41,11 +42,12 @@ export const MarketDetail = ({ match, location }) => {
       </Box>
       <flex px={6}>
         <Flex p={"20px"} justifyContent="space-between">
+        {account?
           <Flex direction="column" flex={1} mr={2}>
             <MarketTransaction messages={messages} data={data} />
           </Flex>
-
-          <MarketAnalyzer />
+        :null}
+          <MarketAnalyzer market={market} />
         </Flex>
       </flex>
     </Box>
