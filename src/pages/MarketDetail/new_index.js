@@ -11,7 +11,7 @@ import { MarketAnalyzer } from "./MarketAnalyzer";
 export const MarketDetail = ({ match, location }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
-  let data = useGetData(market);
+  let { data, analyzeMarket, analyzeLoader } = useGetData(market);
   let remaingRoutes = account
     ? [
         {
@@ -32,7 +32,19 @@ export const MarketDetail = ({ match, location }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
- 
+  let markets = ["usdt", "tusd", "busd", "usdc", "usds"];
+  function getCoin() {
+    let foundMarket = markets.find(x => {
+      let b = market.includes(x);
+      return b;
+    });
+    if (foundMarket) {
+      let coin = market.slice(0, -foundMarket.length);
+      return { coin, market: foundMarket };
+    } else {
+      return {};
+    }
+  }
 
   return (
     <Box className="App">
@@ -42,12 +54,15 @@ export const MarketDetail = ({ match, location }) => {
       </Box>
       <flex px={6}>
         <Flex p={"20px"} justifyContent="space-between">
-        {account?
-          <Flex direction="column" flex={1} mr={2}>
-            <MarketTransaction messages={messages} data={data} />
-          </Flex>
-        :null}
-          <MarketAnalyzer market={market} />
+          {account ? (
+            <Flex direction="column" flex={1} mr={2}>
+              <MarketTransaction messages={messages} data={data} />
+            </Flex>
+          ) : null}
+          <MarketAnalyzer
+            {...getCoin()}
+            {...{ analyzeLoader, analyzeMarket }}
+          />
         </Flex>
       </flex>
     </Box>

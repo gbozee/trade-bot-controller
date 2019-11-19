@@ -310,7 +310,8 @@ function useGetMarkets(account) {
     getFormFields,
     getFormResult,
     storage,
-    bulkUpdateMarkets
+    bulkUpdateMarkets,
+    updateMarket
   } = useContext(AppContext);
   useEffect(() => {
     getSavedMarkets(refresh);
@@ -351,6 +352,7 @@ function useGetMarkets(account) {
     getFormFields,
     setMarkets,
     loading,
+    updateMarket,
     bulkUpdateMarkets,
     setRefresh: refreshLoader
   };
@@ -365,6 +367,7 @@ export function Market({ match, history }) {
     setMarkets,
     hiddenFields,
     getFormFields,
+    updateMarket,
     setRefresh
   } = useGetMarkets(match.params.account);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -407,7 +410,7 @@ export function Market({ match, history }) {
   }
   function onSubmit(config) {
     console.log(config);
-    if (selectedMarkets.length > 0) {
+    if (selectedMarkets.length > 1) {
       let foundMarkets = markets.map(x => {
         if (selectedMarkets.includes(x.market_label())) {
           return { ...x, ...config };
@@ -423,12 +426,41 @@ export function Market({ match, history }) {
       /**
        * return new Promise((resovle,reject)=>reject(["coin",'market']))
        */
-      return getFormResult(config, match.params.account).then(fetchedMarket => {
-        setMarkets([...markets, fetchedMarket]);
-        displayToast(`${fetchedMarket.market_label()} has been saved`);
-        onClose();
-        return {};
-      });
+      if (selectedMarkets.length === 1) {
+        let oldMarketConfig = markets.find(
+          x => x.market_label() === selectedMarkets[0]
+        );
+        if (oldMarketConfig) {
+          updateMarket(oldMarketConfig, config, match.params.account).then(
+            () => {
+              let newMarkets = markets.map(x => {
+                if (x.market_label() === oldMarketConfig.market_label()) {
+                  return {
+                    ...config,
+                    market_label: () => `${config.coin}/${config.buy_market}`
+                  };
+                }
+                return x;
+              });
+              setMarkets(newMarkets);
+              displayToast(
+                `${oldMarketConfig.market_label()} has been updated`
+              );
+              onClose();
+              setSelectedMarkets([]);
+            }
+          );
+        }
+      } else {
+        return getFormResult(config, match.params.account).then(
+          fetchedMarket => {
+            setMarkets([...markets, fetchedMarket]);
+            displayToast(`${fetchedMarket.market_label()} has been saved`);
+            onClose();
+            return {};
+          }
+        );
+      }
     }
   }
   let routes = [

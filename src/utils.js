@@ -89,6 +89,9 @@ export const AppProvider = ({ children, adapter }) => {
 
     return addNewMarket(config, account);
   }
+  function updateMarket(oldConfig, newConfig, account) {
+    return adapter.updateExistingMarket(oldConfig, newConfig, account);
+  }
   function bulkUpdateMarkets(markets, account) {
     return adapter.bulkUpdateMarkets(markets, account);
     // return new Promise((resolve, reject) => {
@@ -116,7 +119,9 @@ export const AppProvider = ({ children, adapter }) => {
     getFormFields,
     getFormResult,
     bulkUpdateMarkets,
-    storage
+    storage,
+    adapter,
+    updateMarket
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

@@ -255,4 +255,24 @@ function addNewMarket(config, account, id) {
     }
   });
 }
-export const adapter = { getAccounts, getMarket, addNewMarket };
+function analyzeMarket(marketConfig) {
+  return fetch("https://tuteria.ngrok.io/api/analyze-market", {
+    method: "POST",
+    body: JSON.stringify(marketConfig),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }).then(response => response.text());
+}
+function updateExistingMarket(oldConfig, newConfig, account) {
+  return new Promise((resolve, reject) => {
+    resolve();
+  });
+}
+export const adapter = {
+  getAccounts,
+  getMarket,
+  addNewMarket,
+  updateExistingMarket,
+  analyzeMarket
+};

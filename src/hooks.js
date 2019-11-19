@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { AppContext } from "./utils";
 
 export function useNotification() {
   let [messages, setMessages] = useState([]);
@@ -109,7 +110,6 @@ export function useMarketData(prices, market, full_market) {
           setCoinValue(coinValue);
           setTradeInfo(tradeValue);
           setLoaded(true);
-   
         }
       );
     }
@@ -164,11 +164,21 @@ export function useMarketData(prices, market, full_market) {
 }
 export function useGetData(market) {
   let [data, setData] = useState([]);
+  let [analyzeLoader, setLoader] = useState(false);
+  let { adapter } = useContext(AppContext);
   useEffect(() => {
     getData(market).then(result => {
       setData(result);
     });
   }, [market]);
+  function analyzeMarket(params) {
+    setLoader(true);
+    return adapter.analyzeMarket(params).then(result => {
+      setLoader(false);
+      // return result;
+      return result.replace(/\n/g, "\n\n");
+    });
+  }
   function getData(mk) {
     return new Promise((resolve, reject) => {
       resolve([
@@ -189,5 +199,5 @@ export function useGetData(market) {
       ]);
     });
   }
-  return data;
+  return { data, analyzeMarket, analyzeLoader };
 }
