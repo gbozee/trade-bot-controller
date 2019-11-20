@@ -185,23 +185,163 @@ export function useGetData(market) {
       setTimeout(() => {
         setTransactionLoader(false);
         resolve([
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
-        { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 }
-      ])} ,3000);
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          {
+            date: "2019-10-01",
+            market: "ETHUSDT",
+            amount: 45.323,
+            profit: 2.3
+          },
+          { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 }
+        ]);
+      }, 3000);
       setTransactionLoader(true);
     });
   }
-  return { data, analyzeMarket, analyzeLoader ,transactionLoader};
+  return { data, analyzeMarket, analyzeLoader, transactionLoader };
+}
+
+export function useAccountMarket(account) {
+  const [markets, setMarkets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState();
+  const { getMarket, storage } = useContext(AppContext);
+  useEffect(() => {
+    if (account) {
+      getSavedMarkets(refresh);
+    }
+  }, [refresh]);
+  function getSavedMarkets(forced) {
+    if (forced) {
+      getMarkets();
+    } else {
+      let markets = storage.get(account) || [];
+      if (markets.length > 0) {
+        setLoading(false);
+        setMarkets(markets);
+        setRefresh(false);
+      } else {
+        getMarkets();
+      }
+    }
+  }
+  function getMarkets() {
+    setLoading(true);
+    getMarket(account).then(mk => {
+      storage.set(account, mk);
+      getSavedMarkets(false);
+    });
+  }
+  function refreshLoader() {
+    setRefresh(true);
+  }
+  function getSpecificMarket(_market = {}) {
+    if (_market.coin && _market.market) {
+      let result = markets.find(_mk => {
+        return (
+          _mk.coin.toLowerCase() === _market.coin.toLowerCase() &&
+          _mk.buy_market.toLowerCase() === _market.market.toLowerCase()
+        );
+      });
+      if (result) {
+        return {
+          ...result,
+          market_label: () => {
+            return `${result.coin}/${result.buy_market}`;
+          }
+        };
+      }
+    }
+    // set the default value for the market when one does not exist
+    return {
+      ..._market,
+      multiplier: 1,
+      spread_multiplier: 1,
+      interval: "1d",
+      buy_amount: 10.1
+    };
+  }
+  return {
+    markets: markets.map(x => ({
+      ...x,
+      market_label: () => {
+        return `${x.coin}/${x.buy_market}`;
+      }
+    })),
+    getSpecificMarket,
+    setMarkets,
+    loading,
+    setRefresh: refreshLoader
+  };
 }

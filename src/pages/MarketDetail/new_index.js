@@ -6,12 +6,14 @@ import { useNotification, useGetData } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
 
-export const MarketDetail = ({ match, location }) => {
+export const MarketDetail = ({ match, pageProps }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
+  let [textBlob, setTextBlob] = useState();
+
   let remaingRoutes = account
     ? [
         {
@@ -32,7 +34,7 @@ export const MarketDetail = ({ match, location }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
-  let markets = ["usdt", "tusd", "busd", "usdc", "usds","btc"];
+  let markets = ["usdt", "tusd", "busd", "usdc", "usds", "btc"];
   function getCoin() {
     let foundMarket = markets.find(x => {
       let b = market.includes(x);
@@ -45,13 +47,22 @@ export const MarketDetail = ({ match, location }) => {
       return {};
     }
   }
-
-
-  // useEffect(() => {
-  //  fetchTransaction()
-
-  // }, []);
-
+  let { getSpecificMarket } = pageProps;
+  let defaultConfig = getSpecificMarket(getCoin()); // {coin,market} "ethbtc"
+  function onsubmit(config) {
+    analyzeMarket({
+      coin: "ont",
+      market: "USDT",
+      buy_amount: 10.1,
+      spread_multiplier: 1,
+      multiplier: 1,
+      interval: "1d"
+    }).then(data => {
+      setTextBlob(data);
+    });
+    // setConfig(newConfig);
+    // console.log(newConfig);
+  }
   return (
     <Box className="App">
       <NavigationBar title="Market Detail" />
@@ -72,8 +83,7 @@ export const MarketDetail = ({ match, location }) => {
             </Flex>
           ) : null}
           <MarketAnalyzer
-            {...getCoin()}
-            {...{ analyzeLoader, analyzeMarket }}
+            {...{ analyzeLoader, textBlob, defaultConfig, onsubmit }}
           />
         </Flex>
       </flex>

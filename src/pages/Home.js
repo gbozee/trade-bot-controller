@@ -1,20 +1,20 @@
 import React, { useContext } from "react";
-import { Box, Flex, Spinner, PseudoBox } from "@chakra-ui/core";
+import { Box, Flex, Spinner, PseudoBox, Button } from "@chakra-ui/core";
 import { NavigationBar } from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
 
-
-
-
-export function Home({history}) {
-//   const loading = false;
-//   const accounts = ["Account 1", "Account 2", "Account 3"];
-  let {accounts, loading} = useContext(AppContext)
-  console.log("this is "+ accounts)
+export function Home({ history }) {
+  //   const loading = false;
+  //   const accounts = ["Account 1", "Account 2", "Account 3"];
+  let { accounts, loading } = useContext(AppContext);
+  function onOpenModal() {}
+  console.log("this is " + accounts);
   return (
     <Box className="App">
-      <NavigationBar title="Accounts" />
+      <NavigationBar title="Accounts">
+        <Button onClick={onOpenModal}>Transfer Markets</Button>{" "}
+      </NavigationBar>
       {loading ? (
         <Box display="flex" justifyContent="center" height="20em">
           <Spinner alignSelf="center" />

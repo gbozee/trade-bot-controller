@@ -36,6 +36,7 @@ import {
 import { FormComponent, useFormState } from "./FormComponent";
 import { MarketWithStat } from "./Components";
 import { Link } from "react-router-dom";
+import { useAccountMarket } from "../../hooks";
 
 const SidebarDrawer = ({
   isOpen,
@@ -48,13 +49,19 @@ const SidebarDrawer = ({
   onSubmit
 }) => {
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      placement="right"
+      // onClose={onClose}
+      finalFocusRef={btnRef}
+    >
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Modal Title</ModalHeader>
+      <ModalContent maxHeight="100vh" overflowY="scroll">
         <ModalCloseButton />
+        <ModalHeader>
+          {!market ? `Create new market` : `Edit ${market} market`}
+        </ModalHeader>
         <ModalBody>
           <Flex
             justifyContent={["space-between", "space-between", "flex-start"]}
@@ -72,11 +79,11 @@ const SidebarDrawer = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Close
+          <Button variant="outline" mr={3} onClick={onClose}>
+            Cancel
           </Button>
-          <Button onClick={onSaveHandler} variantColor="blue">
-            Submit
+          <Button color="blue" onClick={onSaveHandler}>
+            Save
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -300,76 +307,18 @@ function GridLayout({ items, onSelect, selectedMarkets = [] }) {
     </>
   );
 }
-function useGetMarkets(account) {
-  const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refresh, setRefresh] = useState();
+
+export function Market({ match, pageProps }) {
+  const toast = useToast();
+  const { markets, loading, setMarkets, setRefresh } = pageProps;
+
   const {
-    getMarket,
     hiddenFields,
     getFormFields,
     getFormResult,
-    storage,
     bulkUpdateMarkets,
     updateMarket
   } = useContext(AppContext);
-  useEffect(() => {
-    getSavedMarkets(refresh);
-  }, [refresh]);
-  function getSavedMarkets(forced) {
-    if (forced) {
-      getMarkets();
-    } else {
-      let markets = storage.get(account) || [];
-      if (markets.length > 0) {
-        setLoading(false);
-        setMarkets(markets);
-        setRefresh(false);
-      } else {
-        getMarkets();
-      }
-    }
-  }
-  function getMarkets() {
-    setLoading(true);
-    getMarket(account).then(mk => {
-      storage.set(account, mk);
-      getSavedMarkets(false);
-    });
-  }
-  function refreshLoader() {
-    setRefresh(true);
-  }
-  return {
-    markets: markets.map(x => ({
-      ...x,
-      market_label: () => {
-        return `${x.coin}/${x.buy_market}`;
-      }
-    })),
-    getFormResult,
-    hiddenFields,
-    getFormFields,
-    setMarkets,
-    loading,
-    updateMarket,
-    bulkUpdateMarkets,
-    setRefresh: refreshLoader
-  };
-}
-export function Market({ match, history }) {
-  const toast = useToast();
-  const {
-    markets,
-    loading,
-    bulkUpdateMarkets,
-    getFormResult,
-    setMarkets,
-    hiddenFields,
-    getFormFields,
-    updateMarket,
-    setRefresh
-  } = useGetMarkets(match.params.account);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
   // const [markets, setMarkets] = useState([]);
@@ -490,7 +439,7 @@ export function Market({ match, history }) {
             {...{
               isOpen,
               onClose,
-              btnRef,
+              // btnRef,
               hiddenFields,
               market: newEditItem,
               marketInfo: markets.find(x => x.market_label() === newEditItem),
