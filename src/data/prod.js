@@ -153,4 +153,10 @@ function analyzeMarket(marketConfig) {
     }
   }).then(response => response.text());
 }
-export const adapter = { getAccounts, getMarket, addNewMarket, analyzeMarket };
+
+function updateExistingMarket(oldConfig, newConfig, account) {
+  return new Promise((resolve, reject) => {
+    resolve();
+  });
+}
+export const adapter = { getAccounts, getMarket, addNewMarket, analyzeMarket ,updateExistingMarket,};

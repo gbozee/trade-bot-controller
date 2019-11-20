@@ -6,7 +6,8 @@ import {
   Input,
   FormControl,
   FormLabel,
-  Code
+  Code,
+  Spinner
 } from "@chakra-ui/core";
 import {
   useTable,
@@ -15,6 +16,7 @@ import {
   useGroupBy,
   useRowSelect
 } from "react-table";
+
 function Table({ data, updateMyData, disablePageResetOnDataChange }) {
   // Use the state and functions returned from useTable to build your UI
   const columns = React.useMemo(

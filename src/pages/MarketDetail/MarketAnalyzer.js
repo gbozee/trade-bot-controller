@@ -15,6 +15,8 @@ import {
   Spinner
 } from "@chakra-ui/core";
 import { checkPropTypes } from "prop-types";
+import { MarketDetail } from "./new_index";
+// import { supported_markets } from "../../data";
 
 export function MarketAnalyzer({ coin, market, analyzeMarket, analyzeLoader }) {
   // let [config, setConfig] = useState({});
@@ -24,6 +26,7 @@ export function MarketAnalyzer({ coin, market, analyzeMarket, analyzeLoader }) {
     spread_multiplier: 1,
     market
   });
+
   let [textBlob, setTextBlob] = useState();
   //  console.log(buy_amount);
 
@@ -57,11 +60,78 @@ export function MarketAnalyzer({ coin, market, analyzeMarket, analyzeLoader }) {
 
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
+      <MarketDetailsForm
+        handleChange={handleChange}
+        config={config}
+        updateRange={updateRange}
+        onSaveHandler={onSaveHandler}
+        market={market}
+        coin={coin}
+      />
+
+      {analyzeLoader ? (
+        <Box textAlign="center" mt={20}>
+          <Spinner alignSelf="center" textAlign="center" />
+        </Box>
+      ) : (
+        textBlob && (
+          <Code
+            width={"100%"}
+            maxHeight={"500px"}
+            overflowY="scroll"
+            pl={2}
+            py={4}
+          >
+            {textBlob.split("\n").map(text => {
+              if (text.trim() === "") {
+                return <br />;
+              }
+              return text;
+            })}
+          </Code>
+        )
+      )}
+    </Box>
+  );
+}
+export function MarketDetailsForm({
+  config,
+  handleChange,
+  updateRange,
+  onSaveHandler,
+  market
+}) 
+
+{
+   const supported_markets = [
+    "usdt",
+    "tusd",
+    "btc",
+    "bnb",
+    "eth",
+    "usdc",
+    "pax",
+    "busd",
+    "xrp",
+    "trx"
+  ];
+  return (
+    <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
         <FormControl width="42%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="market">Market</FormLabel>
-          <Select>
-            <option>USDT</option>
+          <Select 
+          value={market}
+          id="market"
+          onChange={handleChange("market")}
+          
+          >
+          
+            {supported_markets.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </Select>
         </FormControl>
         <FormControl mb={1} width="42%" mx={3} isRequired>
@@ -125,41 +195,6 @@ export function MarketAnalyzer({ coin, market, analyzeMarket, analyzeLoader }) {
           Submit
         </Button>
       </Box>
-      <Box>
-        {analyzeLoader ? (
-          <Spinner alignSelf="center" />
-        ) : (
-          textBlob && (
-            <Code
-              width={"100%"}
-              maxHeight={"500px"}
-              overflowY="scroll"
-              pl={2}
-              py={4}
-            >
-              {textBlob.split("\n").map(text => {
-                if (text.trim() === "") {
-                  return <br />;
-                }
-                return text;
-              })}
-            </Code>
-          )
-        )}
-      </Box>
     </Box>
   );
 }
-
-/**
- * should resturn results as {
-	"coin":"BTC",
-	"market":"USDT",
-	"buy_amount": 10.1,
-	"budget": 200,
-	"spread_multiplier": 1,
-	"multiplier": 1,
-	"profit": 10,
-	"interval": "1d"
-}
- */

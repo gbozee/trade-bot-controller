@@ -17,7 +17,7 @@ export function useNotification() {
     function _connectSocketStreams(streams) {
       // streams = streams.join("/");
       let connection = btoa(streams);
-      console.log(connection);
+      // console.log(connection);
       connections.current[connection] = new WebSocket(
         ` wss://tuteria.ngrok.io/redis`
         // `wss://stream.binance.com:9443/stream?streams=${streams}`
@@ -165,6 +165,7 @@ export function useMarketData(prices, market, full_market) {
 export function useGetData(market) {
   let [data, setData] = useState([]);
   let [analyzeLoader, setLoader] = useState(false);
+  let [transactionLoader, setTransactionLoader] = useState(false);
   let { adapter } = useContext(AppContext);
   useEffect(() => {
     getData(market).then(result => {
@@ -181,7 +182,9 @@ export function useGetData(market) {
   }
   function getData(mk) {
     return new Promise((resolve, reject) => {
-      resolve([
+      setTimeout(() => {
+        setTransactionLoader(false);
+        resolve([
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
@@ -196,8 +199,9 @@ export function useGetData(market) {
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 },
         { date: "2019-10-01", market: "ETHUSDT", amount: 45.323, profit: 2.3 }
-      ]);
+      ])} ,3000);
+      setTransactionLoader(true);
     });
   }
-  return { data, analyzeMarket, analyzeLoader };
+  return { data, analyzeMarket, analyzeLoader ,transactionLoader};
 }

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Flex } from "@chakra-ui/core";
+import { Box, Flex, Spinner } from "@chakra-ui/core";
 import { NavigationBar, SubNavigationBar } from "../../components";
 
 import { useNotification, useGetData } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
-// import { MarketAnalyzer } from "./MarketAnalyzer";
-// import { MarketAnalyzer } from "./MarketAnalyzer";
 
 export const MarketDetail = ({ match, location }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
-  let { data, analyzeMarket, analyzeLoader } = useGetData(market);
+  let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
+    market
+  );
   let remaingRoutes = account
     ? [
         {
@@ -32,7 +32,7 @@ export const MarketDetail = ({ match, location }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
-  let markets = ["usdt", "tusd", "busd", "usdc", "usds"];
+  let markets = ["usdt", "tusd", "busd", "usdc", "usds","btc"];
   function getCoin() {
     let foundMarket = markets.find(x => {
       let b = market.includes(x);
@@ -46,6 +46,12 @@ export const MarketDetail = ({ match, location }) => {
     }
   }
 
+
+  // useEffect(() => {
+  //  fetchTransaction()
+
+  // }, []);
+
   return (
     <Box className="App">
       <NavigationBar title="Market Detail" />
@@ -56,7 +62,13 @@ export const MarketDetail = ({ match, location }) => {
         <Flex p={"20px"} justifyContent="space-between">
           {account ? (
             <Flex direction="column" flex={1} mr={2}>
-              <MarketTransaction messages={messages} data={data} />
+              {transactionLoader ? (
+                <Box textAlign="center" mt={20}>
+                  <Spinner alignSelf="center" textAlign="center" />
+                </Box>
+              ) : (
+                <MarketTransaction messages={messages} data={data} />
+              )}
             </Flex>
           ) : null}
           <MarketAnalyzer
