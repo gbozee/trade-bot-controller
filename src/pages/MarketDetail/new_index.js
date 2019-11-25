@@ -34,7 +34,7 @@ export const MarketDetail = ({ match, pageProps }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
-
+  debugger;
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
 

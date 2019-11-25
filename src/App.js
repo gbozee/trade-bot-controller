@@ -5,6 +5,7 @@ import { useAccountMarket } from "./hooks";
 
 function IndividualAccount({ match, location }) {
   console.log(match);
+  debugger;
   const pageProps = useAccountMarket(match.params.account);
   return (
     <Switch>
