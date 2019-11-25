@@ -56,4 +56,4 @@ export const ControlButton = ({ edit, onEdit, onAdd, btnRef, ...rest }) => {
   );
 };
 
-export { Modal } from "./Modal";
+export { XModal } from "./Modal";

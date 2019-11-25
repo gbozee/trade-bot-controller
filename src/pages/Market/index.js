@@ -18,20 +18,14 @@ import {
   Spinner,
   Checkbox,
   useToast,
-  Grid,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter
+  Grid
 } from "@chakra-ui/core";
 import { AppContext } from "../../utils";
 import {
   NavigationBar,
   SubNavigationBar,
-  ControlButton
+  ControlButton,
+  XModal
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
 import { MarketWithStat } from "./Components";
@@ -50,44 +44,27 @@ const SidebarDrawer = ({
 }) => {
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
   return (
-    <Modal
+    <XModal
+      onSubmit={onSaveHandler}
+      onClose={onClose}
       isOpen={isOpen}
-      placement="right"
-      // onClose={onClose}
+      title={!market ? `Create new market` : `Edit ${market} market`}
       finalFocusRef={btnRef}
     >
-      <ModalOverlay />
-      <ModalContent maxHeight="100vh" overflowY="scroll">
-        <ModalCloseButton />
-        <ModalHeader>
-          {!market ? `Create new market` : `Edit ${market} market`}
-        </ModalHeader>
-        <ModalBody>
-          <Flex
-            justifyContent={["space-between", "space-between", "flex-start"]}
-            flexGrow={0.3}
-            flexDirection={["column"]}
-            // mx={3}
-            my={5}
-          >
-            <FormComponent
-              {...formParams}
-              {...{ formFields, hiddenFields, market }}
-              // getData
-            />
-          </Flex>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button variant="outline" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button color="blue" onClick={onSaveHandler}>
-            Save
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      <Flex
+        justifyContent={["space-between", "space-between", "flex-start"]}
+        flexGrow={0.3}
+        flexDirection={["column"]}
+        // mx={3}
+        my={5}
+      >
+        <FormComponent
+          {...formParams}
+          {...{ formFields, hiddenFields, market }}
+          // getData
+        />
+      </Flex>
+    </XModal>
   );
 };
 
@@ -308,8 +285,9 @@ function GridLayout({ items, onSelect, selectedMarkets = [] }) {
   );
 }
 
-export function Market({ match, pageProps }) {
+export function Market({ match }) {
   const toast = useToast();
+  const pageProps = useAccountMarket(match.params.account);
   const { markets, loading, setMarkets, setRefresh } = pageProps;
 
   const {

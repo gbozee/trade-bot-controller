@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Box, Flex, Spinner } from "@chakra-ui/core";
 import { NavigationBar, SubNavigationBar } from "../../components";
 
-import { useNotification, useGetData } from "../../hooks";
+import { useNotification, useGetData, useAccountMarket } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
 
-export const MarketDetail = ({ match, pageProps }) => {
+export const MarketDetail = ({ match }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
   let [textBlob, setTextBlob] = useState();
-
+  const _pageProps = useAccountMarket(match.params.account);
   let remaingRoutes = account
     ? [
         {
@@ -22,7 +22,7 @@ export const MarketDetail = ({ match, pageProps }) => {
         },
         {
           name: market,
-          path: `/markets/${market}`,
+          path: `/${account}/markets/${market}`,
           current: true
         }
       ]
@@ -34,8 +34,7 @@ export const MarketDetail = ({ match, pageProps }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
-
-  let { getSpecificMarket } = pageProps;
+  let { getSpecificMarket } = _pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
 
   function onsubmit(config) {

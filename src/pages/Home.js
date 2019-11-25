@@ -1,34 +1,46 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Flex,
   Spinner,
   PseudoBox,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   FormControl,
   FormLabel,
   Select
 } from "@chakra-ui/core";
 import { useDisclosure } from "@chakra-ui/core";
-import { NavigationBar } from "../components";
+import { NavigationBar, XModal } from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
 
 export function Home({ history }) {
-  //   const loading = false;
-  //   const accounts = ["Account 1", "Account 2", "Account 3"];
-  let { accounts, loading } = useContext(AppContext);
+  let { accounts = [], loading, adapter } = useContext(AppContext);
+  let [accountMarkets, setAccountMarkets] = useState([]);
+  let [formValues, setFormValues] = useState({});
+  let [marketLoading, setMarketLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  let acc = ["Account-1", "Account-2", "Acccount-3", "Account-4"];
-
+  function onSubmit() {
+    if (formValues.from && formValues.market && formValues.to) {
+      // display toast message when successful
+      adapter.transferMarket();
+    }
+  }
+  function onFromAccountChange(e) {
+    let value = e.target.value;
+    if (value) {
+      setMarketLoading(true);
+      console.log(value);
+      setFormValues({ ...formValues, from: value });
+      adapter.getMarket(value).then(markets => {
+        setAccountMarkets(markets);
+        setMarketLoading(false);
+        console.log(markets);
+      });
+    }
+  }
   function handleChange() {}
+  console.log(accounts);
   return (
     <Box className="App">
       <NavigationBar title="Accounts">
@@ -47,52 +59,73 @@ export function Home({ history }) {
           })}
         </Flex>
       )}
-
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Select Market</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6} ml={7}>
-            <FormControl width="60%" mb={1} mx={3} isRequired>
-              <FormLabel htmlFor="Account">From Account</FormLabel>
-              <Select>
-                {acc.map(option => (
-                  <option key={option} value={option}>
-                    {option}
+      <XModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onSubmit={onSubmit}
+        title="Transfer Market"
+        submitButtonProps={{ variantColor: "blue" }}
+      >
+        <Box pb={6} ml={7}>
+          <FormControl mb={1} mx={3} isRequired>
+            <FormLabel htmlFor="Account">From Account</FormLabel>
+            <Select value={formValues.from} onChange={onFromAccountChange}>
+              <option>Select Market</option>
+              {accounts.map(option => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl mb={1} mx={3} isRequired>
+            <FormLabel htmlFor="market">{`Select Markets ${
+              formValues.from ? `in ${formValues.from}` : ""
+            } `}</FormLabel>
+            <Flex>
+              <Select
+                value={formValues.market}
+                isDisabled={marketLoading}
+                onChange={e => {
+                  setFormValues({ ...formValues, market: e.target.value });
+                }}
+                id="market"
+              >
+                <option>Select market</option>
+                {accountMarkets.map(option => (
+                  <option
+                    key={`${option.coin}/${option.buy_market}`}
+                    value={`${option.coin.toUpperCase()}${option.buy_market.toUpperCase()}`}
+                  >
+                    {`${option.coin}/${option.buy_market}`}
                   </option>
                 ))}
               </Select>
-            </FormControl>
-            <FormControl width="50%" mb={1} mx={3} isRequired>
-              <FormLabel htmlFor="market">Market</FormLabel>
-              <Select value id="market" onChange>
-              {acc.map(option => (
+              {marketLoading && (
+                <Spinner ml={2} alignSelf="center" textAlign="center" />
+              )}
+            </Flex>
+          </FormControl>
+          <FormControl mb={1} mx={3} isRequired>
+            <FormLabel htmlFor="to_account">To Account</FormLabel>
+            <Select
+              value={formValues.to}
+              id="to_account"
+              onChange={e => {
+                setFormValues({ ...formValues, to: e.target.value });
+              }}
+            >
+              <option>Select Market</option>
+              {/* Ensure that only acccounts that are not from from  */}
+              {[].map(option => (
                 <option key={option} value={option}>
                   {option}
                 </option>
               ))}
-              </Select>
-            </FormControl>
-            <FormControl width="50%" mb={1} mx={3} isRequired>
-              <FormLabel htmlFor="to_account">To Account</FormLabel>
-              <Select value id="to_account" onChange>
-              {acc.map(option => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-              </Select>
-            </FormControl>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variantColor="blue" mr={3}>
-              Submit
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+            </Select>
+          </FormControl>
+        </Box>
+      </XModal>
     </Box>
   );
 }
@@ -118,33 +151,5 @@ function AccountItem({ account }) {
     >
       {account.title}
     </PseudoBox>
-  );
-}
-
-function onOpenModal() {}
-
-function ManualClose() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  return (
-    <>
-      <Button onClick={onOpen}>Open Modal</Button>
-
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Create your account</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}></ModalBody>
-
-          <ModalFooter>
-            <Button variantColor="blue" mr={3}>
-              Save
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
   );
 }

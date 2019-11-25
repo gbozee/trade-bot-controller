@@ -1,28 +1,13 @@
 import React, { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
-import { useAccountMarket } from "./hooks";
 
 function IndividualAccount({ match, location }) {
   console.log(match);
-  const pageProps = useAccountMarket(match.params.account);
   return (
     <Switch>
-      <Route
-        exact
-        path={match.path}
-        render={_routerProps => {
-          return <Market {..._routerProps} pageProps={pageProps} />;
-        }}
-      />
-      <Route
-        exact
-        path={`${match.path}/:market`}
-        render={_routerProps => {
-          return <MarketDetail {..._routerProps} pageProps={pageProps} />;
-        }}
-      />
-     
+      <Route exact path={match.path} component={Market} />
+      <Route exact path={`${match.path}/:market`} component={MarketDetail} />
     </Switch>
   );
 }

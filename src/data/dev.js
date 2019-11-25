@@ -269,10 +269,15 @@ function updateExistingMarket(oldConfig, newConfig, account) {
     resolve();
   });
 }
+function transferMarket(param) {
+  // complete the implementation of the transfer market.
+  return;
+}
 export const adapter = {
   getAccounts,
   getMarket,
   addNewMarket,
   updateExistingMarket,
-  analyzeMarket
+  analyzeMarket,
+  transferMarket
 };
