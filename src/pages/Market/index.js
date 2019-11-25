@@ -293,7 +293,7 @@ function GridLayout({ items, onSelect, selectedMarkets = [] }) {
               <MarketWithStat
                 key={market.market_label()}
                 onSelect={() => {
-                  onSelect(market.market_label());
+                 onSelect(market.market_label());
                 }}
                 market={market}
                 selected={selectedMarkets.includes(market.market_label())}

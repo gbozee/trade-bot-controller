@@ -277,6 +277,7 @@ export function useAccountMarket(account) {
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState();
   const { getMarket, storage } = useContext(AppContext);
+  const [url,setUrl] =useState({})
   useEffect(() => {
     if (account) {
       getSavedMarkets(refresh);
@@ -306,7 +307,23 @@ export function useAccountMarket(account) {
   function refreshLoader() {
     setRefresh(true);
   }
-  function getSpecificMarket(_market = {}) {
+  let filtered_markets = ["usdt", "tusd", "busd", "usdc", "usds", "btc"];
+  function getCoin(mk) {
+    let foundMarket = filtered_markets.find(x => {
+      let market = mk.includes(x);
+      return market;
+    });
+    if (foundMarket) {
+      let coin = mk.slice(0, -foundMarket.length);
+      return { coin, market: foundMarket };
+    } else {
+      return {};
+    }
+  }
+
+   function getSpecificMarket(param ) {
+     let _market=getCoin(param)
+   
     if (_market.coin && _market.market) {
       let result = markets.find(_mk => {
         return (
@@ -315,6 +332,7 @@ export function useAccountMarket(account) {
         );
       });
       if (result) {
+        console.log(result)
         return {
           ...result,
           market_label: () => {

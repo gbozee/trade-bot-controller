@@ -22,7 +22,9 @@ export function MarketAnalyzer({
   analyzeLoader,
   onsubmit,
   defaultConfig = {}
-}) {
+})
+{
+  
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm onsubmit={onsubmit} defaultConfig={defaultConfig} />
@@ -52,15 +54,16 @@ export function MarketAnalyzer({
     </Box>
   );
 }
+
 export function MarketDetailsForm({
   onsubmit,
-  defaultConfig = { multiplier: 1, spread_multiplier: 1 }
+  defaultConfig = { multiplier: 1, spread_multiplier : 1 }
 }) {
   let [config, setConfig] = useState(defaultConfig);
   const supported_markets = [
-    "usdt",
+    "USDT",
     "tusd",
-    "btc",
+    "BTC",
     "bnb",
     "eth",
     "usdc",
@@ -83,13 +86,15 @@ export function MarketDetailsForm({
   function onSaveHandler(event) {
     return onsubmit(config);
   }
+  console.log(defaultConfig);
+  console.log(config)
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
         <FormControl width="42%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="market">Market</FormLabel>
           <Select
-            value={config.market}
+            value={config.buy_market}
             id="market"
             onChange={handleChange("market")}
           >
@@ -118,14 +123,14 @@ export function MarketDetailsForm({
         <FormControl mb={1} width="42%" mx={3} isRequired display="none">
           <FormLabel htmlFor="budget">Budget</FormLabel>
           <Input
-            value={config.buy_amount}
+            value={config.budget}
             onChange={handleChange("budget")}
             type="number"
           />
         </FormControl>
         <FormControl mb={1} width="42%" mx={3} isRequired display="none">
-          <FormLabel htmlFor="buy_amount">Profit</FormLabel>
-          <Input onChange={handleChange("profit")} type="number" />
+          <FormLabel htmlFor="profit">Profit</FormLabel>
+          <Input value={config.profit} onChange={handleChange("profit")} type="number" />
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="multiplier">Multiplier</FormLabel>
@@ -141,10 +146,10 @@ export function MarketDetailsForm({
           </Slider>
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="spread_multiplier">Spread Multiplier</FormLabel>
+          <FormLabel htmlFor="spread">Spread Multiplier</FormLabel>
           <Slider
-            defaultValue={config.multiplier}
-            onChange={updateRange("spread_multiplier")}
+            defaultValue={config.spread}
+            onChange={updateRange("spread")}
           >
             <SliderTrack />
             <SliderFilledTrack />
@@ -152,7 +157,7 @@ export function MarketDetailsForm({
               <Box
                 color="tomato"
                 as={Text}
-                children={config.spread_multiplier}
+                children={config.spread}
               />
             </SliderThumb>
           </Slider>

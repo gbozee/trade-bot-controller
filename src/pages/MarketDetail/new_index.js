@@ -34,29 +34,18 @@ export const MarketDetail = ({ match, pageProps }) => {
         }
       ];
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
-  let markets = ["usdt", "tusd", "busd", "usdc", "usds", "btc"];
-  function getCoin() {
-    let foundMarket = markets.find(x => {
-      let b = market.includes(x);
-      return b;
-    });
-    if (foundMarket) {
-      let coin = market.slice(0, -foundMarket.length);
-      return { coin, market: foundMarket };
-    } else {
-      return {};
-    }
-  }
+
   let { getSpecificMarket } = pageProps;
-  let defaultConfig = getSpecificMarket(getCoin()); // {coin,market} "ethbtc"
+  let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
+
   function onsubmit(config) {
     analyzeMarket({
-      coin: "ont",
-      market: "USDT",
-      buy_amount: 10.1,
-      spread_multiplier: 1,
-      multiplier: 1,
-      interval: "1d"
+      coin: config.coin,
+      market: config.buy_market,
+      buy_amount: config.buy_amount,
+      spread_multiplier: config.spread_multiplier,
+      multiplier: config.multiplier,
+      interval: config.interval
     }).then(data => {
       setTextBlob(data);
     });

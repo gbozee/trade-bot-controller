@@ -22,6 +22,7 @@ function IndividualAccount({ match, location }) {
           return <MarketDetail {..._routerProps} pageProps={pageProps} />;
         }}
       />
+     
     </Switch>
   );
 }
