@@ -6,30 +6,39 @@ import {
   ModalContent,
   ModalHeader,
   ModalCloseButton,
-  ModalBody
+  ModalBody,
+  Modal
 } from "@chakra-ui/core";
 
-export const Modal = ({
-  children,
-  onSubmit,
+export const XModal = ({
+  isOpen,
+  title,
   onClose,
-  title = "Modal Title",
-  isOpen
+  onSubmit,
+  children,
+  submitButtonProps = {},
+  cancelButtonProps = {},
+  ...rest
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} {...rest}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{title}</ModalHeader>
+      <ModalContent maxHeight="100vh" overflowY="scroll">
         <ModalCloseButton />
+        <ModalHeader>{title}</ModalHeader>
         <ModalBody>{children}</ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Close
+          <Button
+            variant="outline"
+            mr={3}
+            {...cancelButtonProps}
+            onClick={onClose}
+          >
+            Cancel
           </Button>
-          <Button onClick={onSubmit} variantColor="blue">
-            Submit
+          <Button color="blue" {...submitButtonProps} onClick={onSubmit}>
+            Save
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -277,23 +277,25 @@ export function useAccountMarket(account) {
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState();
   const { getMarket, storage } = useContext(AppContext);
-  const [url,setUrl] =useState({})
+  const [url, setUrl] = useState({});
   useEffect(() => {
     if (account) {
       getSavedMarkets(refresh);
     }
   }, [refresh]);
   function getSavedMarkets(forced) {
-    if (forced) {
-      getMarkets();
-    } else {
-      let markets = storage.get(account) || [];
-      if (markets.length > 0) {
-        setLoading(false);
-        setMarkets(markets);
-        setRefresh(false);
-      } else {
+    if (account) {
+      if (forced) {
         getMarkets();
+      } else {
+        let markets = storage.get(account) || [];
+        if (markets.length > 0) {
+          setLoading(false);
+          setMarkets(markets);
+          setRefresh(false);
+        } else {
+          getMarkets();
+        }
       }
     }
   }
@@ -321,9 +323,9 @@ export function useAccountMarket(account) {
     }
   }
 
-   function getSpecificMarket(param ) {
-     let _market=getCoin(param)
-   
+  function getSpecificMarket(param) {
+    let _market = getCoin(param);
+
     if (_market.coin && _market.market) {
       let result = markets.find(_mk => {
         return (
@@ -332,7 +334,7 @@ export function useAccountMarket(account) {
         );
       });
       if (result) {
-        console.log(result)
+        console.log(result);
         return {
           ...result,
           market_label: () => {
