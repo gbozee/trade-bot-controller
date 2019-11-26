@@ -334,7 +334,6 @@ export function useAccountMarket(account) {
         );
       });
       if (result) {
-        console.log(result);
         return {
           ...result,
           market_label: () => {

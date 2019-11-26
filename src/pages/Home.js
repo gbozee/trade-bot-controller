@@ -7,7 +7,8 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Select
+  Select,
+  useToast
 } from "@chakra-ui/core";
 import { useDisclosure } from "@chakra-ui/core";
 import { NavigationBar, XModal } from "../components";
@@ -19,28 +20,48 @@ export function Home({ history }) {
   let [accountMarkets, setAccountMarkets] = useState([]);
   let [formValues, setFormValues] = useState({});
   let [marketLoading, setMarketLoading] = useState(false);
+  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  function displayToast(description) {
+    toast({
+      title: "Markets transferred",
+      description,
+      status: "success",
+      duration: 5000,
+      isClosable: true
+    });
+  }
   function onSubmit() {
     if (formValues.from && formValues.market && formValues.to) {
+      displayToast(
+        `${formValues.market} has been transfered to ${formValues.to} `
+      );
       // display toast message when successful
-      adapter.transferMarket();
+      adapter.transferMarket(formValues.market);
+      onClose();
+      setFormValues({});
     }
   }
-  function onFromAccountChange(e) {
+
+  const onFromAccountChange = input => e => {
     let value = e.target.value;
-    if (value) {
+
+    if (input === "from") {
       setMarketLoading(true);
-      console.log(value);
-      setFormValues({ ...formValues, from: value });
+
+      setFormValues({ ...formValues, [input]: value });
       adapter.getMarket(value).then(markets => {
         setAccountMarkets(markets);
         setMarketLoading(false);
-        console.log(markets);
       });
+    } else {
+      setFormValues({ ...formValues, [input]: value });
     }
-  }
+  };
+
   function handleChange() {}
-  console.log(accounts);
+
   return (
     <Box className="App">
       <NavigationBar title="Accounts">
@@ -69,8 +90,11 @@ export function Home({ history }) {
         <Box pb={6} ml={7}>
           <FormControl mb={1} mx={3} isRequired>
             <FormLabel htmlFor="Account">From Account</FormLabel>
-            <Select value={formValues.from} onChange={onFromAccountChange}>
-              <option>Select Market</option>
+            <Select
+              value={formValues.from}
+              onChange={onFromAccountChange("from")}
+            >
+              <option>Select Account</option>
               {accounts.map(option => (
                 <option key={option.slug} value={option.slug}>
                   {option.title}
@@ -89,7 +113,6 @@ export function Home({ history }) {
                 onChange={e => {
                   setFormValues({ ...formValues, market: e.target.value });
                 }}
-                id="market"
               >
                 <option>Select market</option>
                 {accountMarkets.map(option => (
@@ -107,21 +130,16 @@ export function Home({ history }) {
             </Flex>
           </FormControl>
           <FormControl mb={1} mx={3} isRequired>
-            <FormLabel htmlFor="to_account">To Account</FormLabel>
-            <Select
-              value={formValues.to}
-              id="to_account"
-              onChange={e => {
-                setFormValues({ ...formValues, to: e.target.value });
-              }}
-            >
-              <option>Select Market</option>
-              {/* Ensure that only acccounts that are not from from  */}
-              {[].map(option => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
+            <FormLabel htmlFor="Account">To Account</FormLabel>
+            <Select value={formValues.to} onChange={onFromAccountChange("to")}>
+              <option>Select Account</option>
+              {accounts
+                .filter(x => x.slug !== formValues.from)
+                .map(option => (
+                  <option key={option.slug} value={option.slug}>
+                    {option.title}
+                  </option>
+                ))}
             </Select>
           </FormControl>
         </Box>

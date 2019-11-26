@@ -13,7 +13,7 @@ export const MarketDetail = ({ match }) => {
     market
   );
   let [textBlob, setTextBlob] = useState();
-  const _pageProps = useAccountMarket(match.params.account);
+  const pageProps = useAccountMarket(match.params.account);
   let remaingRoutes = account
     ? [
         {

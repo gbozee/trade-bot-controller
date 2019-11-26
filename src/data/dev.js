@@ -271,7 +271,8 @@ function updateExistingMarket(oldConfig, newConfig, account) {
 }
 function transferMarket(param) {
   // complete the implementation of the transfer market.
-  return;
+  let v= console.log(`The ${param} has been transferred `)
+  return v;
 }
 export const adapter = {
   getAccounts,

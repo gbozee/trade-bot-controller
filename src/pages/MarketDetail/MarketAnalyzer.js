@@ -86,8 +86,6 @@ export function MarketDetailsForm({
   function onSaveHandler(event) {
     return onsubmit(config);
   }
-  console.log(defaultConfig);
-  console.log(config)
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">

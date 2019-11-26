@@ -3,8 +3,8 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
 
 function IndividualAccount({ match, location }) {
-  console.log(match);
-  const pageProps = useAccountMarket(match.params.account);
+
+  // const pageProps = useAccountMarket(match.params.account);
   return (
     <Switch>
       <Route exact path={match.path} component={Market} />
