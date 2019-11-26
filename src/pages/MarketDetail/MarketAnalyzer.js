@@ -16,15 +16,18 @@ import {
 } from "@chakra-ui/core";
 import { useAccountMarket } from "../../hooks";
 // import { supported_markets } from "../../data";
-
+/**
+ *
+ * {
+ * "text":},
+ * "json":{}
+ */
 export function MarketAnalyzer({
   textBlob,
   analyzeLoader,
   onsubmit,
   defaultConfig = {}
-})
-{
-  
+}) {
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm onsubmit={onsubmit} defaultConfig={defaultConfig} />
@@ -54,12 +57,7 @@ export function MarketAnalyzer({
     </Box>
   );
 }
-
-export function MarketDetailsForm({
-  onsubmit,
-  defaultConfig = { multiplier: 1, spread_multiplier : 1 }
-}) {
-  let [config, setConfig] = useState(defaultConfig);
+function useSupportedMarkets(coin) {
   const supported_markets = [
     "USDT",
     "tusd",
@@ -72,6 +70,15 @@ export function MarketDetailsForm({
     "xrp",
     "trx"
   ];
+  let loading = false;
+  return [supported_markets, loading];
+}
+export function MarketDetailsForm({
+  onsubmit,
+  defaultConfig = { multiplier: 1, spread_multiplier: 1 }
+}) {
+  let [config, setConfig] = useState(defaultConfig);
+  const [supported_markets, loading] = useSupportedMarkets(config.coin);
   const handleChange = input => e => {
     let value = e.target.value;
     console.log(value);
@@ -128,7 +135,11 @@ export function MarketDetailsForm({
         </FormControl>
         <FormControl mb={1} width="42%" mx={3} isRequired display="none">
           <FormLabel htmlFor="profit">Profit</FormLabel>
-          <Input value={config.profit} onChange={handleChange("profit")} type="number" />
+          <Input
+            value={config.profit}
+            onChange={handleChange("profit")}
+            type="number"
+          />
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="multiplier">Multiplier</FormLabel>
@@ -145,18 +156,11 @@ export function MarketDetailsForm({
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="spread">Spread Multiplier</FormLabel>
-          <Slider
-            defaultValue={config.spread}
-            onChange={updateRange("spread")}
-          >
+          <Slider defaultValue={config.spread} onChange={updateRange("spread")}>
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb size={6}>
-              <Box
-                color="tomato"
-                as={Text}
-                children={config.spread}
-              />
+              <Box color="tomato" as={Text} children={config.spread} />
             </SliderThumb>
           </Slider>
         </FormControl>

@@ -44,11 +44,18 @@ export const SubNavigationBar = ({ routes, ...rest }) => {
   );
 };
 
-export const ControlButton = ({ edit, onEdit, onAdd, btnRef, ...rest }) => {
+export const ControlButton = ({
+  edit,
+  onEdit,
+  onAdd,
+  btnRef,
+  position = "fixed",
+  ...rest
+}) => {
   return (
     <IconButton
       size="lg"
-      position="fixed"
+      position={position}
       ref={btnRef}
       borderRadius="50%"
       {...rest}
