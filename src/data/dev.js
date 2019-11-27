@@ -278,7 +278,10 @@ function analyzeMarket(marketConfig) {
     }
 
   })
-  .then(response => response.text())
+  .then(response => response.json()).then(data=>{
+    return data.result;
+  })
+    // ("text" : response.text(),"json": {}))
  
 
   // .then(response => response.text());

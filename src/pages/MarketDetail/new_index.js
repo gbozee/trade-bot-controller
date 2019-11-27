@@ -44,11 +44,12 @@ export const MarketDetail = ({ match }) => {
       buy_amount: config.buy_amount,
       spread_multiplier: config.spread_multiplier,
       multiplier: config.multiplier,
-      interval: config.interval
+      interval: config.interval,
+      format: "json"
     }).then(data => {
-      setTextBlob({data});
       console.log(typeof(data));
       console.log((data));
+      setTextBlob(data);
     });
     // setConfig(newConfig);
   }
