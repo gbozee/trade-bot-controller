@@ -38,20 +38,25 @@ export function MarketAnalyzer({
 }) {
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
-      <MarketDetailsForm onsubmit={onsubmit} defaultConfig={defaultConfig} />
+      <MarketDetailsForm
+        onsubmit={onsubmit}
+        textBlob={textBlob.text}
+        defaultConfig={defaultConfig}
+      />
 
       {analyzeLoader ? (
         <Box textAlign="center" mt={20}>
           <Spinner alignSelf="center" textAlign="center" />
         </Box>
       ) : (
-        textBlob && (
+        textBlob.text && (
           <Code
             width={"100%"}
             maxHeight={"500px"}
             overflowY="scroll"
             pl={2}
             py={4}
+            dangerouslySetInnerHTML={{ __html: textBlob.text }}
           >
             {/**textBlob.split("\n").map(text => {
               if (text.trim() === "") {
@@ -59,7 +64,8 @@ export function MarketAnalyzer({
               }
               return text;
             })**/}
-            {textBlob.text}
+
+            {/* {textBlob.text} */}
           </Code>
         )
       )}
@@ -102,7 +108,6 @@ function useSupportedMarkets(coin) {
 export function MarketDetailsForm({
   onsubmit,
   textBlob,
-
   defaultConfig = { multiplier: 1, spread_multiplier: 1 }
 }) {
   let [config, setConfig] = useState(defaultConfig);
@@ -110,6 +115,21 @@ export function MarketDetailsForm({
   const [supported_markets, loading] = useSupportedMarkets(config.coin);
   let { accounts = [], adapter } = useContext(AppContext);
   const toast = useToast();
+  let fields = [
+    "coin",
+    "buy_market",
+    "sell_market",
+    "budget",
+    "buy_amount",
+    "sell_amount",
+    "multiplier",
+    "max_trade_count",
+    "spread",
+    "spread_multiplier",
+    "take_profits",
+    "margin_support",
+    "margin_market"
+  ];
 
   const handleChange = input => e => {
     let value = e.target.value;

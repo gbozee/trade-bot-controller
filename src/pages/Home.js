@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -8,12 +8,17 @@ import {
   FormControl,
   FormLabel,
   Select,
-  useToast
+  useToast,
+  Input,
+  InputGroup,
+  InputRightElement,
+  IconButton
 } from "@chakra-ui/core";
 import { useDisclosure } from "@chakra-ui/core";
 import { NavigationBar, XModal } from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
+import { useStorage } from "../hooks";
 
 export function Home({ history }) {
   let { accounts = [], loading, adapter } = useContext(AppContext);
@@ -65,6 +70,8 @@ export function Home({ history }) {
   return (
     <Box className="App">
       <NavigationBar title="Accounts">
+        <SearchInput />
+
         <Button onClick={onOpen} variantColor="teal">
           Transfer Markets
         </Button>
@@ -148,6 +155,99 @@ export function Home({ history }) {
   );
 }
 
+function SearchInput() {
+  let { adapter } = useContext(AppContext);
+  let [getValue, setValue, storage] = useStorage("all-markets");
+  let [allMarkets, setAllMarkets] = useState([]);
+  let [filteredResult, setFilteredResult] = useState([]);
+  let [loading, setLoading] = useState(false);
+  useEffect(() => {
+    loadAllMarkets();
+  }, []);
+  function loadAllMarkets() {
+    let result = getValue([]);
+    if (result.length > 0) {
+      setAllMarkets(result);
+    } else {
+      adapter.getAllAssets().then(data => {
+        setValue(data);
+        setAllMarkets(data);
+      });
+    }
+  }
+  function cachedAlternateMarket(coin) {
+    let key = `fetchd-coin-${coin}`;
+    let result = storage.get(key);
+    if (result) {
+      return new Promise(resolve => resolve(result));
+    }
+    setLoading(true);
+    return adapter.getAlternateMarkets(coin).then(x => {
+      storage.set(key, x);
+      return x;
+    });
+  }
+  function updateFilteredDisplay(coins) {
+    let promises = coins.map(x => cachedAlternateMarket(x));
+    return Promise.all(promises).then(data => {
+      let result = data.flatMap(x => x);
+      setFilteredResult(result);
+      setLoading(false);
+    });
+  }
+  function onSearchDisplay(e) {
+    let value = e.target.value;
+    if (value.length > 1) {
+      let result = allMarkets.filter(x => {
+        return x.toLowerCase().includes(value.toLowerCase());
+      });
+      updateFilteredDisplay(result);
+    } else {
+      setFilteredResult([]);
+    }
+  }
+  return (
+    <Flex flex={0.8} direction="column">
+      <InputGroup size="md">
+        <Input
+          color="black"
+          onBlur={() => {
+            setFilteredResult([]);
+          }}
+          onChange={onSearchDisplay}
+          placeholder="Find Asset to Analyze"
+        />
+        <InputRightElement>
+          {loading && <Spinner color="red.500" pr={4} />}
+          <IconButton
+            ml={4}
+            variantColor="blue"
+            aria-label="Search database"
+            icon="search"
+          />
+        </InputRightElement>
+      </InputGroup>
+      <Box
+        style={{
+          position: "absolute",
+          background: "white",
+          width: "50%",
+          color: "black",
+          marginTop: "3em",
+          ":hover": {
+            cursor: "pointer"
+          }
+        }}
+      >
+        {filteredResult.map(x => (
+          <Box style={{ padding: "0.8em", border: "1px solid" }} key={x}>
+            {x}
+          </Box>
+        ))}
+      </Box>
+    </Flex>
+  );
+}
 function AccountItem({ account }) {
   return (
     <PseudoBox
