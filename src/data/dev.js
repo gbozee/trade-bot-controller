@@ -255,14 +255,33 @@ function addNewMarket(config, account, id) {
     }
   });
 }
+function a(type){
+let text=type.text()
+// let json = type.json()
+  return(
+    {
+      text:text,
+      // json : json
+      // "json":ty.json()
+    }
+  )
+}
+
+
 function analyzeMarket(marketConfig) {
+  
   return fetch("https://tuteria.ngrok.io/api/analyze-market", {
     method: "POST",
     body: JSON.stringify(marketConfig),
     headers: {
       "Content-Type": "application/json"
     }
-  }).then(response => response.text());
+
+  })
+  .then(response => response.text())
+ 
+
+  // .then(response => response.text());
 }
 function updateExistingMarket(oldConfig, newConfig, account) {
   return new Promise((resolve, reject) => {
@@ -271,8 +290,8 @@ function updateExistingMarket(oldConfig, newConfig, account) {
 }
 function transferMarket(param) {
   // complete the implementation of the transfer market.
-  let v = console.log(`The ${param} has been transferred `);
-  return v;
+  let v= console.log(`The ${param} has been transferred `)
+  return;
 }
 export const adapter = {
   getAccounts,

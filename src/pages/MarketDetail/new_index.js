@@ -12,7 +12,7 @@ export const MarketDetail = ({ match }) => {
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
-  let [textBlob, setTextBlob] = useState();
+  let [textBlob, setTextBlob] = useState({text: "This is love", json: {}});
   const pageProps = useAccountMarket(match.params.account);
   let remaingRoutes = account
     ? [
@@ -37,7 +37,7 @@ export const MarketDetail = ({ match }) => {
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
 
-  function onsubmit(config) {
+  function onsubmit(config,type) {
     analyzeMarket({
       coin: config.coin,
       market: config.buy_market,
@@ -46,11 +46,13 @@ export const MarketDetail = ({ match }) => {
       multiplier: config.multiplier,
       interval: config.interval
     }).then(data => {
-      setTextBlob(data);
+      setTextBlob({data});
+      console.log(typeof(data));
+      console.log((data));
     });
     // setConfig(newConfig);
-    // console.log(newConfig);
   }
+
   return (
     <Box className="App">
       <NavigationBar title="Market Detail" />
@@ -66,7 +68,7 @@ export const MarketDetail = ({ match }) => {
                   <Spinner alignSelf="center" textAlign="center" />
                 </Box>
               ) : (
-                <MarketTransaction messages={messages} data={data} />
+                <MarketTransaction messages={messages} data={data}/>
               )}
             </Flex>
           ) : null}

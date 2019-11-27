@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Input,
@@ -12,9 +12,14 @@ import {
   SliderThumb,
   Text,
   Button,
-  Spinner
+  Spinner,
+  Flex,
+  useToast
 } from "@chakra-ui/core";
+import { AppContext } from "../../utils";
+import { useDisclosure } from "@chakra-ui/core";
 import { useAccountMarket } from "../../hooks";
+
 // import { supported_markets } from "../../data";
 /**
  *
@@ -22,8 +27,11 @@ import { useAccountMarket } from "../../hooks";
  * "text":},
  * "json":{}
  */
+import { XModal } from "../../components";
+
 export function MarketAnalyzer({
   textBlob,
+
   analyzeLoader,
   onsubmit,
   defaultConfig = {}
@@ -45,12 +53,13 @@ export function MarketAnalyzer({
             pl={2}
             py={4}
           >
-            {textBlob.split("\n").map(text => {
+            {/**textBlob.split("\n").map(text => {
               if (text.trim() === "") {
                 return <br />;
               }
               return text;
-            })}
+            })**/}
+            {textBlob.text}
           </Code>
         )
       )}
@@ -58,7 +67,17 @@ export function MarketAnalyzer({
   );
 }
 function useSupportedMarkets(coin) {
-  const supported_markets = [
+  let [supported_markets, setSupported_markets] = useState([]);
+  let [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getSupportedMarkets().then(result => {
+      setSupported_markets(result);
+      setLoading(false);
+    });
+  }, []);
+  const markets = [
     "USDT",
     "tusd",
     "BTC",
@@ -70,15 +89,28 @@ function useSupportedMarkets(coin) {
     "xrp",
     "trx"
   ];
-  let loading = false;
+  const getSupportedMarkets = () => {
+    return new Promise((reslove, reject) => {
+      setTimeout(() => {
+        reslove(markets);
+      }, 2000);
+    });
+  };
+
   return [supported_markets, loading];
 }
 export function MarketDetailsForm({
   onsubmit,
+  textBlob,
+
   defaultConfig = { multiplier: 1, spread_multiplier: 1 }
 }) {
   let [config, setConfig] = useState(defaultConfig);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [supported_markets, loading] = useSupportedMarkets(config.coin);
+  let { accounts = [], adapter } = useContext(AppContext);
+  const toast = useToast();
+
   const handleChange = input => e => {
     let value = e.target.value;
     console.log(value);
@@ -93,22 +125,49 @@ export function MarketDetailsForm({
   function onSaveHandler(event) {
     return onsubmit(config);
   }
+  function displayToast(description) {
+    toast({
+      title: "Markets transferred",
+      description,
+      status: "success",
+      duration: 5000,
+      isClosable: true
+    });
+  }
+  function onSumit() {
+    onClose();
+    // if (formValues.from && formValues.market && formValues.to) {
+    displayToast(`Market has been sent `);
+    // display toast message when successful
+    //   adapter.transferMarket(formValues.market);
+    //   setFormValues({});
+    // }
+    console.log("Market Sent");
+  }
+
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
         <FormControl width="42%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="market">Market</FormLabel>
-          <Select
-            value={config.buy_market}
-            id="market"
-            onChange={handleChange("market")}
-          >
-            {supported_markets.map(option => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
+          {loading ? (
+            <Box ml={2}>
+              <Spinner alignSelf="center" textAlign="center" />
+            </Box>
+          ) : (
+            <Select
+              value={config.buy_market}
+              id="market"
+              onChange={handleChange("market")}
+            >
+              (
+              {supported_markets.map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Select>
+          )}
         </FormControl>
         <FormControl mb={1} width="42%" mx={3} isRequired>
           <FormLabel htmlFor="buy_amount">Buy Amount</FormLabel>
@@ -164,10 +223,44 @@ export function MarketDetailsForm({
             </SliderThumb>
           </Slider>
         </FormControl>
-        <Button mb={5} onClick={onSaveHandler}>
-          Submit
-        </Button>
+        <Box w="100%">
+          <Flex justifyContent="space-between">
+            <Button onClick={onSaveHandler}>Submit</Button>
+            {textBlob ? (
+              <Button variantColor="teal" onClick={onOpen}>
+                create
+              </Button>
+            ) : null}
+          </Flex>
+        </Box>
       </Box>
+
+      <XModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onSubmit={onSumit}
+        title="To Account"
+        submitButtonProps={{ variantColor: "blue" }}
+      >
+        <Box pb={6} ml={7}>
+          <FormControl mb={1} mx={3} isRequired>
+            <FormLabel htmlFor="Account"> Account</FormLabel>
+            <Select value={accounts.title} onChange={handleModalInput}>
+              <option>Select Account</option>
+              {accounts.map(option => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </XModal>
     </Box>
   );
+}
+
+function handleModalInput(e) {
+  let value = e.target.value;
+  console.log(value);
 }
