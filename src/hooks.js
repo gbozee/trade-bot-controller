@@ -177,6 +177,7 @@ export function useGetData(market) {
     return adapter.analyzeMarket(params).then(result => {
       setLoader(false);
       return { text: "", json: result };
+      // return {text:result.text.replace(/\n/g, "\n\n")};
     });
   }
   function getData(mk) {
