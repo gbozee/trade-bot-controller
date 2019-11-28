@@ -271,12 +271,32 @@ export function useGetData(market) {
   }
   return { data, analyzeMarket, analyzeLoader, transactionLoader };
 }
+export const useStorage = key => {
+  function setStorage(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  function getStorage(key) {
+    let result = localStorage.getItem(key);
+    if (result) {
+      return JSON.parse(result);
+    }
+    return undefined;
+  }
 
+  function getValue(_default = {}) {
+    return getStorage(key) || _default;
+  }
+  function setValue(value) {
+    setStorage(key, value);
+  }
+  return [getValue, setValue, { get: getStorage, set: setStorage }];
+};
 export function useAccountMarket(account) {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState();
-  const { getMarket, storage } = useContext(AppContext);
+  const { getMarket } = useContext(AppContext);
+  const [getValue, setValue] = useStorage(account);
   const [url, setUrl] = useState({});
   useEffect(() => {
     if (account) {
@@ -288,7 +308,7 @@ export function useAccountMarket(account) {
       if (forced) {
         getMarkets();
       } else {
-        let markets = storage.get(account) || [];
+        let markets = getValue([]);
         if (markets.length > 0) {
           setLoading(false);
           setMarkets(markets);
@@ -302,7 +322,7 @@ export function useAccountMarket(account) {
   function getMarkets() {
     setLoading(true);
     getMarket(account).then(mk => {
-      storage.set(account, mk);
+      setValue(mk);
       getSavedMarkets(false);
     });
   }
@@ -319,7 +339,7 @@ export function useAccountMarket(account) {
       let coin = mk.slice(0, -foundMarket.length);
       return { coin, market: foundMarket };
     } else {
-      return {};
+      return { coin: mk, market: "" };
     }
   }
 

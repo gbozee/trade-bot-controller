@@ -6,13 +6,139 @@ import { useNotification, useGetData, useAccountMarket } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
 
+/**
+ * {
+  "result": {
+    "sell_price": 4.320399999999999,
+    "purchase_coins": 162.02203499675957,
+    "diff": 3.7031999999999994,
+    "buys": [
+      {
+        "price": 0.56,
+        "quantity": 18.03,
+        "dollar": 10.1
+      },
+      {
+        "price": 0.503,
+        "quantity": 20.07,
+        "dollar": 10.1
+      },
+      {
+        "price": 0.446,
+        "quantity": 22.64,
+        "dollar": 10.1
+      }
+    ],
+    "sells": [
+      {
+        "price": 0.674,
+        "quantity": 22.64,
+        "dollar": 15.259
+      },
+      {
+        "price": 0.731,
+        "quantity": 20.07,
+        "dollar": 14.671
+      },
+      {
+        "price": 0.788,
+        "quantity": 18.03,
+        "dollar": 14.208
+      }
+    ],
+    "re_buys": {
+      "price": 0.674,
+      "quantity": 7.8,
+      "dollar": 5.2572
+    },
+    "re_sells": {
+      "price": 0.56,
+      "quantity": 17.86,
+      "dollar": 10
+    },
+    "remaining": 101.28203499675956,
+    "gained": 222.76203499675958,
+    "bought_coins": 60.74,
+    "sold_coins": 60.74,
+    "mined": 0.0,
+    "buy_amount": 10.1,
+    "sell_amount": 10.1,
+    "minimum_trades": 10,
+    "pair": 3,
+    "multiplier": 1,
+    "spread_multiplier": 1,
+    "_range": 0.057,
+    "equal": "quantity",
+    "price_places": "%.3f",
+    "decimal_places": "%.2f",
+    "use_new": false
+  }
+}
+ */
+
+/**
+ * ONT Config
+Buy Trades
+
+Price: 0.56	Q:18.03	Dollar:10.1
+Price: 0.503	Q:20.07	Dollar:10.1
+Price: 0.446	Q:22.63	Dollar:10.1
+
+Sell Trades
+
+Price: 0.674	Q:22.63	Dollar:15.253
+Price: 0.731	Q:20.07	Dollar:14.671
+Price: 0.788	Q:18.03	Dollar:14.208
+
+Config
+
+buy_amount: 10.1
+sell_amount: 10.1
+minimum_trades: 10
+pair: 3
+multiplier: 1
+spread_multiplier: 1
+_range: 0.057
+equal: quantity
+price_places: %.3f
+decimal_places: %.2f
+use_new: False
+
+Profit for 3 pairs
+6.916
+
+Trades to Complete
+2
+
+Proposed Budget
+20.2
+
+Fees in BNB
+0.0026613264472609417
+ */
+function buildMarketSummaryString(passedObject, result) {
+  let _result = "";
+  _result += `${passedObject.coin.toUpperCase()} Config
+  Buy Trades
+  ${result.buys
+    .map(buy => `Price: ${buy.price} Q:${buy.quantity} Dollar:${buy.dollar}`)
+    .join("\n")}
+  
+  Sell Trades
+  ${result.sells
+    .map(buy => `Price: ${buy.price} Q:${buy.quantity} Dollar:${buy.dollar}`)
+    .join("\n")}
+  `;
+
+  return _result.replace(/\n/g, "<br/>");
+}
 export const MarketDetail = ({ match }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
-  let [textBlob, setTextBlob] = useState({text: "This is love", json: {}});
+  let [textBlob, setTextBlob] = useState({});
   const pageProps = useAccountMarket(match.params.account);
   let remaingRoutes = account
     ? [
@@ -37,8 +163,8 @@ export const MarketDetail = ({ match }) => {
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
 
-  function onsubmit(config,type) {
-    analyzeMarket({
+  function onsubmit(config, type) {
+    let passedObject = {
       coin: config.coin,
       market: config.buy_market,
       buy_amount: config.buy_amount,
@@ -46,10 +172,12 @@ export const MarketDetail = ({ match }) => {
       multiplier: config.multiplier,
       interval: config.interval,
       format: "json"
-    }).then(data => {
-      console.log(typeof(data));
-      console.log((data));
-      setTextBlob(data);
+    };
+    analyzeMarket(passedObject).then(data => {
+      console.log(typeof data);
+      console.log(data);
+      let text = buildMarketSummaryString(passedObject, data.json);
+      setTextBlob({ text, json: data.json });
     });
     // setConfig(newConfig);
   }
@@ -69,7 +197,7 @@ export const MarketDetail = ({ match }) => {
                   <Spinner alignSelf="center" textAlign="center" />
                 </Box>
               ) : (
-                <MarketTransaction messages={messages} data={data}/>
+                <MarketTransaction messages={messages} data={data} />
               )}
             </Flex>
           ) : null}

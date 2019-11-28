@@ -3,20 +3,7 @@ import { configs, supported_markets, formFields, hiddenFields } from "./data";
 export const AppContext = React.createContext();
 
 export { useMarketData, useWebSockets } from "./hooks";
-function getStorage(key) {
-  let result = localStorage.getItem(key);
-  if (result) {
-    return JSON.parse(result);
-  }
-  return undefined;
-}
-function setStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-const storage = {
-  get: getStorage,
-  set: setStorage
-};
+
 export const AppProvider = ({ children, adapter }) => {
   let [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -119,7 +106,6 @@ export const AppProvider = ({ children, adapter }) => {
     getFormFields,
     getFormResult,
     bulkUpdateMarkets,
-    storage,
     adapter,
     updateMarket
   };

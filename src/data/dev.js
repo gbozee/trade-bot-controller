@@ -255,36 +255,35 @@ function addNewMarket(config, account, id) {
     }
   });
 }
-function a(type){
-let text=type.text()
-// let json = type.json()
-  return(
-    {
-      text:text,
-      // json : json
-      // "json":ty.json()
-    }
-  )
+function a(type) {
+  let text = type.text();
+  // let json = type.json()
+  return {
+    text: text
+    // json : json
+    // "json":ty.json()
+  };
 }
 
-
 function analyzeMarket(marketConfig) {
-  
   return fetch("https://tuteria.ngrok.io/api/analyze-market", {
     method: "POST",
     body: JSON.stringify(marketConfig),
     headers: {
       "Content-Type": "application/json"
     }
-
   })
-  .then(response => response.json()).then(data=>{
-    return data.result;
-  })
-    // ("text" : response.text(),"json": {}))
- 
-
-  // .then(response => response.text());
+    .then(response => response.json())
+    .then(data => {
+      return data.result;
+    });
+}
+function getAlternateMarkets(coin) {
+  return fetch(`https://tuteria.ngrok.io/api/markets/${coin}`)
+    .then(response => response.json())
+    .then(data => {
+      return data.data;
+    });
 }
 function updateExistingMarket(oldConfig, newConfig, account) {
   return new Promise((resolve, reject) => {
@@ -293,8 +292,19 @@ function updateExistingMarket(oldConfig, newConfig, account) {
 }
 function transferMarket(param) {
   // complete the implementation of the transfer market.
-  let v= console.log(`The ${param} has been transferred `)
+  let v = console.log(`The ${param} has been transferred `);
   return;
+}
+function getAllAssets(account = "main_account", key = "asset") {
+  return fetch(`https://tuteria.ngrok.io/api/all-assets/${account}`)
+    .then(response => response.json())
+    .then(data => {
+      let result = data.data;
+      if (key) {
+        return result.map(x => x[key]);
+      }
+      return data.data;
+    });
 }
 export const adapter = {
   getAccounts,
@@ -302,5 +312,7 @@ export const adapter = {
   addNewMarket,
   updateExistingMarket,
   analyzeMarket,
-  transferMarket
+  transferMarket,
+  getAlternateMarkets,
+  getAllAssets
 };
