@@ -384,3 +384,67 @@ export function useAccountMarket(account) {
     setRefresh: refreshLoader
   };
 }
+
+
+
+export function useSerchInput(){
+  let { adapter } = useContext(AppContext);
+  let [getValue, setValue, storage] = useStorage("all-markets");
+  let [allMarkets, setAllMarkets] = useState([]);
+  let [filteredResult, setFilteredResult] = useState([]);
+  let [searchLoading, setSearchLoading] = useState(false);
+  useEffect(() => {
+    loadAllMarkets();
+  }, []);
+
+  function loadAllMarkets() {
+    let result = getValue([]);
+    if (result.length > 0) {
+      setAllMarkets(result);
+    } else {
+      adapter.getAllAssets().then(data => {
+        setValue(data);
+        setAllMarkets(data);
+      });
+    }
+  }
+  function cachedAlternateMarket(coin) {
+    let key = `fetchd-coin-${coin}`;
+    let result = storage.get(key);
+    if (result) {
+      return new Promise(resolve => resolve(result));
+    }
+    setSearchLoading(true);
+    return adapter.getAlternateMarkets(coin).then(x => {
+      storage.set(key, x);
+      return x;
+    });
+  }
+
+  function updateFilteredDisplay(coins) {
+    let promises = coins.map(x => cachedAlternateMarket(x));
+    return Promise.all(promises).then(data => {
+      let result = data.flatMap(x => x);
+      setFilteredResult(result);
+      setSearchLoading(false);
+    });
+  }
+  function onSearchDisplay(e) {
+    let value = e.target.value;
+    if (value.length > 1) {
+      let result = allMarkets.filter(x => {
+        return x.toLowerCase().includes(value.toLowerCase());
+      });
+      updateFilteredDisplay(result);
+    } else {
+      setFilteredResult([]);
+    }
+  }
+
+  return{
+    filteredResult,
+    searchLoading,
+    onSearchDisplay,
+    setFilteredResult
+  }
+}

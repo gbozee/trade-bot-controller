@@ -283,8 +283,22 @@ function getAlternateMarkets(coin) {
     .then(response => response.json())
     .then(data => {
       return data.data;
+      console.log(data)
     });
-}
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 function updateExistingMarket(oldConfig, newConfig, account) {
   return new Promise((resolve, reject) => {
     resolve();

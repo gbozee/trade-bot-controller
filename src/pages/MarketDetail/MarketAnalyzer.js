@@ -19,19 +19,10 @@ import {
 import { AppContext } from "../../utils";
 import { useDisclosure } from "@chakra-ui/core";
 import { useAccountMarket } from "../../hooks";
-
-// import { supported_markets } from "../../data";
-/**
- *
- * {
- * "text":},
- * "json":{}
- */
 import { XModal } from "../../components";
 
 export function MarketAnalyzer({
   textBlob,
-
   analyzeLoader,
   onsubmit,
   defaultConfig = {}
@@ -57,51 +48,35 @@ export function MarketAnalyzer({
             pl={2}
             py={4}
             dangerouslySetInnerHTML={{ __html: textBlob.text }}
-          >
-            {/**textBlob.split("\n").map(text => {
-              if (text.trim() === "") {
-                return <br />;
-              }
-              return text;
-            })**/}
-
-            {/* {textBlob.text} */}
-          </Code>
+          ></Code>
         )
       )}
     </Box>
   );
 }
 function useSupportedMarkets(coin) {
+  let { adapter } = useContext(AppContext);
   let [supported_markets, setSupported_markets] = useState([]);
   let [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    getSupportedMarkets().then(result => {
-      setSupported_markets(result);
+    //Assigment 2
+    adapter.getAlternateMarkets(coin).then(result => {
+      let isCoin = result.find(x => x.toLowerCase().includes(coin));
+      if (!!isCoin) {
+        let market = result.map(x => {
+          return x.toLowerCase().slice(coin.length);
+        });
+        setSupported_markets(market);
+      } else {
+        let market = result.map(x => x.toLowerCase());
+
+        setSupported_markets(market);
+      }
       setLoading(false);
     });
   }, []);
-  const markets = [
-    "USDT",
-    "tusd",
-    "BTC",
-    "bnb",
-    "eth",
-    "usdc",
-    "pax",
-    "busd",
-    "xrp",
-    "trx"
-  ];
-  const getSupportedMarkets = () => {
-    return new Promise((reslove, reject) => {
-      setTimeout(() => {
-        reslove(markets);
-      }, 2000);
-    });
-  };
 
   return [supported_markets, loading];
 }
@@ -115,6 +90,7 @@ export function MarketDetailsForm({
   const [supported_markets, loading] = useSupportedMarkets(config.coin);
   let { accounts = [], adapter } = useContext(AppContext);
   const toast = useToast();
+
   let fields = [
     "coin",
     "buy_market",
@@ -131,10 +107,10 @@ export function MarketDetailsForm({
     "margin_market"
   ];
 
+  // console.log(textBl
+
   const handleChange = input => e => {
     let value = e.target.value;
-    console.log(value);
-    // value=value;
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
   };
@@ -162,7 +138,28 @@ export function MarketDetailsForm({
     //   adapter.transferMarket(formValues.market);
     //   setFormValues({});
     // }
-    console.log("Market Sent");
+
+    let values = getValues(config);
+    console.log(values);
+  }
+  //Assigmenet Create an object with all the fields
+  function getValues(x) {
+    let resultValues = {
+      coin: x.coin,
+      buy_market: x.market,
+      sell_market: x.sell_market,
+      budget: x.budget,
+      buy_amount: x.buy_amount,
+      "sell_amount":x.sell_amount,
+      multiplier: x.multiplier,
+      max_trade_count: 1,
+      // "spread",
+      "spread_multiplier": x.spread_multiplier,
+      // "take_profits",
+      // "margin_support",
+      margin_market: x.margin_market
+    };
+    return resultValues;
   }
 
   return (
@@ -180,7 +177,7 @@ export function MarketDetailsForm({
               id="market"
               onChange={handleChange("market")}
             >
-              (
+              (<option>Select Market</option>
               {supported_markets.map(option => (
                 <option key={option} value={option}>
                   {option}
@@ -234,12 +231,12 @@ export function MarketDetailsForm({
           </Slider>
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="spread">Spread Multiplier</FormLabel>
-          <Slider defaultValue={config.spread} onChange={updateRange("spread")}>
+          <FormLabel htmlFor="spread_multiplier">Spread Multiplier</FormLabel>
+          <Slider defaultValue={config.spread_multiplier} onChange={updateRange("spread_multiplier")}>
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb size={6}>
-              <Box color="tomato" as={Text} children={config.spread} />
+              <Box color="tomato" as={Text} children={config.spread_multiplier} />
             </SliderThumb>
           </Slider>
         </FormControl>

@@ -18,7 +18,7 @@ import { useDisclosure } from "@chakra-ui/core";
 import { NavigationBar, XModal } from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
-import { useStorage, useSerchInput } from "../hooks";
+import { useStorage } from "../hooks";
 
 export function Home({ history }) {
   let { accounts = [], loading, adapter } = useContext(AppContext);
@@ -155,31 +155,69 @@ export function Home({ history }) {
   );
 }
 
-function SearchInput() {
-  const {
-    filteredResult,
-    searchLoading,
-    onSearchDisplay,
-    setFilteredResult
-  } = useSerchInput();
 
-  // function onSearchDisplay(e) {
-  //   let value = e.target.value;
-  //   if (value.length > 1) {
-  //     let result = allMarkets.filter(x => {
-  //       return x.toLowerCase().includes(value.toLowerCase());
-  //     });
-  //     updateFilteredDisplay(result);
-  //   } else {
-  //     setFilteredResult([]);
-  //   }
-  // }
+
+
+
+function SearchInput() {
+  let { adapter } = useContext(AppContext);
+  let [getValue, setValue, storage] = useStorage("all-markets");
+  let [allMarkets, setAllMarkets] = useState([]);
+  let [filteredResult, setFilteredResult] = useState([]);
+  let [loading, setLoading] = useState(false);
+  useEffect(() => {
+    loadAllMarkets();
+  }, []);
+
+  function loadAllMarkets() {
+    let result = getValue([]);
+    if (result.length > 0) {
+      setAllMarkets(result);
+    } else {
+      adapter.getAllAssets().then(data => {
+        setValue(data);
+        setAllMarkets(data);
+      });
+    }
+  }
+  function cachedAlternateMarket(coin) {
+    let key = `fetchd-coin-${coin}`;
+    let result = storage.get(key);
+    if (result) {
+      return new Promise(resolve => resolve(result));
+    }
+    setLoading(true);
+    return adapter.getAlternateMarkets(coin).then(x => {
+      storage.set(key, x);
+      return x;
+    });
+  }
+  function updateFilteredDisplay(coins) {
+    let promises = coins.map(x => cachedAlternateMarket(x));
+    return Promise.all(promises).then(data => {
+      let result = data.flatMap(x => x);
+      setFilteredResult(result);
+      setLoading(false);
+    });
+  }
+  function onSearchDisplay(e) {
+    let value = e.target.value;
+    if (value.length > 1) {
+      let result = allMarkets.filter(x => {
+        return x.toLowerCase().includes(value.toLowerCase());
+      });
+      updateFilteredDisplay(result);
+    } else {
+      setFilteredResult([]);
+    }
+  }
   // function filteredResultHandler(e,input) {
   //   let value = (input.x)
   //   console.log(value);
+ 
 
   // }
-  console.log(filteredResult);
+
   return (
     <Flex flex={0.8} direction="column">
       <InputGroup size="md">
@@ -192,7 +230,7 @@ function SearchInput() {
           placeholder="Find Asset to Analyze"
         />
         <InputRightElement>
-          {searchLoading && <Spinner color="red.500" pr={4} />}
+          {loading && <Spinner color="red.500" pr={4} />}
           <IconButton
             ml={4}
             variantColor="blue"
@@ -202,9 +240,10 @@ function SearchInput() {
         </InputRightElement>
       </InputGroup>
       <Box
-           style={{
-          display: "flex",
-          flexDirection: "column",
+      // onClick={filteredResultHandler}
+        style={{
+          display:"flex",
+          flexDirection:"column",
           position: "absolute",
           background: "white",
           width: "50%",
@@ -218,36 +257,36 @@ function SearchInput() {
       >
         {filteredResult.map(x => (
           <PseudoBox
-            as={Link}
-            py="1em"
-            px="1em"
-            mx="1em"
-            my="0.2em"
-            border="1px solid"
-            boxShadow="md"
-            rounded="md"
-            _hover={{
-              cursor: "pointer",
-              background: "teal",
-              color: "white",
-              borderColor: "white"
-            }}
-            // _hover={{ borderColor: "gray.200", bg: "gray.200" }}
-            // _focus={{
-            //   outline: "none",
-            //   bg: "white",
-            //   boxShadow: "outline",
-            //   borderColor: "gray.300",
-            // }}
-            //   style={{
-            //     padding: "0.8em",
-            //     border: "1px solid",
-            //     ":hover": {
-            //       cursor: "pointer",
-            //       borderColor: "gray.200"
-            //     },
-
-            //   }}
+          as={Link}
+          py="1em"
+          px="1em"
+          mx="1em"
+          my="0.2em"
+          border="1px solid"
+          boxShadow="md"
+          rounded="md"
+          _hover={{
+            cursor: "pointer",
+            background: "teal",
+            color: "white",
+            borderColor: "white"
+          }}
+          // _hover={{ borderColor: "gray.200", bg: "gray.200" }}
+          // _focus={{
+          //   outline: "none",
+          //   bg: "white",
+          //   boxShadow: "outline",
+          //   borderColor: "gray.300",
+          // }}
+          //   style={{
+          //     padding: "0.8em",
+          //     border: "1px solid",
+          //     ":hover": {
+          //       cursor: "pointer",
+          //       borderColor: "gray.200"
+          //     },
+            
+          //   }}
             key={x}
             // onClick={(e)=>filteredResultHandler(e,{x})}
             to={`/markets/${x.toLowerCase()}`}
@@ -282,6 +321,3 @@ function AccountItem({ account }) {
     </PseudoBox>
   );
 }
-
-//Assignment create a hook for the search input
-// Assignment make sure the search market can link to create market

@@ -128,6 +128,32 @@ function buildMarketSummaryString(passedObject, result) {
   ${result.sells
     .map(buy => `Price: ${buy.price} Q:${buy.quantity} Dollar:${buy.dollar}`)
     .join("\n")}
+
+    Config
+
+    buy_amount: ${passedObject.buy_amount}
+    sell_amount: ${result.sell_amount}
+    minimum_trades:${result.minimum_trades}
+    pair: ${result.pair}
+    multiplier: ${passedObject.multiplier}
+    spread_multiplier: ${passedObject.spread_multiplier}
+    _range: ${result._range}
+    equal: ${result.equal}
+    price_places: ${result.price_places}
+    decimal_places:${result.decimal_places}
+    use_new: ${result.use_new}
+
+    Profit for ${result.pair} pairs 
+    ${result.profit}
+
+    Trades to Complete
+    ${result.trades}
+
+    Proposed Budget
+    ${passedObject.budget}
+
+    Fees in BNB
+    0.0026613264472609417
   `;
 
   return _result.replace(/\n/g, "<br/>");
@@ -170,6 +196,15 @@ export const MarketDetail = ({ match }) => {
       buy_amount: config.buy_amount,
       spread_multiplier: config.spread_multiplier,
       multiplier: config.multiplier,
+
+      sell_market: config.sell_market,
+      budget: config.budget,
+      sell_amount: config.sell_amount,
+      max_trade_count: config.max_trade_count,
+      spread: config.spread,
+      take_profits: config.take_profits,
+      margin_support: config.margin_support,
+      margin_market: config.margin_market,
       interval: config.interval,
       format: "json"
     };
