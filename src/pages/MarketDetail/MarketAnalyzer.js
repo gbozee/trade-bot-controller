@@ -31,7 +31,7 @@ export function MarketAnalyzer({
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
         onsubmit={onsubmit}
-        textBlob={textBlob.text}
+        textBlob={textBlob}
         defaultConfig={defaultConfig}
       />
 
@@ -48,7 +48,7 @@ export function MarketAnalyzer({
             pl={2}
             py={4}
             dangerouslySetInnerHTML={{ __html: textBlob.text }}
-          ></Code>
+          />
         )
       )}
     </Box>
@@ -100,11 +100,13 @@ export function MarketDetailsForm({
     "sell_amount",
     "multiplier",
     "max_trade_count",
-    "spread",
-    "spread_multiplier",
     "take_profits",
     "margin_support",
-    "margin_market"
+    "margin_market",
+    "buy_amount",
+    "sell_amount",
+    "price_places",
+    "decimal_places"
   ];
 
   // console.log(textBl
@@ -132,34 +134,43 @@ export function MarketDetailsForm({
   }
   function onSumit() {
     onClose();
-    // if (formValues.from && formValues.market && formValues.to) {
     displayToast(`Market has been sent `);
-    // display toast message when successful
-    //   adapter.transferMarket(formValues.market);
-    //   setFormValues({});
-    // }
 
     let values = getValues(config);
     console.log(values);
   }
   //Assigmenet Create an object with all the fields
   function getValues(x) {
-    let resultValues = {
-      coin: x.coin,
-      buy_market: x.market,
-      sell_market: x.sell_market,
-      budget: x.budget,
-      buy_amount: x.buy_amount,
-      "sell_amount":x.sell_amount,
-      multiplier: x.multiplier,
+    console.log(textBlob.json);
+    let resultValue = {
+      take_profits: true,
+      budget: 200,
       max_trade_count: 1,
-      // "spread",
-      "spread_multiplier": x.spread_multiplier,
-      // "take_profits",
-      // "margin_support",
-      margin_market: x.margin_market
+      margin_support: false,
+      use_new: true,
+      one_way: true,
+      profit_value: textBlob.json.buy_amount
     };
-    return resultValues;
+    fields.forEach(field => {
+      if (Object.keys(x).includes(field)) {
+        resultValue[field] = x[field];
+      } else {
+        if (["buy_market", "sell_market"].includes(field)) {
+          resultValue[field] = x.market;
+        }
+        if (
+          [
+            "buy_amount",
+            "sell_amount",
+            "price_places",
+            "decimal_places"
+          ].includes(field)
+        ) {
+          resultValue[field] = textBlob.json[field];
+        }
+      }
+    });
+    return resultValue;
   }
 
   return (
@@ -232,18 +243,25 @@ export function MarketDetailsForm({
         </FormControl>
         <FormControl width="100%" mb={1} mx={3} isRequired>
           <FormLabel htmlFor="spread_multiplier">Spread Multiplier</FormLabel>
-          <Slider defaultValue={config.spread_multiplier} onChange={updateRange("spread_multiplier")}>
+          <Slider
+            defaultValue={config.spread_multiplier}
+            onChange={updateRange("spread_multiplier")}
+          >
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb size={6}>
-              <Box color="tomato" as={Text} children={config.spread_multiplier} />
+              <Box
+                color="tomato"
+                as={Text}
+                children={config.spread_multiplier}
+              />
             </SliderThumb>
           </Slider>
         </FormControl>
         <Box w="100%">
           <Flex justifyContent="space-between">
             <Button onClick={onSaveHandler}>Submit</Button>
-            {textBlob ? (
+            {textBlob.text ? (
               <Button variantColor="teal" onClick={onOpen}>
                 create
               </Button>

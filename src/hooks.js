@@ -385,9 +385,7 @@ export function useAccountMarket(account) {
   };
 }
 
-
-
-export function useSerchInput(){
+export function useSerchInput() {
   let { adapter } = useContext(AppContext);
   let [getValue, setValue, storage] = useStorage("all-markets");
   let [allMarkets, setAllMarkets] = useState([]);
@@ -421,30 +419,40 @@ export function useSerchInput(){
     });
   }
 
-  function updateFilteredDisplay(coins) {
+  function updateFilteredDisplay(coins, originalValue) {
     let promises = coins.map(x => cachedAlternateMarket(x));
     return Promise.all(promises).then(data => {
-      let result = data.flatMap(x => x);
+      let result = data.flatMap(x => x).filter(o=>{
+        return o.toLowerCase().includes(originalValue.toLowerCase())
+      });
+      console.log(true);
       setFilteredResult(result);
       setSearchLoading(false);
     });
   }
-  function onSearchDisplay(e) {
-    let value = e.target.value;
+  function compoundFilter(value) {
+    let results = [value.slice(0, 3), value.slice(0, 4), value.slice(0, 5)]
+      .map(o => {
+        return allMarkets.filter(x =>
+          x.toLowerCase().includes(o.toLowerCase())
+        );
+      })
+      .flatMap(x => x);
+    return [...new Set(results)];
+  }
+  function onSearchDisplay(value) {
     if (value.length > 1) {
-      let result = allMarkets.filter(x => {
-        return x.toLowerCase().includes(value.toLowerCase());
-      });
-      updateFilteredDisplay(result);
+      let result = compoundFilter(value);
+      updateFilteredDisplay(result, value);
     } else {
       setFilteredResult([]);
     }
   }
 
-  return{
+  return {
     filteredResult,
     searchLoading,
     onSearchDisplay,
     setFilteredResult
-  }
+  };
 }
