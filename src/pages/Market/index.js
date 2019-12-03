@@ -28,6 +28,7 @@ import {
   XModal
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
+import { FormModal } from "./FormModal";
 import { MarketWithStat } from "./Components";
 import { Link } from "react-router-dom";
 import { useAccountMarket } from "../../hooks";
@@ -45,11 +46,17 @@ const SidebarDrawer = ({
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
   return (
     <XModal
+      style={{
+        height: "29rem"
+        // marginTop: "12rem",
+        // marginRight: "0rem",
+      }}
       onSubmit={onSaveHandler}
       onClose={onClose}
       isOpen={isOpen}
       title={!market ? `Create new market` : `Edit ${market} market`}
       finalFocusRef={btnRef}
+      // submitButtonProps={{ display: "none" }}
     >
       <Flex
         justifyContent={["space-between", "space-between", "flex-start"]}
@@ -58,11 +65,16 @@ const SidebarDrawer = ({
         // mx={3}
         my={5}
       >
-        <FormComponent
-          {...formParams}
-          {...{ formFields, hiddenFields, market }}
-          // getData
-        />
+        {!market ? (
+         
+          <FormModal />
+        ) : (
+          <FormComponent
+            {...formParams}
+            {...{ formFields, hiddenFields, market }}
+            // getData
+          />
+        )}
       </Flex>
     </XModal>
   );

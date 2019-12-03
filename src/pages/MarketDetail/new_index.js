@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Box, Flex, Spinner } from "@chakra-ui/core";
+import { Box, Flex, Spinner,useToast } from "@chakra-ui/core";
 import { NavigationBar, SubNavigationBar } from "../../components";
 
 import { useNotification, useGetData, useAccountMarket } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
+
+
 
 /**
  * {
@@ -116,6 +118,16 @@ Proposed Budget
 Fees in BNB
 0.0026613264472609417
  */
+
+
+
+
+
+
+
+
+
+
 function buildMarketSummaryString(passedObject, result) {
   let _result = "";
   _result += `${passedObject.coin.toUpperCase()} Config
@@ -166,6 +178,7 @@ export const MarketDetail = ({ match }) => {
   );
   let [textBlob, setTextBlob] = useState({});
   const pageProps = useAccountMarket(match.params.account);
+  const toast = useToast();
   let remaingRoutes = account
     ? [
         {
@@ -209,12 +222,27 @@ export const MarketDetail = ({ match }) => {
       format: "json"
     };
     analyzeMarket(passedObject).then(data => {
-      console.log(typeof data);
-      console.log(data);
-      let text = buildMarketSummaryString(passedObject, data.json);
+         let text = buildMarketSummaryString(passedObject, data.json);
       setTextBlob({ text, json: data.json });
     });
     // setConfig(newConfig);
+  }
+
+  function displayToast(description) {
+    toast({
+      title: "Markets transferred",
+      description,
+      status: "success",
+      duration: 5000,
+      isClosable: true
+    });
+  }
+  
+
+
+  function onCreateMarket(values){
+    displayToast(`Market has been created `);
+    console.log(values)
   }
 
   return (
@@ -237,7 +265,7 @@ export const MarketDetail = ({ match }) => {
             </Flex>
           ) : null}
           <MarketAnalyzer
-            {...{ analyzeLoader, textBlob, defaultConfig, onsubmit }}
+            {...{ analyzeLoader, textBlob, defaultConfig, onsubmit,onCreateMarket }}
           />
         </Flex>
       </flex>

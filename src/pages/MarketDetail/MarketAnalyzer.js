@@ -20,17 +20,20 @@ import { AppContext } from "../../utils";
 import { useDisclosure } from "@chakra-ui/core";
 import { useAccountMarket } from "../../hooks";
 import { XModal } from "../../components";
+import { supported_markets } from "../../data/prod";
 
 export function MarketAnalyzer({
   textBlob,
   analyzeLoader,
   onsubmit,
+  onCreateMarket,
   defaultConfig = {}
 }) {
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
         onsubmit={onsubmit}
+        onCreateMarket={onCreateMarket}
         textBlob={textBlob}
         defaultConfig={defaultConfig}
       />
@@ -58,10 +61,9 @@ function useSupportedMarkets(coin) {
   let { adapter } = useContext(AppContext);
   let [supported_markets, setSupported_markets] = useState([]);
   let [loading, setLoading] = useState(false);
-
+  
   useEffect(() => {
     setLoading(true);
-    //Assigment 2
     adapter.getAlternateMarkets(coin).then(result => {
       let isCoin = result.find(x => x.toLowerCase().includes(coin));
       if (!!isCoin) {
@@ -82,6 +84,7 @@ function useSupportedMarkets(coin) {
 }
 export function MarketDetailsForm({
   onsubmit,
+  onCreateMarket,
   textBlob,
   defaultConfig = { multiplier: 1, spread_multiplier: 1 }
 }) {
@@ -89,7 +92,9 @@ export function MarketDetailsForm({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [supported_markets, loading] = useSupportedMarkets(config.coin);
   let { accounts = [], adapter } = useContext(AppContext);
-  const toast = useToast();
+
+  console.log(config)
+
 
   let fields = [
     "coin",
@@ -121,30 +126,30 @@ export function MarketDetailsForm({
     setConfig(newConfig);
   };
   function onSaveHandler(event) {
+    // console.log(config);
     return onsubmit(config);
   }
-  function displayToast(description) {
-    toast({
-      title: "Markets transferred",
-      description,
-      status: "success",
-      duration: 5000,
-      isClosable: true
-    });
-  }
-  function onSumit() {
-    onClose();
-    displayToast(`Market has been sent `);
+  // function displayToast(description) {
+  //   toast({
+  //     title: "Markets transferred",
+  //     description,
+  //     status: "success",
+  //     duration: 5000,
+  //     isClosable: true
+  //   });
+  // }
 
+  function onSave(event){
+    onClose();
     let values = getValues(config);
-    console.log(values);
-  }
-  //Assigmenet Create an object with all the fields
+    return onCreateMarket(values)
+ 
+}
+
   function getValues(x) {
-    console.log(textBlob.json);
     let resultValue = {
       take_profits: true,
-      budget: 200,
+      // budget: 200,
       max_trade_count: 1,
       margin_support: false,
       use_new: true,
@@ -156,7 +161,7 @@ export function MarketDetailsForm({
         resultValue[field] = x[field];
       } else {
         if (["buy_market", "sell_market"].includes(field)) {
-          resultValue[field] = x.market;
+          resultValue[field] = x.market.toLowerCase();
         }
         if (
           [
@@ -184,11 +189,11 @@ export function MarketDetailsForm({
             </Box>
           ) : (
             <Select
-              value={config.buy_market}
+              value={config.market}
               id="market"
               onChange={handleChange("market")}
             >
-              (<option>Select Market</option>
+             (<option>Select Market</option>
               {supported_markets.map(option => (
                 <option key={option} value={option}>
                   {option}
@@ -212,7 +217,7 @@ export function MarketDetailsForm({
             <option>1d</option>
           </Select>
         </FormControl>
-        <FormControl mb={1} width="42%" mx={3} isRequired display="none">
+        <FormControl mb={1} width="42%" mx={3} isRequired >
           <FormLabel htmlFor="budget">Budget</FormLabel>
           <Input
             value={config.budget}
@@ -241,23 +246,7 @@ export function MarketDetailsForm({
             </SliderThumb>
           </Slider>
         </FormControl>
-        <FormControl width="100%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="spread_multiplier">Spread Multiplier</FormLabel>
-          <Slider
-            defaultValue={config.spread_multiplier}
-            onChange={updateRange("spread_multiplier")}
-          >
-            <SliderTrack />
-            <SliderFilledTrack />
-            <SliderThumb size={6}>
-              <Box
-                color="tomato"
-                as={Text}
-                children={config.spread_multiplier}
-              />
-            </SliderThumb>
-          </Slider>
-        </FormControl>
+      
         <Box w="100%">
           <Flex justifyContent="space-between">
             <Button onClick={onSaveHandler}>Submit</Button>
@@ -273,7 +262,7 @@ export function MarketDetailsForm({
       <XModal
         isOpen={isOpen}
         onClose={onClose}
-        onSubmit={onSumit}
+        onSubmit={onSave}
         title="To Account"
         submitButtonProps={{ variantColor: "blue" }}
       >
