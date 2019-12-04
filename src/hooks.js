@@ -271,7 +271,25 @@ export function useGetData(market) {
   }
   return { data, analyzeMarket, analyzeLoader, transactionLoader };
 }
-export const useStorage = key => {
+export const useStorage = (key, adapter) => {
+  let [allMarkets, setAllMarkets] = useState([]);
+  useEffect(() => {
+    if (adapter) {
+      loadAllMarkets();
+    }
+  }, []);
+
+  function loadAllMarkets() {
+    let result = getValue([]);
+    if (result.length > 0) {
+      setAllMarkets(result);
+    } else {
+      adapter.getAllAssets().then(data => {
+        setValue(data);
+        setAllMarkets(data);
+      });
+    }
+  }
   function setStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
   }
@@ -282,6 +300,18 @@ export const useStorage = key => {
     }
     return undefined;
   }
+  function cachedAlternateMarket(coin, callback = () => {}) {
+    let key = `fetchd-coin-${coin.toUpperCase()}`;
+    let result = getStorage(key);
+    if (result) {
+      return new Promise(resolve => resolve(result));
+    }
+    callback();
+    return adapter.getAlternateMarkets(coin).then(x => {
+      setStorage(key, x);
+      return x;
+    });
+  }
 
   function getValue(_default = {}) {
     return getStorage(key) || _default;
@@ -289,14 +319,37 @@ export const useStorage = key => {
   function setValue(value) {
     setStorage(key, value);
   }
-  return [getValue, setValue, { get: getStorage, set: setStorage }];
+  function extractCoinFromSymbol(marketSymbol) {
+    let coin = allMarkets
+      .map(x => x)
+      .find(o => marketSymbol.toUpperCase().startsWith(o));
+    let markets = [];
+    if (coin) {
+      
+      let key = `fetchd-coin-${coin}`;
+      markets = (getStorage(key) || []).map(x =>
+        x.replace(coin, "").toLowerCase()
+      );
+      coin = coin.toLowerCase()
+    }
+    return { coin, markets };
+  }
+  return {
+    getValue,
+    setValue,
+    storage: { get: getStorage, set: setStorage },
+    cachedAlternateMarket,
+    allMarkets,
+    extractCoinFromSymbol
+  };
 };
 export function useAccountMarket(account) {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState();
-  const { getMarket } = useContext(AppContext);
-  const [getValue, setValue] = useStorage(account);
+  const { getMarket, adapter } = useContext(AppContext);
+  const { getValue, setValue } = useStorage(account);
+  const { extractCoinFromSymbol } = useStorage("all-markets", adapter);
   const [url, setUrl] = useState({});
   useEffect(() => {
     if (account) {
@@ -329,18 +382,23 @@ export function useAccountMarket(account) {
   function refreshLoader() {
     setRefresh(true);
   }
-  let filtered_markets = ["usdt", "tusd", "busd", "usdc", "usds", "btc"];
+  // let filtered_markets = ["usdt", "tusd", "busd", "usdc", "usds", "btc"];
   function getCoin(mk) {
-    let foundMarket = filtered_markets.find(x => {
-      let market = mk.includes(x);
-      return market;
-    });
-    if (foundMarket) {
-      let coin = mk.slice(0, -foundMarket.length);
-      return { coin, market: foundMarket };
-    } else {
-      return { coin: mk, market: "" };
-    }
+    let { coin, markets = [] } = extractCoinFromSymbol(mk);
+    let foundMarket =
+      markets.find(x => {
+        let market = mk.toLowerCase().includes(x.toLowerCase());
+        return market;
+      }) || "";
+    return { coin, market: foundMarket };
+    // let foundMarket = filtered_markets.find(x => {
+    // });
+    // if (foundMarket) {
+    //   let coin = mk.slice(0, -foundMarket.length);
+    //   return { coin, market: foundMarket };
+    // } else {
+    //   return { coin: mk, market: "" };
+    // }
   }
 
   function getSpecificMarket(param) {
@@ -382,77 +440,5 @@ export function useAccountMarket(account) {
     setMarkets,
     loading,
     setRefresh: refreshLoader
-  };
-}
-
-export function useSerchInput() {
-  let { adapter } = useContext(AppContext);
-  let [getValue, setValue, storage] = useStorage("all-markets");
-  let [allMarkets, setAllMarkets] = useState([]);
-  let [filteredResult, setFilteredResult] = useState([]);
-  let [searchLoading, setSearchLoading] = useState(false);
-  useEffect(() => {
-    loadAllMarkets();
-  }, []);
-
-  function loadAllMarkets() {
-    let result = getValue([]);
-    if (result.length > 0) {
-      setAllMarkets(result);
-    } else {
-      adapter.getAllAssets().then(data => {
-        setValue(data);
-        setAllMarkets(data);
-      });
-    }
-  }
-  function cachedAlternateMarket(coin) {
-    let key = `fetchd-coin-${coin}`;
-    let result = storage.get(key);
-    if (result) {
-      return new Promise(resolve => resolve(result));
-    }
-    setSearchLoading(true);
-    return adapter.getAlternateMarkets(coin).then(x => {
-      storage.set(key, x);
-      return x;
-    });
-  }
-
-  function updateFilteredDisplay(coins, originalValue) {
-    let promises = coins.map(x => cachedAlternateMarket(x));
-    return Promise.all(promises).then(data => {
-      let result = data.flatMap(x => x).filter(o=>{
-        return o.toLowerCase().includes(originalValue.toLowerCase())
-      });
-      console.log(true);
-      setFilteredResult(result);
-      setSearchLoading(false);
-    });
-  }
-  function compoundFilter(value) {
-    let results = [value.slice(0, 3), value.slice(0, 4), value.slice(0, 5)]
-      .map(o => {
-        return allMarkets.filter(x =>
-          x.toLowerCase().includes(o.toLowerCase())
-        );
-      })
-      .flatMap(x => x);
-    return [...new Set(results)];
-  }
-  function onSearchDisplay(value) {
-    if (value.length > 1) {
-      let result = compoundFilter(value);
-      updateFilteredDisplay(result, value);
-    } else {
-      setFilteredResult([]);
-    }
-  }
-
-  return {
-    filteredResult,
-    searchLoading,
-    onSearchDisplay,
-    setFilteredResult
   };
 }

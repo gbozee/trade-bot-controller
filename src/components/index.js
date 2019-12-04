@@ -9,6 +9,7 @@ import {
   IconButton
 } from "@chakra-ui/core";
 import { Link } from "react-router-dom";
+export {SearchInput} from "./SearchInput"
 export const NavigationBar = ({ title = "", children }) => {
   return (
     <Box

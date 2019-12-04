@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
+import { SearchInput } from "./components";
 
 function IndividualAccount({ match, location }) {
 

@@ -214,6 +214,7 @@ function getMarket(account_id) {
 }
 function addNewMarket(config, account, id) {
   let dataToSave = {
+    ...config,
     id: id,
     coin: config.coin,
     buy_market: config.buy_market || "USDT",

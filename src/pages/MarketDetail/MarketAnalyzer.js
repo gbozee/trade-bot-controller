@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/core";
 import { AppContext } from "../../utils";
 import { useDisclosure } from "@chakra-ui/core";
-import { useAccountMarket } from "../../hooks";
+import { useAccountMarket, useStorage } from "../../hooks";
 import { XModal } from "../../components";
 import { supported_markets } from "../../data/prod";
 
@@ -27,14 +27,19 @@ export function MarketAnalyzer({
   analyzeLoader,
   onsubmit,
   onCreateMarket,
-  defaultConfig = {}
+  account,accounts,
+  defaultConfig = {},
+  symbol
 }) {
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
+        symbol={symbol}
         onsubmit={onsubmit}
         onCreateMarket={onCreateMarket}
         textBlob={textBlob}
+        account={account}
+        accounts={accounts}
         defaultConfig={defaultConfig}
       />
 
@@ -59,26 +64,24 @@ export function MarketAnalyzer({
 }
 function useSupportedMarkets(coin) {
   let { adapter } = useContext(AppContext);
-  let [supported_markets, setSupported_markets] = useState([]);
   let [loading, setLoading] = useState(false);
-  
-  useEffect(() => {
-    setLoading(true);
-    adapter.getAlternateMarkets(coin).then(result => {
-      let isCoin = result.find(x => x.toLowerCase().includes(coin));
-      if (!!isCoin) {
-        let market = result.map(x => {
-          return x.toLowerCase().slice(coin.length);
-        });
-        setSupported_markets(market);
-      } else {
-        let market = result.map(x => x.toLowerCase());
+  let { cachedAlternateMarket } = useStorage("all-markets", adapter);
+  // let result = extractCoinFromSymbol(coin);
+  let [supported_markets, setSupported_markets] = useState([]);
 
-        setSupported_markets(market);
-      }
-      setLoading(false);
-    });
-  }, []);
+  useEffect(() => {
+    console.log({supported_markets})
+    if (supported_markets.length === 0) {
+      setLoading(true);
+      cachedAlternateMarket(coin, () => {
+        setLoading(true);
+      }).then(result => {
+        let rr = result.map(x => x.toLowerCase().replace(coin, ""));
+        setSupported_markets(rr);
+        setLoading(false);
+      });
+    }
+  }, [coin]);
 
   return [supported_markets, loading];
 }
@@ -86,15 +89,19 @@ export function MarketDetailsForm({
   onsubmit,
   onCreateMarket,
   textBlob,
-  defaultConfig = { multiplier: 1, spread_multiplier: 1 }
+  account,
+  accounts = [],
+  defaultConfig = { multiplier: 1, spread_multiplier: 1 },
+  symbol
 }) {
   let [config, setConfig] = useState(defaultConfig);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [supported_markets, loading] = useSupportedMarkets(config.coin);
-  let { accounts = [], adapter } = useContext(AppContext);
-
-  console.log(config)
-
+  const [supported_markets, loading] = useSupportedMarkets(
+    defaultConfig.coin || symbol
+  );
+  useEffect(() => {
+    setConfig({ ...config, ...defaultConfig });
+  }, [defaultConfig.coin]);
 
   let fields = [
     "coin",
@@ -114,10 +121,11 @@ export function MarketDetailsForm({
     "decimal_places"
   ];
 
-  // console.log(textBl
-
-  const handleChange = input => e => {
+  const handleChange = (input, kind) => e => {
     let value = e.target.value;
+    if(kind==='number'){
+      value = parseFloat(value)
+    }
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
   };
@@ -126,7 +134,6 @@ export function MarketDetailsForm({
     setConfig(newConfig);
   };
   function onSaveHandler(event) {
-    // console.log(config);
     return onsubmit(config);
   }
   // function displayToast(description) {
@@ -139,12 +146,14 @@ export function MarketDetailsForm({
   //   });
   // }
 
-  function onSave(event){
+  function onSave(event) {
     onClose();
     let values = getValues(config);
-    return onCreateMarket(values)
- 
-}
+    onCreateMarket(values,account).then(()=>{
+      //show toast
+      //close modal
+    });
+  }
 
   function getValues(x) {
     let resultValue = {
@@ -175,6 +184,9 @@ export function MarketDetailsForm({
         }
       }
     });
+    if (resultValue.budget){
+      resultValue.budget = parseFloat(resultValue.budget)
+    }
     return resultValue;
   }
 
@@ -193,7 +205,7 @@ export function MarketDetailsForm({
               id="market"
               onChange={handleChange("market")}
             >
-             (<option>Select Market</option>
+              (<option>Select Market</option>
               {supported_markets.map(option => (
                 <option key={option} value={option}>
                   {option}
@@ -206,7 +218,7 @@ export function MarketDetailsForm({
           <FormLabel htmlFor="buy_amount">Buy Amount</FormLabel>
           <Input
             value={config.buy_amount}
-            onChange={handleChange("buy_amount")}
+            onChange={handleChange("buy_amount","number")}
             type="number"
             name="buy_amount"
           />
@@ -217,11 +229,11 @@ export function MarketDetailsForm({
             <option>1d</option>
           </Select>
         </FormControl>
-        <FormControl mb={1} width="42%" mx={3} isRequired >
+        <FormControl mb={1} width="42%" mx={3} isRequired>
           <FormLabel htmlFor="budget">Budget</FormLabel>
           <Input
             value={config.budget}
-            onChange={handleChange("budget")}
+            onChange={handleChange("budget","number")}
             type="number"
           />
         </FormControl>
@@ -246,7 +258,7 @@ export function MarketDetailsForm({
             </SliderThumb>
           </Slider>
         </FormControl>
-      
+
         <Box w="100%">
           <Flex justifyContent="space-between">
             <Button onClick={onSaveHandler}>Submit</Button>
@@ -286,5 +298,4 @@ export function MarketDetailsForm({
 
 function handleModalInput(e) {
   let value = e.target.value;
-  console.log(value);
 }

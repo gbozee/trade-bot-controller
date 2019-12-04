@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/core";
 
 import { Link } from "react-router-dom";
-import { useSerchInput } from "../../hooks";
+import { useSerchInput, useWindowListener } from "../../hooks";
 
 export const FormModal = ({}) => {
   const {
@@ -20,6 +20,9 @@ export const FormModal = ({}) => {
     onSearchDisplay,
     setFilteredResult
   } = useSerchInput();
+
+
+
 
   function onSearchChange(e) {
     let value = e.target.value;
@@ -59,35 +62,11 @@ export const FormModal = ({}) => {
 };
 
 function MarketListItems({ markets, onClose }) {
-  const containerResultRef = useRef();
-  function onClick(e) {
-    if (!containerResultRef.current.contains(e.target)) {
-      onClose();
-    }
-  }
-  function onRemoveClick() {
-    console.log("remove click");
-  }
-  useEffect(() => {
-    window.addEventListener("click", onClick);
-    return () => {
-      window.removeEventListener("click", onRemoveClick);
-    };
-  }, []);
+  const containerResultRef = useWindowListener(onClose);
   return (
     <Box
       ref={containerResultRef}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        background: "white",
-        color: "black",
-        marginTop: "1em",
-        ":hover": {
-          // cursor: "pointer",
-          borderColor: "gray.200"
-        }
-      }}
+      style={}
     >
       {markets.map(x => (
         <PseudoBox

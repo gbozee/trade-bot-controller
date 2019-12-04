@@ -7,13 +7,6 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  Drawer,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  DrawerHeader,
-  DrawerBody,
-  DrawerFooter,
   useDisclosure,
   Spinner,
   Checkbox,
@@ -25,10 +18,10 @@ import {
   NavigationBar,
   SubNavigationBar,
   ControlButton,
-  XModal
+  XModal,
+  SearchInput
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
-import { FormModal } from "./FormModal";
 import { MarketWithStat } from "./Components";
 import { Link } from "react-router-dom";
 import { useAccountMarket } from "../../hooks";
@@ -38,10 +31,12 @@ const SidebarDrawer = ({
   onClose,
   btnRef,
   market,
+  markets,
   marketInfo = {},
   hiddenFields = [],
   formFields,
-  onSubmit
+  onSubmit,
+  account
 }) => {
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
   return (
@@ -56,7 +51,8 @@ const SidebarDrawer = ({
       isOpen={isOpen}
       title={!market ? `Create new market` : `Edit ${market} market`}
       finalFocusRef={btnRef}
-      // submitButtonProps={{ display: "none" }}
+      submitButtonProps={!market ? { display: "none" } : { display: "inherit" }}
+      cancelButtonProps
     >
       <Flex
         justifyContent={["space-between", "space-between", "flex-start"]}
@@ -66,8 +62,11 @@ const SidebarDrawer = ({
         my={5}
       >
         {!market ? (
-         
-          <FormModal />
+          <SearchInput
+            boxStyle={{}}
+            to={x => `/${account}/markets/${x.toLowerCase()}`}
+            markets={markets.map(x =>`${x.coin}${x.buy_market}`)}
+          />
         ) : (
           <FormComponent
             {...formParams}
@@ -80,58 +79,6 @@ const SidebarDrawer = ({
   );
 };
 
-// const SidebarDrawer = ({
-//   isOpen,
-//   onClose,
-//   btnRef,
-//   market,
-//   marketInfo = {},
-//   hiddenFields = [],
-//   formFields,
-//   onSubmit
-// }) => {
-//   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
-//   return (
-//     <Drawer
-//       isOpen={isOpen}
-//       placement="right"
-//       // onClose={onClose}
-//       finalFocusRef={btnRef}
-//     >
-//       <DrawerOverlay />
-//       <DrawerContent maxHeight="100vh" overflowY="scroll">
-//         {/* <DrawerCloseButton /> */}
-//         <DrawerHeader>
-//           {!market ? `Create new market` : `Edit ${market} market`}
-//         </DrawerHeader>
-//         <DrawerBody>
-//           <Flex
-//             justifyContent={["space-between", "space-between", "flex-start"]}
-//             flexGrow={0.3}
-//             flexDirection={["column"]}
-//             // mx={3}
-//             my={5}
-//           >
-//             <FormComponent
-//               {...formParams}
-//               {...{ formFields, hiddenFields, market }}
-//               // getData
-//             />
-//           </Flex>
-//         </DrawerBody>
-
-//         <DrawerFooter>
-//           <Button variant="outline" mr={3} onClick={onClose}>
-//             Cancel
-//           </Button>
-//           <Button color="blue" onClick={onSaveHandler}>
-//             Save
-//           </Button>
-//         </DrawerFooter>
-//       </DrawerContent>
-//     </Drawer>
-//   );
-// };
 const MenuComponent = ({
   options = [],
   defaultText = "Menu",
@@ -410,7 +357,6 @@ export function Market({ match }) {
       current: true
     }
   ];
-  console.log(markets);
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
@@ -429,6 +375,8 @@ export function Market({ match }) {
             {...{
               isOpen,
               onClose,
+              markets,
+              account: match.params.account,
               // btnRef,
               hiddenFields,
               market: newEditItem,

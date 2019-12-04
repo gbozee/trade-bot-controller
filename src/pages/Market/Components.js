@@ -56,6 +56,7 @@ export const MarketWithStat = ({
     market.price_places
   );
   const { info, loaded } = useMarketData(prices, market, full_market);
+ 
 
   function _format(value) {
     if (value) {

@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Box, Flex, Spinner,useToast } from "@chakra-ui/core";
+import React, { useEffect, useState, useContext } from "react";
+import { Box, Flex, Spinner, useToast } from "@chakra-ui/core";
 import { NavigationBar, SubNavigationBar } from "../../components";
 
 import { useNotification, useGetData, useAccountMarket } from "../../hooks";
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
-
-
+import { AppContext } from "../../utils";
 
 /**
  * {
@@ -119,15 +118,6 @@ Fees in BNB
 0.0026613264472609417
  */
 
-
-
-
-
-
-
-
-
-
 function buildMarketSummaryString(passedObject, result) {
   let _result = "";
   _result += `${passedObject.coin.toUpperCase()} Config
@@ -170,14 +160,16 @@ function buildMarketSummaryString(passedObject, result) {
 
   return _result.replace(/\n/g, "<br/>");
 }
-export const MarketDetail = ({ match }) => {
+export const MarketDetail = ({ match, history }) => {
   let { messages } = useNotification();
   let { market, account } = match.params;
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
   let [textBlob, setTextBlob] = useState({});
-  const pageProps = useAccountMarket(match.params.account);
+  let { accounts = [], getFormResult } = useContext(AppContext);
+
+  const pageProps = useAccountMarket(account);
   const toast = useToast();
   let remaingRoutes = account
     ? [
@@ -201,7 +193,7 @@ export const MarketDetail = ({ match }) => {
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
-
+  console.log({ defaultConfig });
   function onsubmit(config, type) {
     let passedObject = {
       coin: config.coin,
@@ -222,7 +214,7 @@ export const MarketDetail = ({ match }) => {
       format: "json"
     };
     analyzeMarket(passedObject).then(data => {
-         let text = buildMarketSummaryString(passedObject, data.json);
+      let text = buildMarketSummaryString(passedObject, data.json);
       setTextBlob({ text, json: data.json });
     });
     // setConfig(newConfig);
@@ -237,12 +229,16 @@ export const MarketDetail = ({ match }) => {
       isClosable: true
     });
   }
-  
 
+  function onCreateMarket(values) {
+    return getFormResult(values, account).then(() => {
+      // display toast
+      // clear the cache of the account markets.
+      displayToast(`Market has been created `);
+      // redirecting back to the account page.
+      console.log("redirect")
+    });
 
-  function onCreateMarket(values){
-    displayToast(`Market has been created `);
-    console.log(values)
   }
 
   return (
@@ -265,7 +261,16 @@ export const MarketDetail = ({ match }) => {
             </Flex>
           ) : null}
           <MarketAnalyzer
-            {...{ analyzeLoader, textBlob, defaultConfig, onsubmit,onCreateMarket }}
+            {...{
+              analyzeLoader,
+              symbol: market,
+              textBlob,
+              defaultConfig,
+              onsubmit,
+              onCreateMarket,
+              accounts,
+              account
+            }}
           />
         </Flex>
       </flex>
