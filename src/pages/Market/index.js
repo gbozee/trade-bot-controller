@@ -39,6 +39,7 @@ const SidebarDrawer = ({
   account
 }) => {
   const { onSaveHandler, ...formParams } = useFormState(marketInfo, onSubmit);
+
   return (
     <XModal
       style={{
@@ -65,7 +66,7 @@ const SidebarDrawer = ({
           <SearchInput
             boxStyle={{}}
             to={x => `/${account}/markets/${x.toLowerCase()}`}
-            markets={markets.map(x =>`${x.coin}${x.buy_market}`)}
+            markets={markets.map(x => `${x.coin}${x.buy_market}`)}
           />
         ) : (
           <FormComponent
@@ -190,7 +191,7 @@ function ConfigurationComponent({ params, onSubmit }) {
     </>
   );
 }
-function GridLayout({ items, onSelect, selectedMarkets = [] }) {
+function GridLayout({update, items, onSelect, selectedMarkets = [] }) {
   return (
     <>
       <Grid
@@ -202,13 +203,16 @@ function GridLayout({ items, onSelect, selectedMarkets = [] }) {
       >
         {items.map(market => {
           return (
+            
             <MarketWithStat
               key={market.market_label()}
               onSelect={() => {
                 onSelect(market.market_label());
               }}
+              
               market={market}
               selected={selectedMarkets.includes(market.market_label())}
+              update={update}
             >
               {market.market_label()}
             </MarketWithStat>
@@ -257,11 +261,13 @@ export function Market({ match }) {
     updateMarket
   } = useContext(AppContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenDelete, onOpenDelete, onCloseDelete } = useDisclosure();
   const btnRef = React.useRef();
   // const [markets, setMarkets] = useState([]);
   let [selectedMarkets, setSelectedMarkets] = useState([]);
   let [newEditItem, setNewEditItem] = useState();
   let [filteredItem, setFilteredItem] = useState(" ");
+  let[ updated, setUpdated]= useState(false);
 
   function getFilterItem(filteredItem) {
     if (filteredItem === " ") {
@@ -357,6 +363,78 @@ export function Market({ match }) {
       current: true
     }
   ];
+
+
+
+  function updatedMarket() {
+    function displayToast(description) {
+      toast({
+        title: "Market Updated",
+        description,
+        status: "success",
+        duration: 5000,
+        isClosable: true
+      });
+    }
+  
+    (setUpdated(true))
+    console.log(selectedMarkets);
+    return new Promise((reslove, reject) => {
+      setTimeout(() => {
+        reslove(setUpdated(false));
+        setSelectedMarkets([]);
+        displayToast(`${selectedMarkets} updated `);
+      }, 3000);
+    });
+   
+  }
+
+
+
+  function DeleteMarket() {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    function deleteHandler(){
+      return new Promise((resolve, reject) => {
+        
+        console.log("The Market has been deleted")
+        onClose();
+        setRefresh();
+      })
+    }
+
+    return (
+      <Box>
+        {selectedMarkets.length === 1 && (
+          <ControlButton
+            btnRef={btnRef}
+            onClick={onOpen}
+            icon={"delete"}
+            variantColor="blue"
+            style={{
+              right: "14em",
+              bottom: "2em"
+            }}
+          />
+        )}
+
+        <XModal
+          isOpen={isOpen}
+          onClose={onClose}
+          onSubmit={deleteHandler}
+          ButtonTitle="Confirm"
+          title
+          submitButtonProps={{ variantColor: "red" }}
+        >
+          <Box pb={6} ml={7}>
+            Are you sure you want to delete this market
+          </Box>
+        </XModal>
+      </Box>
+    );
+  }
+
+ 
+
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
@@ -368,8 +446,23 @@ export function Market({ match }) {
             setFilteredItem(x);
           }}
           menuProps={{ background: "teal" }}
-          buttonProps={{ variantColor: "teal", variant: "solid" }}
+          buttonProps={{
+            variantColor: "teal",
+            variant: "solid",
+            marginRight: "4em"
+          }}
         />
+        <ControlButton
+          btnRef={btnRef}
+          onClick={setRefresh}
+          icon={"repeat"}
+          variantColor="blue"
+          style={{
+            right: "1em",
+            position: "absolute"
+          }}
+        />
+
         {isOpen && (
           <SidebarDrawer
             {...{
@@ -403,9 +496,11 @@ export function Market({ match }) {
         >
           {/*Grid layout for markets */}
           <GridLayout
+         
             items={getFilterItem(filteredItem)}
             onSelect={addOrRemoveMarkets}
             selectedMarkets={selectedMarkets}
+            update={updated}
           />
 
           {selectedMarkets.length > 1 ? (
@@ -442,16 +537,19 @@ export function Market({ match }) {
                   }}
                 />
               )}
-              <ControlButton
-                btnRef={btnRef}
-                onClick={setRefresh}
-                icon={"spinner"}
-                variantColor="red"
-                style={{
-                  right: "10em",
-                  bottom: "2em"
-                }}
-              />
+              {selectedMarkets.length === 1 && (
+                <ControlButton
+                  btnRef={btnRef}
+                  onClick={updatedMarket}
+                  icon={"repeat"}
+                  variantColor="red"
+                  style={{
+                    right: "10em",
+                    bottom: "2em"
+                  }}
+                />
+              )}
+              <DeleteMarket />
             </>
           )}
         </Flex>

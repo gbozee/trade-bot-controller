@@ -27,10 +27,17 @@ export function MarketAnalyzer({
   analyzeLoader,
   onsubmit,
   onCreateMarket,
-  account,accounts,
+  account,
+  accounts,
   defaultConfig = {},
-  symbol
-}) {
+  symbol,
+  error,
+
+ 
+}) 
+
+{
+
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
@@ -43,11 +50,12 @@ export function MarketAnalyzer({
         defaultConfig={defaultConfig}
       />
 
-      {analyzeLoader ? (
+      {analyzeLoader  && error ? (
         <Box textAlign="center" mt={20}>
           <Spinner alignSelf="center" textAlign="center" />
         </Box>
-      ) : (
+      ) : 
+     (
         textBlob.text && (
           <Code
             width={"100%"}
@@ -70,7 +78,6 @@ function useSupportedMarkets(coin) {
   let [supported_markets, setSupported_markets] = useState([]);
 
   useEffect(() => {
-    console.log({supported_markets})
     if (supported_markets.length === 0) {
       setLoading(true);
       cachedAlternateMarket(coin, () => {
@@ -91,14 +98,17 @@ export function MarketDetailsForm({
   textBlob,
   account,
   accounts = [],
-  defaultConfig = { multiplier: 1, spread_multiplier: 1 },
-  symbol
+  defaultConfig,
+  symbol,
+  edit
 }) {
   let [config, setConfig] = useState(defaultConfig);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [supported_markets, loading] = useSupportedMarkets(
     defaultConfig.coin || symbol
   );
+
+  const [accountSelected, setAccountSelected] = useState(account);
   useEffect(() => {
     setConfig({ ...config, ...defaultConfig });
   }, [defaultConfig.coin]);
@@ -121,10 +131,10 @@ export function MarketDetailsForm({
     "decimal_places"
   ];
 
-  const handleChange = (input, kind) => e => {
+   const handleChange = (input, kind) => e => {
     let value = e.target.value;
-    if(kind==='number'){
-      value = parseFloat(value)
+    if (kind === "number") {
+      value = parseFloat(value);
     }
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
@@ -135,6 +145,7 @@ export function MarketDetailsForm({
   };
   function onSaveHandler(event) {
     return onsubmit(config);
+    
   }
   // function displayToast(description) {
   //   toast({
@@ -149,7 +160,8 @@ export function MarketDetailsForm({
   function onSave(event) {
     onClose();
     let values = getValues(config);
-    onCreateMarket(values,account).then(()=>{
+    onCreateMarket(values, accountSelected).then(() => {
+     
       //show toast
       //close modal
     });
@@ -184,41 +196,64 @@ export function MarketDetailsForm({
         }
       }
     });
-    if (resultValue.budget){
-      resultValue.budget = parseFloat(resultValue.budget)
+    if (resultValue.budget) {
+      resultValue.budget = parseFloat(resultValue.budget);
     }
     return resultValue;
+  }
+
+  function handleModalInput(e) {
+    let value = e.target.value;
+    setAccountSelected(value);
   }
 
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
-        <FormControl width="42%" mb={1} mx={3} isRequired>
-          <FormLabel htmlFor="market">Market</FormLabel>
-          {loading ? (
-            <Box ml={2}>
-              <Spinner alignSelf="center" textAlign="center" />
-            </Box>
-          ) : (
-            <Select
-              value={config.market}
-              id="market"
+        {supported_markets.every(x => x.length > 5) ? (
+          <FormControl mb={1} width="42%" mx={3} isRequired>
+            <FormLabel htmlFor="market">Market</FormLabel>
+            <Input
+            isDisabled
+              value={config.buy_market}
               onChange={handleChange("market")}
-            >
-              (<option>Select Market</option>
-              {supported_markets.map(option => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
-          )}
-        </FormControl>
+              name="market"
+            />
+          </FormControl>
+        ) : (
+          <FormControl
+            width="42%"
+            mb={1}
+            mx={3}
+            isRequired
+          >
+            <FormLabel htmlFor="market">Market</FormLabel>
+            {loading ? (
+              <Box ml={2}>
+                <Spinner alignSelf="center" textAlign="center" />
+              </Box>
+            ) : (
+              <Select
+                value={config.market}
+                id="market"
+                onChange={handleChange("market")}
+              >
+                (<option>Select Market</option>
+                {supported_markets.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </FormControl>
+        )}
+
         <FormControl mb={1} width="42%" mx={3} isRequired>
           <FormLabel htmlFor="buy_amount">Buy Amount</FormLabel>
           <Input
             value={config.buy_amount}
-            onChange={handleChange("buy_amount","number")}
+            onChange={handleChange("buy_amount", "number")}
             type="number"
             name="buy_amount"
           />
@@ -233,7 +268,7 @@ export function MarketDetailsForm({
           <FormLabel htmlFor="budget">Budget</FormLabel>
           <Input
             value={config.budget}
-            onChange={handleChange("budget","number")}
+            onChange={handleChange("budget", "number")}
             type="number"
           />
         </FormControl>
@@ -280,8 +315,8 @@ export function MarketDetailsForm({
       >
         <Box pb={6} ml={7}>
           <FormControl mb={1} mx={3} isRequired>
-            <FormLabel htmlFor="Account"> Account</FormLabel>
-            <Select value={accounts.title} onChange={handleModalInput}>
+            <FormLabel htmlFor="account"> Account</FormLabel>
+            <Select value={accountSelected} id="account" onChange={handleModalInput}>
               <option>Select Account</option>
               {accounts.map(option => (
                 <option key={option.slug} value={option.slug}>
@@ -294,8 +329,4 @@ export function MarketDetailsForm({
       </XModal>
     </Box>
   );
-}
-
-function handleModalInput(e) {
-  let value = e.target.value;
 }

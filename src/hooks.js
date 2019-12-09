@@ -426,7 +426,8 @@ export function useAccountMarket(account) {
       multiplier: 1,
       spread_multiplier: 1,
       interval: "1d",
-      buy_amount: 10.1
+      buy_amount: 10.1,
+      budget:200
     };
   }
   return {

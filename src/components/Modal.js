@@ -18,6 +18,7 @@ export const XModal = ({
   children,
   submitButtonProps = {},
   cancelButtonProps = {},
+  ButtonTitle="Save",
   ...rest
 }) => {
   return (
@@ -38,7 +39,7 @@ export const XModal = ({
             Cancel
           </Button>
           <Button color="blue" {...submitButtonProps} onClick={onSubmit}>
-            Save
+            {ButtonTitle}
           </Button>
         </ModalFooter>
       </ModalContent>

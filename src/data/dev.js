@@ -256,15 +256,6 @@ function addNewMarket(config, account, id) {
     }
   });
 }
-function a(type) {
-  let text = type.text();
-  // let json = type.json()
-  return {
-    text: text
-    // json : json
-    // "json":ty.json()
-  };
-}
 
 function analyzeMarket(marketConfig) {
   return fetch("https://tuteria.ngrok.io/api/analyze-market", {

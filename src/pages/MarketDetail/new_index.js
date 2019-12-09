@@ -171,6 +171,7 @@ export const MarketDetail = ({ match, history }) => {
 
   const pageProps = useAccountMarket(account);
   const toast = useToast();
+  const [error, setError] = useState(true);
   let remaingRoutes = account
     ? [
         {
@@ -193,7 +194,7 @@ export const MarketDetail = ({ match, history }) => {
   let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
-  console.log({ defaultConfig });
+
   function onsubmit(config, type) {
     let passedObject = {
       coin: config.coin,
@@ -217,12 +218,13 @@ export const MarketDetail = ({ match, history }) => {
       let text = buildMarketSummaryString(passedObject, data.json);
       setTextBlob({ text, json: data.json });
     });
+    setError(true);
     // setConfig(newConfig);
   }
 
   function displayToast(description) {
     toast({
-      title: "Markets transferred",
+      title: "Markets ",
       description,
       status: "success",
       duration: 5000,
@@ -230,16 +232,23 @@ export const MarketDetail = ({ match, history }) => {
     });
   }
 
-  function onCreateMarket(values) {
-    return getFormResult(values, account).then(() => {
-      // display toast
+  function onCreateMarket(values, accountSelected) {
+    return getFormResult(values, accountSelected).then(() => {
       // clear the cache of the account markets.
       displayToast(`Market has been created `);
-      // redirecting back to the account page.
-      console.log("redirect")
+      history.push(`/${accountSelected}/markets`);
     });
-
   }
+  function analyzerError() {
+    return new Promise((reslove, reject) => {
+      setTimeout(() => {
+        reslove(setError(false));
+      }, 10000);
+    });
+  }
+  useEffect(() => {
+    analyzerError();
+  }, [error]);
 
   return (
     <Box className="App">
@@ -269,7 +278,8 @@ export const MarketDetail = ({ match, history }) => {
               onsubmit,
               onCreateMarket,
               accounts,
-              account
+              account,
+              error
             }}
           />
         </Flex>

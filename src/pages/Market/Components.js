@@ -25,7 +25,7 @@ function PopItem({ name, value }) {
   );
 }
 function MarketPopover({ children, items = [] }) {
-  return <>{children}</>
+  return <>{children}</>;
   // return (
   //   <Popover trigger="hover">
   //     <PopoverTrigger>
@@ -47,7 +47,8 @@ export const MarketWithStat = ({
   children,
   selected = false,
   onSelect,
-  market
+  market,
+  update
 }) => {
   let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
   let places = market.price_places;
@@ -56,7 +57,7 @@ export const MarketWithStat = ({
     market.price_places
   );
   const { info, loaded } = useMarketData(prices, market, full_market);
- 
+  
 
   function _format(value) {
     if (value) {
@@ -88,7 +89,17 @@ export const MarketWithStat = ({
         _focus={{ boxShadow: "outline" }}
         style={{ backgroundColor: selected ? "teal" : "inherit" }}
       >
-        <Stat>
+        {selected && update ? (
+         ( <Stat>
+          <Flex justifyContent="space-between">
+            <StatLabel>Updating..........</StatLabel>
+          </Flex>
+          <Flex justifyContent="space-between" alignSelf="flex-end">
+            <StatNumber>{children}</StatNumber>
+          </Flex>
+        </Stat>)
+        ) : (
+          <Stat>
           <Flex justifyContent="space-between">
             <StatLabel>
               {prices === "Loading" ? "Loading" : "$" + prices}
@@ -127,7 +138,9 @@ export const MarketWithStat = ({
             </Flex>
           )}
         </Stat>
+        )}
       </PseudoBox>
     </MarketPopover>
   );
 };
+
