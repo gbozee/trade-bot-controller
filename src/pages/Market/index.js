@@ -65,7 +65,7 @@ const SidebarDrawer = ({
         {!market ? (
           <SearchInput
             boxStyle={{}}
-            to={x => `/${account}/markets/${x.toLowerCase()}`}
+            to={x => `/${account}/markets/${x.toLowerCase()}?market=true`}
             markets={markets.map(x => `${x.coin}${x.buy_market}`)}
           />
         ) : (
@@ -191,7 +191,7 @@ function ConfigurationComponent({ params, onSubmit }) {
     </>
   );
 }
-function GridLayout({update, items, onSelect, selectedMarkets = [] }) {
+function GridLayout({ update, items, onSelect, selectedMarkets = [] }) {
   return (
     <>
       <Grid
@@ -203,13 +203,11 @@ function GridLayout({update, items, onSelect, selectedMarkets = [] }) {
       >
         {items.map(market => {
           return (
-            
             <MarketWithStat
               key={market.market_label()}
               onSelect={() => {
                 onSelect(market.market_label());
               }}
-              
               market={market}
               selected={selectedMarkets.includes(market.market_label())}
               update={update}
@@ -248,6 +246,59 @@ function GridLayout({update, items, onSelect, selectedMarkets = [] }) {
   );
 }
 
+export function DeleteAccountMarket({
+  selectedMarkets,
+  setSelectedMarkets,
+  setRefresh,
+  btnRef,
+  markets,
+  deleteMarket,
+  match
+}) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  function onDeleteHandler(e) {
+    let market = markets
+      .filter(x => x.market_label() === selectedMarkets[0])
+      .map(x => x);
+    console.log(market);
+    deleteMarket(market[0], match.params.account);
+
+    onClose();
+    setSelectedMarkets([]);
+    setRefresh();
+  }
+
+  return (
+    <Box>
+      {selectedMarkets.length === 1 && (
+        <ControlButton
+          btnRef={btnRef}
+          onClick={onOpen}
+          icon={"delete"}
+          variantColor="blue"
+          style={{
+            right: "14em",
+            bottom: "2em"
+          }}
+        />
+      )}
+
+      <XModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onSubmit={onDeleteHandler}
+        ButtonTitle="Confirm"
+        title
+        submitButtonProps={{ variantColor: "red" }}
+      >
+        <Box pb={6} ml={7}>
+          Are you sure you want to delete this market
+        </Box>
+      </XModal>
+    </Box>
+  );
+}
+
 export function Market({ match }) {
   const toast = useToast();
   const pageProps = useAccountMarket(match.params.account);
@@ -257,17 +308,16 @@ export function Market({ match }) {
     hiddenFields,
     getFormFields,
     getFormResult,
+    deleteMarket,
     bulkUpdateMarkets,
     updateMarket
   } = useContext(AppContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenDelete, onOpenDelete, onCloseDelete } = useDisclosure();
   const btnRef = React.useRef();
-  // const [markets, setMarkets] = useState([]);
   let [selectedMarkets, setSelectedMarkets] = useState([]);
   let [newEditItem, setNewEditItem] = useState();
   let [filteredItem, setFilteredItem] = useState(" ");
-  let[ updated, setUpdated]= useState(false);
+  let [updated, setUpdated] = useState(false);
 
   function getFilterItem(filteredItem) {
     if (filteredItem === " ") {
@@ -364,8 +414,6 @@ export function Market({ match }) {
     }
   ];
 
-
-
   function updatedMarket() {
     function displayToast(description) {
       toast({
@@ -376,8 +424,8 @@ export function Market({ match }) {
         isClosable: true
       });
     }
-  
-    (setUpdated(true))
+
+    setUpdated(true);
     console.log(selectedMarkets);
     return new Promise((reslove, reject) => {
       setTimeout(() => {
@@ -386,54 +434,7 @@ export function Market({ match }) {
         displayToast(`${selectedMarkets} updated `);
       }, 3000);
     });
-   
   }
-
-
-
-  function DeleteMarket() {
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    function deleteHandler(){
-      return new Promise((resolve, reject) => {
-        
-        console.log("The Market has been deleted")
-        onClose();
-        setRefresh();
-      })
-    }
-
-    return (
-      <Box>
-        {selectedMarkets.length === 1 && (
-          <ControlButton
-            btnRef={btnRef}
-            onClick={onOpen}
-            icon={"delete"}
-            variantColor="blue"
-            style={{
-              right: "14em",
-              bottom: "2em"
-            }}
-          />
-        )}
-
-        <XModal
-          isOpen={isOpen}
-          onClose={onClose}
-          onSubmit={deleteHandler}
-          ButtonTitle="Confirm"
-          title
-          submitButtonProps={{ variantColor: "red" }}
-        >
-          <Box pb={6} ml={7}>
-            Are you sure you want to delete this market
-          </Box>
-        </XModal>
-      </Box>
-    );
-  }
-
- 
 
   return (
     <Box className="App">
@@ -496,7 +497,6 @@ export function Market({ match }) {
         >
           {/*Grid layout for markets */}
           <GridLayout
-         
             items={getFilterItem(filteredItem)}
             onSelect={addOrRemoveMarkets}
             selectedMarkets={selectedMarkets}
@@ -549,7 +549,17 @@ export function Market({ match }) {
                   }}
                 />
               )}
-              <DeleteMarket />
+              <DeleteAccountMarket
+                {...{
+                  deleteMarket,
+                  selectedMarkets,
+                  match,
+                  btnRef,
+                  markets,
+                  setSelectedMarkets,
+                  setRefresh
+                }}
+              />
             </>
           )}
         </Flex>

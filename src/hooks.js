@@ -174,11 +174,17 @@ export function useGetData(market) {
   }, [market]);
   function analyzeMarket(params) {
     setLoader(true);
-    return adapter.analyzeMarket(params).then(result => {
-      setLoader(false);
-      return { text: "", json: result };
-      // return {text:result.text.replace(/\n/g, "\n\n")};
-    });
+    return adapter
+      .analyzeMarket(params)
+      .then(result => {
+        setLoader(false);
+        return { text: "", json: result };
+        // return {text:result.text.replace(/\n/g, "\n\n")};
+      })
+      .catch(error => {
+        setLoader(false);
+        throw error
+      });
   }
   function getData(mk) {
     return new Promise((resolve, reject) => {
@@ -269,7 +275,7 @@ export function useGetData(market) {
       setTransactionLoader(true);
     });
   }
-  return { data, analyzeMarket, analyzeLoader, transactionLoader };
+  return { data, analyzeMarket, analyzeLoader, setLoader, transactionLoader };
 }
 export const useStorage = (key, adapter) => {
   let [allMarkets, setAllMarkets] = useState([]);
@@ -325,12 +331,11 @@ export const useStorage = (key, adapter) => {
       .find(o => marketSymbol.toUpperCase().startsWith(o));
     let markets = [];
     if (coin) {
-      
       let key = `fetchd-coin-${coin}`;
       markets = (getStorage(key) || []).map(x =>
         x.replace(coin, "").toLowerCase()
       );
-      coin = coin.toLowerCase()
+      coin = coin.toLowerCase();
     }
     return { coin, markets };
   }
@@ -391,14 +396,6 @@ export function useAccountMarket(account) {
         return market;
       }) || "";
     return { coin, market: foundMarket };
-    // let foundMarket = filtered_markets.find(x => {
-    // });
-    // if (foundMarket) {
-    //   let coin = mk.slice(0, -foundMarket.length);
-    //   return { coin, market: foundMarket };
-    // } else {
-    //   return { coin: mk, market: "" };
-    // }
   }
 
   function getSpecificMarket(param) {
@@ -426,8 +423,7 @@ export function useAccountMarket(account) {
       multiplier: 1,
       spread_multiplier: 1,
       interval: "1d",
-      buy_amount: 10.1,
-      budget:200
+      buy_amount: 10.1
     };
   }
   return {

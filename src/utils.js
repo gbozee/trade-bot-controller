@@ -16,6 +16,7 @@ export const AppProvider = ({ children, adapter }) => {
     loadAccounts();
   }, []);
 
+  console.log(accounts);
   function loadAccounts() {
     // if (accounts.length !== 0) {
     //   return new Promise(resolve => {
@@ -71,6 +72,12 @@ export const AppProvider = ({ children, adapter }) => {
         };
       });
   }
+  function deleteMarket(market, account) {
+    return adapter.deleteMarket(market,account).then(newAccounts=>{
+      setAccounts(newAccounts)
+    })
+    
+  }
   function getFormResult(config, account, markets) {
     // console.log(config);
 
@@ -107,7 +114,8 @@ export const AppProvider = ({ children, adapter }) => {
     getFormResult,
     bulkUpdateMarkets,
     adapter,
-    updateMarket
+    updateMarket,
+    deleteMarket
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

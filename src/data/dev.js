@@ -312,6 +312,20 @@ function getAllAssets(account = "main_account", key = "asset") {
       return data.data;
     });
 }
+function deleteMarket(market,account){
+  let id = market.id;
+
+    let newAccounts = accounts.map(x => {
+      if (x.slug === account) {
+        return { ...x, market: x.market.filter(x => x !== id) };
+      }
+      return x;
+    });
+    accounts = newAccounts;
+    return new Promise((resolve, reject) => {
+      resolve(accounts);
+    });
+}
 export const adapter = {
   getAccounts,
   getMarket,
@@ -320,5 +334,6 @@ export const adapter = {
   analyzeMarket,
   transferMarket,
   getAlternateMarkets,
-  getAllAssets
+  getAllAssets,
+  deleteMarket
 };
