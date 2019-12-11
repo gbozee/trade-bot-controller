@@ -21,7 +21,12 @@ import {
   IconButton
 } from "@chakra-ui/core";
 import { useDisclosure } from "@chakra-ui/core";
-import { NavigationBar, XModal, SearchInput,ControlButton} from "../components";
+import {
+  NavigationBar,
+  XModal,
+  SearchInput,
+  ControlButton
+} from "../components";
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
 import { useStorage, useSerchInput } from "../hooks";
@@ -81,7 +86,6 @@ export function Home({ history }) {
         <Button onClick={onOpen} variantColor="teal">
           Transfer Markets
         </Button>
-        
       </NavigationBar>
       {loading ? (
         <Box display="flex" justifyContent="center" height="20em">

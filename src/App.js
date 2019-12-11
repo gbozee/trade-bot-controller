@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
-import { SearchInput } from "./components";
 
 function IndividualAccount({ match, location }) {
-
   // const pageProps = useAccountMarket(match.params.account);
   return (
     <Switch>
-      <Route exact path={match.path} component={Market} />
-      <Route exact path={`${match.path}/:market`} component={MarketDetail} />
+      <Route
+        exact
+        path={`${match.path}/detail/:market`}
+        component={MarketDetail}
+      />
+      <Route path={match.path} component={Market} />
     </Switch>
   );
 }
