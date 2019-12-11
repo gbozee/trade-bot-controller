@@ -11,8 +11,11 @@ import {
   Spinner,
   Checkbox,
   useToast,
-  Grid
+  Grid,
+  Switch,
+  FormLabel
 } from "@chakra-ui/core";
+import { Switch as RouterSwitch, Route } from "react-router-dom";
 import { AppContext } from "../../utils";
 import {
   NavigationBar,
@@ -65,7 +68,9 @@ const SidebarDrawer = ({
         {!market ? (
           <SearchInput
             boxStyle={{}}
-            to={x => `/${account}/markets/${x.toLowerCase()}?market=true`}
+            to={x =>
+              `/${account}/markets/detail/${x.toLowerCase()}?market=true`
+            }
             markets={markets.map(x => `${x.coin}${x.buy_market}`)}
           />
         ) : (
@@ -299,11 +304,19 @@ export function DeleteAccountMarket({
   );
 }
 
-export function Market({ match }) {
+export function Market({ match, history }) {
+  let [isListMode, setListMode] = useState(false);
   const toast = useToast();
   const pageProps = useAccountMarket(match.params.account);
   const { markets, loading, setMarkets, setRefresh } = pageProps;
 
+  useEffect(() => {
+    if (isListMode) {
+      history.push(`${match.url}/list-mode`);
+    } else {
+      history.push(`${match.url}`);
+    }
+  }, [isListMode]);
   const {
     hiddenFields,
     getFormFields,
@@ -439,6 +452,16 @@ export function Market({ match }) {
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
+        <Flex justify="center" align="center">
+          <FormLabel htmlFor="email-alerts">Toggle List Mode</FormLabel>
+          <Switch
+            onChange={e => {
+              setListMode(e.target.checked);
+            }}
+            isChecked={isListMode}
+            id="email-alerts"
+          />
+        </Flex>
         <MenuComponent
           defaultText="Filter"
           options={["All", "BTC", "USDT", "ETH ", "BNB"]}
@@ -489,26 +512,26 @@ export function Market({ match }) {
           <Spinner alignSelf="center" />
         </Box>
       ) : (
-        <Flex
-          flexDirection="column"
-          justifyContent={["space-between", "inherit"]}
-          mx={3}
-          minHeight="90vh"
-        >
-          {/*Grid layout for markets */}
-          <GridLayout
-            items={getFilterItem(filteredItem)}
-            onSelect={addOrRemoveMarkets}
-            selectedMarkets={selectedMarkets}
-            update={updated}
-          />
-
-          {selectedMarkets.length > 1 ? (
-            <ConfigurationComponent
-              params={getFormFields("bulk")}
-              onSubmit={onSubmit}
-            />
-          ) : (
+        <>
+          <RouterSwitch>
+            <Route exact path={`${match.url}`}>
+              <DetailView
+                {...{
+                  getFormFields,
+                  addOrRemoveMarkets,
+                  selectedMarkets,
+                  updated,
+                  markets,
+                  filteredItem,
+                  onSubmit
+                }}
+              />
+            </Route>
+            <Route exact path={`${match.url}/list-mode`}>
+              <div>Hello world</div>
+            </Route>
+          </RouterSwitch>
+          {selectedMarkets.length > 1 ? null : (
             <>
               <ControlButton
                 btnRef={btnRef}
@@ -525,7 +548,7 @@ export function Market({ match }) {
                   as={Link}
                   to={`/${
                     match.params.account
-                  }/markets/${selectedMarkets[0]
+                  }/markets/detail/${selectedMarkets[0]
                     .toLowerCase()
                     .replace("/", "")}`}
                   btnRef={btnRef}
@@ -562,8 +585,50 @@ export function Market({ match }) {
               />
             </>
           )}
-        </Flex>
+        </>
       )}
     </Box>
   );
 }
+
+const DetailView = ({
+  markets,
+  filteredItem = " ",
+  addOrRemoveMarkets,
+  selectedMarkets,
+  updated,
+  getFormFields,
+  onSubmit
+}) => {
+  function getFilterItem() {
+    if (filteredItem === " ") {
+      return markets;
+    } else {
+      let filteredmarket = markets.filter(x => x.buy_market === filteredItem);
+      return filteredmarket;
+    }
+  }
+  return (
+    <Flex
+      flexDirection="column"
+      justifyContent={["space-between", "inherit"]}
+      mx={3}
+      minHeight="90vh"
+    >
+      {/*Grid layout for markets */}
+      <GridLayout
+        items={getFilterItem()}
+        onSelect={addOrRemoveMarkets}
+        selectedMarkets={selectedMarkets}
+        update={updated}
+      />
+
+      {selectedMarkets.length > 1 ? (
+        <ConfigurationComponent
+          params={getFormFields("bulk")}
+          onSubmit={onSubmit}
+        />
+      ) : null}
+    </Flex>
+  );
+};
