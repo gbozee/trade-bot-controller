@@ -165,8 +165,8 @@ function buildMarketSummaryString(passedObject, result) {
 
   return _result.replace(/\n/g, "<br/>");
 }
-export const MarketDetail = ({ match, history,location:{search} }) => {
-  let fromMarketPage = search.includes("market=true")
+export const MarketDetail = ({ match, history, location: { search } }) => {
+  let fromMarketPage = search.includes("market=true");
   let { messages } = useNotification();
   let { market, account } = match.params;
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
@@ -240,21 +240,20 @@ export const MarketDetail = ({ match, history,location:{search} }) => {
       isClosable: true
     });
   }
-  function onEditSave(values){
-    console.log(values)
+  function onEditSave(values) {
+    console.log(values);
     history.push(`/${account}/markets`);
   }
-
 
   function onCreateMarket(values, accountSelected) {
     console.log(accountSelected);
     return getFormResult(values, accountSelected)
-      .then((savedMarketValue) => {
+      .then(savedMarketValue => {
         // clear the cache of the account markets.
         // storage.set(accountSelected,"")
         let accountMarkets = storage.get(accountSelected);
         if (accountMarkets) {
-          let newAccountMarkets = [...accountMarkets,savedMarketValue];
+          let newAccountMarkets = [...accountMarkets, savedMarketValue];
           storage.set(accountSelected, newAccountMarkets);
         }
         displayToast(`Market has been created `);
@@ -277,7 +276,6 @@ export const MarketDetail = ({ match, history,location:{search} }) => {
       });
     }
   }
-
 
   return (
     <Box className="App">
@@ -309,9 +307,7 @@ export const MarketDetail = ({ match, history,location:{search} }) => {
               onCreateMarket,
               cachedAlternateMarket,
               accounts,
-              account,
-          
-              
+              account
             }}
           />
         </Flex>

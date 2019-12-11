@@ -106,11 +106,6 @@ export function MarketAnalyzer({
         debugger;
       });
   }
- 
-
-
-
-
 
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
@@ -125,7 +120,6 @@ export function MarketAnalyzer({
           config,
           account,
           onEditSave
-          
         }}
         defaultMarket={defaultConfig.coin || symbol}
       >
@@ -212,7 +206,6 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     return onsubmit(config);
   }
 
-
   function str2bool(value) {
     if (value && typeof value === "string") {
       if (value.toLowerCase() === "true") return true;
@@ -220,7 +213,6 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     }
     return value;
   }
-
 
   // function displayToast(description) {
   //   toast({
@@ -252,18 +244,16 @@ export function MarketDetailsForm({
   cachedAlternateMarket,
   handleChange,
   onEditSave
-  
 }) {
   const [supported_markets, loading] = useSupportedMarkets(
     defaultMarket,
     cachedAlternateMarket
   );
 
-  function editFormHandler(e){
+  function editFormHandler(e) {
     onEditSave(config);
   }
 
-  
   // function displayToast(description) {
   //   toast({
   //     title: "Markets transferred",
@@ -371,7 +361,7 @@ export function MarketDetailsForm({
             </SliderThumb>
           </Slider>
         </FormControl>
-{/**
+        {/**
         <FormControl
           width="50%"
           mb={1}
@@ -437,8 +427,11 @@ export function MarketDetailsForm({
           <Flex justifyContent="space-between">
             <Button onClick={onSaveForm}>Submit</Button>
             {textBlob.text ? (
-              <Button variantColor="teal" onClick={account? editFormHandler : onOpen}>
-                {account?"Save":"Create"}
+              <Button
+                variantColor="teal"
+                onClick={account ? editFormHandler : onOpen}
+              >
+                {account ? "Save" : "Create"}
               </Button>
             ) : null}
           </Flex>
