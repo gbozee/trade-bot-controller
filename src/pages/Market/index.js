@@ -304,7 +304,7 @@ export function DeleteAccountMarket({
   );
 }
 export function Market({ match, history }) {
-  let [isListMode, setListMode] = useState(false);
+  let [isListMode, setListMode] = useState(true);
   const toast = useToast();
   const pageProps = useAccountMarket(match.params.account);
   const { markets, loading, setMarkets, setRefresh } = pageProps;
@@ -595,9 +595,12 @@ function ListView({
   let [selectedCoinMarkets, setSelectedCoinMarkets] = useState([]);
 
   useEffect(() => {
-    cachedAlternateMarket(selectedCoin).then(x => {
-      console.log(x);
-    });
+    if(selectedCoin){
+      cachedAlternateMarket(selectedCoin).then(x => {
+        console.log(x);
+      });
+
+    }
   }, [selectedCoin]);
   function coinButton(coin) {
     setSelectedCoin(coin);
