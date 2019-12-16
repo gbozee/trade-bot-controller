@@ -10,7 +10,6 @@ import {
   Button
 } from "@chakra-ui/core";
 import { NavigationBar } from "../components";
-
 export function Login({}) {
   return (
     <Box className="App">

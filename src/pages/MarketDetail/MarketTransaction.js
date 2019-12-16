@@ -16,7 +16,6 @@ import {
   useGroupBy,
   useRowSelect
 } from "react-table";
-
 function Table({ data, updateMyData, disablePageResetOnDataChange }) {
   // Use the state and functions returned from useTable to build your UI
   const columns = React.useMemo(
@@ -90,7 +89,6 @@ function Table({ data, updateMyData, disablePageResetOnDataChange }) {
     usePagination,
     useRowSelect
   );
-
   // Render the UI for your table
   return (
     <Box width={["100%", "100%"]}>
@@ -229,7 +227,6 @@ function Table({ data, updateMyData, disablePageResetOnDataChange }) {
     </Box>
   );
 }
-
 export function MarketTransaction({ messages, data, columns }) {
   return (
     <>
@@ -246,7 +243,6 @@ export function MarketTransaction({ messages, data, columns }) {
       </Box>
       <Flex direction="column" flex={1} mr={2}>
         <Table columns={columns} data={data} />
-
         <Code
           flex={1}
           width={"100%"}

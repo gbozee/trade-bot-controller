@@ -23,7 +23,6 @@ import { useDisclosure } from "@chakra-ui/core";
 import { useAccountMarket, useStorage } from "../../hooks";
 import { XModal } from "../../components";
 import { supported_markets } from "../../data/prod";
-
 export function MarketAnalyzer({
   textBlob,
   analyzeLoader,
@@ -37,12 +36,12 @@ export function MarketAnalyzer({
   onEditSave
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
   let { config, handleChange, updateRange, onSaveForm } = useDetailForm({
     defaultConfig,
     onsubmit,
     onCreateMarket
   });
-  console.log(config);
   function getValues(x) {
     let fields = [
       "coin",
@@ -95,6 +94,7 @@ export function MarketAnalyzer({
     return resultValue;
   }
   function onSave(accountSelected) {
+    debugger;
     let values = getValues(config);
     onCreateMarket(values, accountSelected)
       .then(() => {
@@ -106,7 +106,6 @@ export function MarketAnalyzer({
         debugger;
       });
   }
-
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
@@ -118,6 +117,7 @@ export function MarketAnalyzer({
           textBlob,
           onOpen,
           config,
+          defaultConfig,
           account,
           onEditSave
         }}
@@ -127,7 +127,6 @@ export function MarketAnalyzer({
           {...{ isOpen, onClose, onSave, account, accounts }}
         />
       </MarketDetailsForm>
-
       {analyzeLoader ? (
         <Box textAlign="center" mt={20}>
           <Spinner alignSelf="center" textAlign="center" />
@@ -151,7 +150,6 @@ function useSupportedMarkets(coin, cachedAlternateMarket) {
   let [loading, setLoading] = useState(false);
   // let result = extractCoinFromSymbol(coin);
   let [supported_markets, setSupported_markets] = useState([]);
-
   useEffect(() => {
     if (supported_markets.length === 0) {
       setLoading(true);
@@ -164,16 +162,15 @@ function useSupportedMarkets(coin, cachedAlternateMarket) {
       });
     }
   }, [coin]);
-
   return [supported_markets, loading];
 }
 function useDetailForm({ defaultConfig, onsubmit }) {
   let localDefaultconfig = {
-    budget: 500,
-    max_trade_count: 1,
-    pause: false,
-    take_profits: false,
-    market_condition: "bull"
+    budget: 500
+    // max_trade_count: 1,
+    // pause: false,
+    // take_profits: false,
+    // market_condition: "bull"
   };
   let [config, setConfig] = useState({
     ...localDefaultconfig,
@@ -186,7 +183,6 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     }
     setConfig({ ...config, ...newConfig });
   }, [defaultConfig.coin]);
-
   const updateRange = input => x => {
     let newConfig = { ...config, [input]: x };
     setConfig(newConfig);
@@ -205,7 +201,6 @@ function useDetailForm({ defaultConfig, onsubmit }) {
   function onSaveHandler(event) {
     return onsubmit(config);
   }
-
   function str2bool(value) {
     if (value && typeof value === "string") {
       if (value.toLowerCase() === "true") return true;
@@ -213,17 +208,6 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     }
     return value;
   }
-
-  // function displayToast(description) {
-  //   toast({
-  //     title: "Markets transferred",
-  //     description,
-  //     status: "success",
-  //     duration: 5000,
-  //     isClosable: true
-  //   });
-  // }
-
   return {
     config,
     handleChange,
@@ -231,9 +215,9 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     onSaveForm: onSaveHandler
   };
 }
-
 export function MarketDetailsForm({
   config,
+  defaultConfig,
   textBlob,
   defaultMarket,
   updateRange,
@@ -249,21 +233,9 @@ export function MarketDetailsForm({
     defaultMarket,
     cachedAlternateMarket
   );
-
   function editFormHandler(e) {
-    onEditSave(config);
+    onEditSave(defaultConfig, config, account);
   }
-
-  // function displayToast(description) {
-  //   toast({
-  //     title: "Markets transferred",
-  //     description,
-  //     status: "success",
-  //     duration: 5000,
-  //     isClosable: true
-  //   });
-  // }
-
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">
@@ -300,7 +272,6 @@ export function MarketDetailsForm({
             )}
           </FormControl>
         )}
-
         <FormControl mb={1} width="42%" mx={3} isRequired>
           <FormLabel htmlFor="buy_amount">Buy Amount</FormLabel>
           <Input
@@ -382,7 +353,6 @@ export function MarketDetailsForm({
             ))}
           </Select>
         </FormControl>
-
         <FormControl
           width="100%"
           mb={1}
@@ -402,7 +372,6 @@ export function MarketDetailsForm({
             <Radio value="false">False</Radio>
           </RadioGroup>
         </FormControl>
-
         <FormControl
           width="100%"
           mb={1}
@@ -422,7 +391,6 @@ export function MarketDetailsForm({
             <Radio value="false">False</Radio>
           </RadioGroup>
             </FormControl> */}
-
         <Box w="100%">
           <Flex justifyContent="space-between">
             <Button onClick={onSaveForm}>Submit</Button>
@@ -441,15 +409,12 @@ export function MarketDetailsForm({
     </Box>
   );
 }
-
 function AddNewMarketModal({ accounts, account, isOpen, onClose, onSave }) {
   const [accountSelected, setAccountSelected] = useState(account);
-
   function handleModalInput(e) {
     let value = e.target.value;
     setAccountSelected(value);
   }
-
   return (
     <XModal
       isOpen={isOpen}

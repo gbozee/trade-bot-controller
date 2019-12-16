@@ -26,7 +26,6 @@ export const NavigationBar = ({ title = "", children }) => {
     </Box>
   );
 };
-
 export const SubNavigationBar = ({ routes, ...rest }) => {
   return (
     <Breadcrumb
@@ -44,7 +43,6 @@ export const SubNavigationBar = ({ routes, ...rest }) => {
     </Breadcrumb>
   );
 };
-
 export const ControlButton = ({
   edit,
   onEdit,
@@ -63,5 +61,4 @@ export const ControlButton = ({
     />
   );
 };
-
 export { XModal } from "./Modal";

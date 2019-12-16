@@ -82,7 +82,6 @@ export let configs = [
     price_places: ".6f"
   }
 ];
-
 let accounts = [
   {
     id: 1,
@@ -134,9 +133,7 @@ export const supported_markets = [
   "XRP",
   "TRX"
 ];
-
 const number_grades = ["0", "1", "2", "3", "4", " 5", "6", "7", "8", "9"];
-
 export const hiddenFields = [
   "sell_amount",
   "sell_market",
@@ -208,7 +205,6 @@ function getMarket(account_id) {
   return getAccounts().then(data => {
     let acc = data.find(x => x.slug === account_id);
     let _markets = acc.market.map(mk => configs.find(x => x.id === mk));
-
     return _markets;
   });
 }
@@ -224,7 +220,6 @@ function addNewMarket(config, account, id) {
     price_places: config.price_places || "%.2f",
     pause: config.pause || false
   };
-
   return new Promise((resolve, reject) => {
     let transformed = configs.map(
       x => `${x.coin.toLowerCase()}/${x.buy_market.toLowerCase()}`
@@ -256,7 +251,6 @@ function addNewMarket(config, account, id) {
     }
   });
 }
-
 function analyzeMarket(marketConfig) {
   return fetch("https://tuteria.ngrok.io/api/analyze-market", {
     method: "POST",
@@ -278,20 +272,9 @@ function getAlternateMarkets(coin) {
       console.log(data)
     });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 function updateExistingMarket(oldConfig, newConfig, account) {
+  console.log(oldConfig)
+  console.log(newConfig)
   return new Promise((resolve, reject) => {
     resolve();
   });
@@ -314,7 +297,6 @@ function getAllAssets(account = "main_account", key = "asset") {
 }
 function deleteMarket(market,account){
   let id = market.id;
-
     let newAccounts = accounts.map(x => {
       if (x.slug === account) {
         return { ...x, market: x.market.filter(x => x !== id) };

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Market, Home, Login, MarketDetail } from "./pages";
-
 function IndividualAccount({ match, location }) {
   // const pageProps = useAccountMarket(match.params.account);
   return (
@@ -15,7 +14,6 @@ function IndividualAccount({ match, location }) {
     </Switch>
   );
 }
-
 function App() {
   return (
     <BrowserRouter>
@@ -30,5 +28,4 @@ function App() {
     </BrowserRouter>
   );
 }
-
 export default App;

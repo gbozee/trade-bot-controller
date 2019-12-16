@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AppContext } from "./utils";
-
 export function useNotification() {
   let [messages, setMessages] = useState([]);
   const connections = useRef({});
@@ -44,7 +43,6 @@ export function useNotification() {
   });
   return { messages };
 }
-
 export function useWebSockets(market, price_places = ".0f", currency) {
   let places = price_places.replace(".", "").replace("f", "");
   const connections = useRef({});
@@ -53,7 +51,6 @@ export function useWebSockets(market, price_places = ".0f", currency) {
   ]);
   let [prices, setPrices] = useState("Loading");
   let [percent, setPercent] = useState();
-
   function _disconnectSocketStreams(streams) {
     streams = streams.join("/");
     let connection = btoa(streams);
@@ -96,13 +93,11 @@ export function useWebSockets(market, price_places = ".0f", currency) {
     percent
   };
 }
-
 export function useMarketData(prices, market, full_market) {
   let [coinValue, setCoinValue] = useState();
   let [tradeInfo, setTradeInfo] = useState({});
   let [loaded, setLoaded] = useState(false);
   let places = market.price_places;
-
   useEffect(() => {
     if (prices !== "Loading") {
       getTradeInfoFormMarket(full_market, prices).then(
@@ -113,15 +108,12 @@ export function useMarketData(prices, market, full_market) {
         }
       );
     }
-
     function change2num(places) {
       let s = places.replace("f", "").replace(".", "");
       let f = parseFloat(s);
       return f;
     }
-
     let decimal_places = change2num(places);
-
     function getTradeInfoFormMarket(market_name, _prices) {
       return new Promise((resolve, reject) => {
         let result = determineSellValue(_prices);
@@ -156,7 +148,6 @@ export function useMarketData(prices, market, full_market) {
     coin_value: coinValue,
     spread: market.spread * (market.spread_multiplier || 1)
   };
-
   return {
     info,
     loaded
@@ -182,6 +173,7 @@ export function useGetData(market) {
         // return {text:result.text.replace(/\n/g, "\n\n")};
       })
       .catch(error => {
+        console.log("Thid")
         setLoader(false);
         throw error
       });
@@ -284,7 +276,6 @@ export const useStorage = (key, adapter) => {
       loadAllMarkets();
     }
   }, []);
-
   function loadAllMarkets() {
     let result = getValue([]);
     if (result.length > 0) {
@@ -318,7 +309,6 @@ export const useStorage = (key, adapter) => {
       return x;
     });
   }
-
   function getValue(_default = {}) {
     return getStorage(key) || _default;
   }
@@ -397,10 +387,8 @@ export function useAccountMarket(account) {
       }) || "";
     return { coin, market: foundMarket };
   }
-
   function getSpecificMarket(param) {
     let _market = getCoin(param);
-
     if (_market.coin && _market.market) {
       let result = markets.find(_mk => {
         return (

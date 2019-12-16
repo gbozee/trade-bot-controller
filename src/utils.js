@@ -1,22 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { configs, supported_markets, formFields, hiddenFields } from "./data";
 export const AppContext = React.createContext();
-
 export { useMarketData, useWebSockets } from "./hooks";
-
 export const AppProvider = ({ children, adapter }) => {
   let [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   // const [markets, setMarkets] = useState([]);
   const [uniqueId, setUniqueId] = useState();
   const [allMarkets, setAllMarkets] = useState([]);
-
   useEffect(() => {
     // setAllMarkets(configs);
     loadAccounts();
   }, []);
-
-  console.log(accounts);
   function loadAccounts() {
     // if (accounts.length !== 0) {
     //   return new Promise(resolve => {
@@ -76,11 +71,9 @@ export const AppProvider = ({ children, adapter }) => {
     return adapter.deleteMarket(market,account).then(newAccounts=>{
       setAccounts(newAccounts)
     })
-    
   }
   function getFormResult(config, account, markets) {
     // console.log(config);
-
     return addNewMarket(config, account);
   }
   function updateMarket(oldConfig, newConfig, account) {
@@ -100,7 +93,6 @@ export const AppProvider = ({ children, adapter }) => {
     //   resolve();
     // });
   }
-
   const appValue = {
     // markets: markets,
     getMarket,

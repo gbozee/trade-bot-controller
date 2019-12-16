@@ -20,7 +20,6 @@ export function useSerchInput() {
     "all-markets",
     adapter
   );
-
   function updateFilteredDisplay(coins, originalValue) {
     let promises = coins.map(x =>
       cachedAlternateMarket(x, () => {
@@ -33,7 +32,6 @@ export function useSerchInput() {
         .filter(o => {
           return o.toLowerCase().includes(originalValue.toLowerCase());
         });
-      console.log(true);
       setFilteredResult(result);
       setSearchLoading(false);
     });
@@ -56,7 +54,6 @@ export function useSerchInput() {
       setFilteredResult([]);
     }
   }
-
   return {
     filteredResult,
     searchLoading,
@@ -64,7 +61,6 @@ export function useSerchInput() {
     setFilteredResult
   };
 }
-
 export function useWindowListener(onClose) {
   const containerResultRef = useRef();
   function onClick(e) {
@@ -85,13 +81,11 @@ export function useWindowListener(onClose) {
   }, []);
   return containerResultRef;
 }
-
 export function SearchInput({
   to = x => `/markets/${x.toLowerCase()}`,
   markets = {},
   boxStyle = { position: "absolute", width: "50%" },
   pseudoProps = {},
-
   ...props
 }) {
   const {
@@ -100,9 +94,7 @@ export function SearchInput({
     onSearchDisplay,
     setFilteredResult
   } = useSerchInput();
-
   const containerResultRef = useWindowListener(() => setFilteredResult([]));
-
   function getResult(markets) {
     if (markets.length > 0) {
       let result = filteredResult.filter(x => !markets.includes(x));
@@ -111,13 +103,10 @@ export function SearchInput({
       return filteredResult;
     }
   }
-
   function onSearchChange(e) {
     let value = e.target.value;
-    console.log(value);
     onSearchDisplay(value);
   }
-
   return (
     <Flex flex={0.8} direction="column">
       <InputGroup size="md">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Flex, Spinner, useToast } from "@chakra-ui/core";
 import { NavigationBar, SubNavigationBar } from "../../components";
-
 import {
   useNotification,
   useGetData,
@@ -11,7 +10,6 @@ import {
 import { MarketTransaction } from "./MarketTransaction";
 import { MarketAnalyzer } from "./MarketAnalyzer";
 import { AppContext } from "../../utils";
-
 /**
  * {
   "result": {
@@ -81,23 +79,17 @@ import { AppContext } from "../../utils";
   }
 }
  */
-
 /**
  * ONT Config
 Buy Trades
-
 Price: 0.56	Q:18.03	Dollar:10.1
 Price: 0.503	Q:20.07	Dollar:10.1
 Price: 0.446	Q:22.63	Dollar:10.1
-
 Sell Trades
-
 Price: 0.674	Q:22.63	Dollar:15.253
 Price: 0.731	Q:20.07	Dollar:14.671
 Price: 0.788	Q:18.03	Dollar:14.208
-
 Config
-
 buy_amount: 10.1
 sell_amount: 10.1
 minimum_trades: 10
@@ -109,20 +101,15 @@ equal: quantity
 price_places: %.3f
 decimal_places: %.2f
 use_new: False
-
 Profit for 3 pairs
 6.916
-
 Trades to Complete
 2
-
 Proposed Budget
 20.2
-
 Fees in BNB
 0.0026613264472609417
  */
-
 function buildMarketSummaryString(passedObject, result) {
   let _result = "";
   _result += `${passedObject.coin.toUpperCase()} Config
@@ -130,14 +117,11 @@ function buildMarketSummaryString(passedObject, result) {
   ${result.buys
     .map(buy => `Price: ${buy.price} Q:${buy.quantity} Dollar:${buy.dollar}`)
     .join("\n")}
-  
   Sell Trades
   ${result.sells
     .map(buy => `Price: ${buy.price} Q:${buy.quantity} Dollar:${buy.dollar}`)
     .join("\n")}
-
     Config
-
     buy_amount: ${passedObject.buy_amount}
     sell_amount: ${result.sell_amount}
     minimum_trades:${result.minimum_trades}
@@ -149,20 +133,15 @@ function buildMarketSummaryString(passedObject, result) {
     price_places: ${result.price_places}
     decimal_places:${result.decimal_places}
     use_new: ${result.use_new}
-
     Profit for ${result.pair} pairs 
     ${result.profit}
-
     Trades to Complete
     ${result.trades}
-
     Proposed Budget
     ${passedObject.budget}
-
     Fees in BNB
     0.0026613264472609417
   `;
-
   return _result.replace(/\n/g, "<br/>");
 }
 export const MarketDetail = ({ match, history, location: { search } }) => {
@@ -172,14 +151,12 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
   let { data, analyzeMarket, analyzeLoader, transactionLoader } = useGetData(
     market
   );
+  const toast = useToast();
   let [textBlob, setTextBlob] = useState({});
-  let { accounts = [], getFormResult, adapter } = useContext(AppContext);
-
+  let { accounts = [], getFormResult, adapter,updateMarket} = useContext(AppContext);
   const pageProps = useAccountMarket(account);
   const { storage, cachedAlternateMarket } = useStorage("all-markets", adapter);
-  const toast = useToast();
-  const [error, setError] = useState(true);
-  let remaingRoutes = account
+  let remainingRoutes = account
     ? [
         {
           name: account,
@@ -198,12 +175,9 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
           current: true
         }
       ];
-  let routes = [{ name: "Home", path: "/" }, ...remaingRoutes];
+  let routes = [{ name: "Home", path: "/" }, ...remainingRoutes];
   let { getSpecificMarket } = pageProps;
   let defaultConfig = getSpecificMarket(market); // {coin,market} "ethbtc"
-
-  console.log(error);
-
   function onsubmit(config, type) {
     let passedObject = {
       coin: config.coin,
@@ -211,7 +185,6 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
       buy_amount: config.buy_amount,
       spread_multiplier: config.spread_multiplier,
       multiplier: config.multiplier,
-
       sell_market: config.sell_market,
       budget: config.budget,
       sell_amount: config.sell_amount,
@@ -226,25 +199,25 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
     analyzeMarket(passedObject).then(data => {
       let text = buildMarketSummaryString(passedObject, data.json);
       setTextBlob({ text, json: data.json });
-    });
+    }).catch(error=>{
+      displayToast("Error","Cannot fetch data ","warning",2000);
+    })
+    ;
     // setConfig(newConfig);
   }
-
-  function displayToast(description, status = "success") {
-    console.log({ description, status });
+  function displayToast(title="Markets",description, status = "success",duration=5000) {
     toast({
-      title: "Markets ",
+      title,
       description,
       status,
-      duration: 5000,
+      duration,
       isClosable: true
     });
   }
-  function onEditSave(values) {
-    console.log(values);
-    history.push(`/${account}/markets`);
+  function onEditSave(defaultConfig,config,account) {
+    updateMarket(defaultConfig,config,account,)
+      history.push(`/${account}/markets`);
   }
-
   function onCreateMarket(values, accountSelected) {
     console.log(accountSelected);
     return getFormResult(values, accountSelected)
@@ -262,21 +235,9 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
         }
       })
       .catch(error => {
-        displayToast("An Error occured", "warning");
+        displayToast("An Error occurred", "warning");
       });
   }
-  function analyzerError() {
-    function displayToast(description, status = "sucess") {
-      toast({
-        title: "Error ",
-        description,
-        status,
-        duration: 1000,
-        isClosable: true
-      });
-    }
-  }
-
   return (
     <Box className="App">
       <NavigationBar title="Market Detail" />
@@ -315,7 +276,6 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
     </Box>
   );
 };
-
 // get the list of running trades
 // display the completed trades filterable by from and to date
 // ability to determine new spread multiplier or multiplier to use

@@ -9,10 +9,8 @@ import {
   InputRightElement,
   IconButton
 } from "@chakra-ui/core";
-
 import { Link } from "react-router-dom";
 import { useSerchInput, useWindowListener } from "../../hooks";
-
 export const FormModal = ({}) => {
   const {
     filteredResult,
@@ -20,16 +18,11 @@ export const FormModal = ({}) => {
     onSearchDisplay,
     setFilteredResult
   } = useSerchInput();
-
-
-
-
   function onSearchChange(e) {
     let value = e.target.value;
     console.log(value);
     onSearchDisplay(value);
   }
-
   return (
     <>
       <Flex flex={0.8} direction="column">
@@ -60,7 +53,6 @@ export const FormModal = ({}) => {
     </>
   );
 };
-
 function MarketListItems({ markets, onClose }) {
   const containerResultRef = useWindowListener(onClose);
   return (
@@ -98,7 +90,6 @@ function MarketListItems({ markets, onClose }) {
           //       cursor: "pointer",
           //       borderColor: "gray.200"
           //     },
-
           //   }}
           key={x}
           // onClick={(e)=>filteredResultHandler(e,{x})}

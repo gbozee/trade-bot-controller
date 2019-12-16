@@ -30,7 +30,6 @@ import {
 import { Link } from "react-router-dom";
 import { AppContext } from "../utils";
 import { useStorage, useSerchInput } from "../hooks";
-
 export function Home({ history }) {
   let { accounts = [], loading, adapter } = useContext(AppContext);
   let [accountMarkets, setAccountMarkets] = useState([]);
@@ -38,7 +37,6 @@ export function Home({ history }) {
   let [marketLoading, setMarketLoading] = useState(false);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   function displayToast(description) {
     toast({
       title: "Markets transferred",
@@ -51,7 +49,7 @@ export function Home({ history }) {
   function onSubmit() {
     if (formValues.from && formValues.market && formValues.to) {
       displayToast(
-        `${formValues.market} has been transfered to ${formValues.to} `
+        `${formValues.market} has been transferred to ${formValues.to} `
       );
       // display toast message when successful
       adapter.transferMarket(formValues.market);
@@ -59,13 +57,10 @@ export function Home({ history }) {
       setFormValues({});
     }
   }
-
   const onFromAccountChange = input => e => {
     let value = e.target.value;
-
     if (input === "from") {
       setMarketLoading(true);
-
       setFormValues({ ...formValues, [input]: value });
       adapter.getMarket(value).then(markets => {
         setAccountMarkets(markets);
@@ -75,14 +70,11 @@ export function Home({ history }) {
       setFormValues({ ...formValues, [input]: value });
     }
   };
-
   function handleChange() {}
-
   return (
     <Box className="App">
       <NavigationBar title="Accounts">
         <SearchInput />
-
         <Button onClick={onOpen} variantColor="teal">
           Transfer Markets
         </Button>
@@ -165,7 +157,6 @@ export function Home({ history }) {
     </Box>
   );
 }
-
 function AccountItem({ account }) {
   return (
     <PseudoBox
@@ -189,6 +180,5 @@ function AccountItem({ account }) {
     </PseudoBox>
   );
 }
-
 //Assignment create a hook for the search input
 // Assignment make sure the search market can link to create market

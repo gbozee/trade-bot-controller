@@ -31,7 +31,6 @@ function MarketPopover({ children, items = [] }) {
   //     <PopoverTrigger>
   //       <Link _hover={{ outline: "none" }}>{children}</Link>
   //     </PopoverTrigger>
-
   //     <PopoverContent border="0" zIndex={4} width="400px">
   //       <Box p={5}>
   //         {items.map(item => (
@@ -42,7 +41,6 @@ function MarketPopover({ children, items = [] }) {
   //   </Popover>
   // );
 }
-
 export const MarketWithStat = ({
   children,
   selected = false,
@@ -57,8 +55,6 @@ export const MarketWithStat = ({
     market.price_places
   );
   const { info, loaded } = useMarketData(prices, market, full_market);
-  
-
   function _format(value) {
     if (value) {
       return value.toLocaleString();
@@ -126,7 +122,6 @@ export const MarketWithStat = ({
                 {prices !== "Loading" && info.coin_value ? (
                   <StatLabel>
                     {info.coin_value}/
-                  
                  {(info.coin_value * prices).toFixed(places)}  
                   </StatLabel>
                 ) : (
@@ -143,4 +138,3 @@ export const MarketWithStat = ({
     </MarketPopover>
   );
 };
-

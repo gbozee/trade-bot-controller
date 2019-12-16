@@ -83,7 +83,6 @@ export const configs = [
     price_places: ".6f"
   }
 ];
-
 const _getAccounts = () => {
   let accounts = [
     {
@@ -145,9 +144,7 @@ export const supported_markets = [
   "XRP",
   "TRX"
 ];
-
 const number_grades = ["0", "1", "2", "3", "4", " 5", "6", "7", "8", "9"];
-
 export const hiddenFields = [
   "sell_amount",
   "sell_market",
@@ -215,6 +212,5 @@ export let formFields = [
     label: "Market Conditions"
   }
 ];
-
 export { adapter as devAdapter } from "./dev";
 export { adapter as prodAdapter } from "./prod";

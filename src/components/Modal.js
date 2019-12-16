@@ -9,7 +9,6 @@ import {
   ModalBody,
   Modal
 } from "@chakra-ui/core";
-
 export const XModal = ({
   isOpen,
   title,
@@ -28,7 +27,6 @@ export const XModal = ({
         <ModalCloseButton />
         <ModalHeader>{title}</ModalHeader>
         <ModalBody>{children}</ModalBody>
-
         <ModalFooter>
           <Button
             variant="outline"

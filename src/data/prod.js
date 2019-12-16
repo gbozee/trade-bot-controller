@@ -1,5 +1,4 @@
 let ENDPOINT = "https://tuteria.ngrok.io/api";
-
 function toTitle(slug) {
   return slug.replace("_", " ");
 }
@@ -10,7 +9,6 @@ const _getProductionAccounts = async () => {
     return { ...j, id: i + 1, slug: j.name, title: toTitle(j.name) };
   });
 };
-
 export const getAccounts = (kind = "dev") => {
   return _getProductionAccounts();
 };
@@ -26,9 +24,7 @@ export const supported_markets = [
   "XRP",
   "TRX"
 ];
-
 const number_grades = ["0", "1", "2", "3", "4", " 5", "6", "7", "8", "9"];
-
 export const hiddenFields = [
   "sell_amount",
   "sell_market",
@@ -105,7 +101,6 @@ function getMarket(account_id, with_markets = false) {
     return acc.markets;
   });
 }
-
 function addNewMarket(config, account, id) {
   let dataToSave = {
     id: id,
@@ -153,7 +148,6 @@ function analyzeMarket(marketConfig) {
     }
   }).then(response => response.text());
 }
-
 function updateExistingMarket(oldConfig, newConfig, account) {
   return new Promise((resolve, reject) => {
     resolve();

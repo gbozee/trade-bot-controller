@@ -13,7 +13,6 @@ import {
 } from "@chakra-ui/core";
 import { conditionalExpression } from "@babel/types";
 import { isNull } from "util";
-
 export const useFormState = (
   defaultconfig,
   onSubmit,
@@ -26,18 +25,13 @@ export const useFormState = (
   let compulsoryFields = ["coin", "buy_amount", "buy_market", "spread"];
   let [displayText, setDisplayText] = useState(false);
   let [formErrors, setFormErrors] = useState({});
-
   // todays works starts from here
-
   let defaultInputValues = { max_trade_count: 1, market_condition: "bear" };
-
   let defaultformvalues = is_new || bulk ? defaultInputValues : {};
   let [config, setConfig] = useState(defaultformvalues);
-
   useEffect(() => {
     setConfig({ ...defaultformvalues, ...defaultconfig }); //
   }, []);
-
   function displayToast(description) {
     toast({
       title: "Markets saved",
@@ -47,7 +41,6 @@ export const useFormState = (
       isClosable: true
     });
   }
-
   function validateForm(configuration) {
     let results = compulsoryFields.map(x => !!configuration[x]);
     let errors = {};
@@ -58,7 +51,6 @@ export const useFormState = (
     setFormErrors({ ...formErrors, ...errors });
     return results.every(x => x);
   }
-
   function onSaveHandler(event) {
     // event.preventDefault();
     let sameValues = is_new
@@ -93,32 +85,26 @@ export const useFormState = (
         setConfig({});
         console.log(displayText);
       }
-
       // onsubmit(newConfig);console.log(isNull(newConfig));
-
       // (onSubmit()) {
       //   setDisplayText(true)
     }
   }
-
   //   function isNumberKey(evt){
   //     var charCode = (evt.which) ? evt.which : event.keyCode
   //     if (charCode > 31 && (charCode < 48 || charCode > 57))
   //         return false;
   //     return true;
   // }
-
   function getDecimalformat(numPlace) {
     let a = `%${numPlace / 10}f`;
     return a;
   }
-
   function getTimeInterval(val) {
     let newpp = val.replace("Hourly", "h").replace("Daily", "d");
     return newpp;
     //   });
   }
-
   const handleChange = input => e => {
     let value = e.target.value;
     if (e.target.type === "radio") {
@@ -130,7 +116,6 @@ export const useFormState = (
     } else if (e.target.type === "number") {
       value = parseFloat(value);
     }
-
     let newConfig = { ...config, [input]: value };
     setConfig(newConfig);
     // onSubmit(newConfig)
@@ -176,7 +161,6 @@ export const FormComponent = ({
 }) => {
   function getRadioValue(val) {
     // console.log(val);
-
     if (val) {
       if (typeof val === "boolean") {
         return val.toString();
@@ -185,7 +169,6 @@ export const FormComponent = ({
     }
     return "false";
   }
-
   function getSelectValue(val) {
     if (["price_places", "decimal_places"].includes(val)) {
       let pp = config[val];
@@ -209,7 +192,6 @@ export const FormComponent = ({
     }
     return config[val];
   }
-
   let extraArray = ["profit_value", "pause", "margin_multiplier"];
   extraArray = extraArray.filter(x => !fieldsToUnhide.includes(x));
   if (config.take_profits) {
@@ -232,7 +214,6 @@ export const FormComponent = ({
     "sell_amount",
     "budget"
   ];
-
   return (
     <>
       {formFields.map(field => {
@@ -240,7 +221,6 @@ export const FormComponent = ({
         if (market && field.name === "coin") {
           extraArray.push("coin");
         }
-
         if (field.field_type === "radio") {
           actualField = (
             <RadioGroup
@@ -306,7 +286,6 @@ export const FormComponent = ({
     </>
   );
 };
-
 const SpreadInput = ({ onSpreadSubmit, config, ...props }) => {
   return (
     <InputGroup size="md">
