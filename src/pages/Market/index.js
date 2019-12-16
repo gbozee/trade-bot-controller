@@ -29,7 +29,7 @@ import {
 import { FormComponent, useFormState } from "./FormComponent";
 import { MarketWithStat } from "./Components";
 import { Link } from "react-router-dom";
-import { useAccountMarket } from "../../hooks";
+import { useAccountMarket, useStorage } from "../../hooks";
 import { useSerchInput } from "../../components/SearchInput";
 const SidebarDrawer = ({
   isOpen,
@@ -194,7 +194,13 @@ function ConfigurationComponent({ params, onSubmit }) {
     </>
   );
 }
-function GridLayout({ update, items, onSelect, selectedMarkets = [] }) {
+function GridLayout({
+  update,
+  items,
+  onSelect,
+  selectedMarkets = [],
+  ...rest
+}) {
   return (
     <>
       <Grid
@@ -202,7 +208,7 @@ function GridLayout({ update, items, onSelect, selectedMarkets = [] }) {
         templateColumns={["repeat(2, 1fr)", "repeat(3,1fr)", "repeat(4,1fr)"]}
         gap={[1, 2, 3]}
         maxHeight="400px"
-        overflowY="scroll"
+        {...rest}
       >
         {items.map(market => {
           return (
@@ -315,7 +321,8 @@ export function Market({ match, history }) {
     getFormResult,
     deleteMarket,
     bulkUpdateMarkets,
-    updateMarket
+    updateMarket,
+    adapter
   } = useContext(AppContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
@@ -431,21 +438,7 @@ export function Market({ match, history }) {
       }, 3000);
     });
   }
-  function getCoin(array, key) {
-    return array.filter(
-      (obj, index, self) => index === self.findIndex(el => el[key] === obj[key])
-    );
-  }
-  function getMarketFromCoin(marketCoin) {
-    let filteredmarket = markets.filter(x => x.coin === marketCoin);
-    return filteredmarket;
-  }
-  console.log(getMarketFromCoin(marketCoin));
-  function coinButton(e) {
-    let value = e.target.value;
-    setMarketCoin(value);
-    setSelected(value)
-  }
+
   return (
     <Box className="App">
       <NavigationBar title="Main Account Markets">
@@ -524,130 +517,9 @@ export function Market({ match, history }) {
               />
             </Route>
             <Route exact path={`${match.url}/list-mode`}>
-              <Box display="flex">
-                <Box display="flex" flexDirection="column" >
-                  {getCoin(markets, "coin").map(x => (
-                    <PseudoBox
-                      value={x.coin}
-                      as="button"
-                      py="1em"
-                      px="1em"
-                      mx="1em"
-                      my="0.2em"
-                      border="1px solid"
-                      boxShadow="md"
-                      rounded="md"
-                      _active={{ bg: "teal.700" }}
-                      _hover={{
-                        cursor: "pointer",
-                        background: "teal",
-                        color: "white",
-                        borderColor: "white"
-                      }}
-                      key={x.coin}
-                      background={selected === x.coin ? "teal" : "inherit"}
-                      color={selected === x.coin ? "white" : "inherit"}
-                      onClick={e => coinButton(e)}
-                      // to={x)}
-                    >
-                      {x.coin}
-                    </PseudoBox>
-                  ))}
-                </Box>
-                <Box borderLeft= "1px solid">
-                <Box  borderBottom="1px solid">
-                <Text fontSize="20px" color="tomato" textAlign="center">
-                  Active Market
-                </Text>
-                <Box display="flex" paddingBottom="10px">
-                  {getMarketFromCoin(marketCoin).map(x => (
-                    <PseudoBox
-                      as="button"
-                      py="1em"
-                      px="1em"
-                      mx="1em"
-                      my="0.2em"
-                      border="1px solid"
-                      boxShadow="md"
-                      rounded="md"
-                      background="teal"
-                      color="white"
-                      _hover={{
-                        cursor: "pointer",
-                        background: "teal",
-                        color: "white",
-                        borderColor: "white"
-                      }}
-                      key={x}
-                      // to={x)}
-                    >
-                      {x.market_label()}
-                    </PseudoBox>
-                  ))}
-                </Box>
-                </Box>
-                <Box  borderBottom="1px solid">
-                <Text fontSize="20px" color="tomato" textAlign="center">
-                Non-active USD Market
-              </Text>
-                <Box display="flex"  paddingBottom="10px">
-                {["A", "B", "C", "D", "E"].map(x => (
-                  <PseudoBox
-                  as="button"
-                  py="1em"
-                  px="1em"
-                  mx="1em"
-                  my="0.2em"
-                  border="1px solid"
-                  boxShadow="md"
-                  rounded="md"
-                  _hover={{
-                    cursor: "pointer",
-                          background: "teal",
-                          color: "white",
-                          borderColor: "white"
-                        }}
-                        key={x}
-                        // to={x)}
-                      >
-                        {x}
-                        </PseudoBox>
-                        ))}
-                        </Box>
-                        </Box>
-                  <Box >
-                  <Text fontSize="20px" color="tomato" textAlign="center">
-                  USD Market
-                </Text>
-                  <Box display="flex" >
-                  {["Femi", "Bola", "Bukky"].map(x => (
-                    <PseudoBox
-                    as="button"
-                        py="1em"
-                        px="1em"
-                        mx="1em"
-                        my="0.2em"
-                        border="1px solid"
-                        boxShadow="md"
-                        rounded="md"
-                        _hover={{
-                          cursor: "pointer",
-                          background: "teal",
-                          color: "white",
-                          borderColor: "white"
-                        }}
-                        key={x}
-                        // to={x)}
-                        >
-                        {x}
-                        </PseudoBox>
-                        ))}
-                        </Box>
-                        </Box>
-                        </Box>
-                        </Box>
-                        </Route>
-                        </RouterSwitch>
+              <ListView activeMarkets={markets} adapter={adapter} />
+            </Route>
+          </RouterSwitch>
           {selectedMarkets.length > 1 ? null : (
             <>
               <ControlButton
@@ -707,6 +579,149 @@ export function Market({ match, history }) {
     </Box>
   );
 }
+function ListView({
+  activeMarkets = [],
+  addOrRemoveMarkets,
+  selectedMarkets,
+  updated,
+  adapter
+}) {
+  let { getValue, setValue, cachedAlternateMarket, allMarkets } = useStorage(
+    "all-markets",
+    adapter
+  );
+  // console.log()
+  let [selectedCoin, setSelectedCoin] = useState();
+  let [selectedCoinMarkets, setSelectedCoinMarkets] = useState([]);
+
+  useEffect(() => {
+    cachedAlternateMarket(selectedCoin).then(x => {
+      console.log(x);
+    });
+  }, [selectedCoin]);
+  function coinButton(coin) {
+    setSelectedCoin(coin);
+  }
+  function getCoin() {
+    return activeMarkets.filter(
+      (obj, index, self) =>
+        index === self.findIndex(el => el["coin"] === obj["coin"])
+    );
+  }
+  function getMarketFromCoin() {
+    let filteredmarket = activeMarkets.filter(x => x.coin === selectedCoin);
+    return filteredmarket;
+  }
+  let baseCoins = getCoin();
+  return (
+    <Box display="flex">
+      <Box display="flex" flexDirection="column">
+        {baseCoins.map(x => (
+          <PseudoBox
+            value={x.coin}
+            as="button"
+            py="1em"
+            px="1em"
+            mx="1em"
+            my="0.2em"
+            border="1px solid"
+            boxShadow="md"
+            rounded="md"
+            _active={{ bg: "teal.700" }}
+            _hover={{
+              cursor: "pointer",
+              background: "teal",
+              color: "white",
+              borderColor: "white"
+            }}
+            key={x.coin}
+            background={selectedCoin === x.coin ? "teal" : "inherit"}
+            color={selectedCoin === x.coin ? "white" : "inherit"}
+            onClick={e => coinButton(x.coin)}
+          >
+            {x.coin}
+          </PseudoBox>
+        ))}
+      </Box>
+      {selectedCoin && (
+        <Box borderLeft="1px solid">
+          <Box borderBottom="1px solid">
+            <Text fontSize="20px" color="tomato" textAlign="center">
+              Active Market
+            </Text>
+
+            <Box display="flex" paddingBottom="10px">
+              <GridLayout
+                items={getMarketFromCoin()}
+                onSelect={addOrRemoveMarkets}
+                selectedMarkets={selectedMarkets}
+                update={updated}
+              />
+            </Box>
+          </Box>
+          <Box borderBottom="1px solid">
+            <Text fontSize="20px" color="tomato" textAlign="center">
+              Non-active USD Market
+            </Text>
+            <Box display="flex" paddingBottom="10px">
+              {["A", "B", "C", "D", "E"].map(x => (
+                <PseudoBox
+                  as="button"
+                  py="1em"
+                  px="1em"
+                  mx="1em"
+                  my="0.2em"
+                  border="1px solid"
+                  boxShadow="md"
+                  rounded="md"
+                  _hover={{
+                    cursor: "pointer",
+                    background: "teal",
+                    color: "white",
+                    borderColor: "white"
+                  }}
+                  key={x}
+                  // to={x)}
+                >
+                  {x}
+                </PseudoBox>
+              ))}
+            </Box>
+          </Box>
+          <Box>
+            <Text fontSize="20px" color="tomato" textAlign="center">
+              USD Market
+            </Text>
+            <Box display="flex">
+              {["Femi", "Bola", "Bukky"].map(x => (
+                <PseudoBox
+                  as="button"
+                  py="1em"
+                  px="1em"
+                  mx="1em"
+                  my="0.2em"
+                  border="1px solid"
+                  boxShadow="md"
+                  rounded="md"
+                  _hover={{
+                    cursor: "pointer",
+                    background: "teal",
+                    color: "white",
+                    borderColor: "white"
+                  }}
+                  key={x}
+                  // to={x)}
+                >
+                  {x}
+                </PseudoBox>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
+}
 const DetailView = ({
   markets,
   filteredItem = " ",
@@ -737,6 +752,7 @@ const DetailView = ({
         onSelect={addOrRemoveMarkets}
         selectedMarkets={selectedMarkets}
         update={updated}
+        overflowY="scroll"
       />
       {selectedMarkets.length > 1 ? (
         <ConfigurationComponent
