@@ -1,3 +1,5 @@
+import { setStorage } from "../hooks";
+
 export let configs = [
   {
     id: 1,
@@ -269,13 +271,20 @@ function getAlternateMarkets(coin) {
     .then(response => response.json())
     .then(data => {
       return data.data;
-      console.log(data)
+      console.log(data);
     });
-    }
+}
 function updateExistingMarket(oldConfig, newConfig, account) {
-  console.log(oldConfig)
-  console.log(newConfig)
+  console.log(oldConfig);
+  console.log(newConfig);
   return new Promise((resolve, reject) => {
+    configs = configs.map(x => {
+      if (x.id === oldConfig.id) {
+        return { ...oldConfig, ...newConfig };
+      }
+      return x;
+    });
+    setStorage(account, undefined);
     resolve();
   });
 }
@@ -295,18 +304,18 @@ function getAllAssets(account = "main_account", key = "asset") {
       return data.data;
     });
 }
-function deleteMarket(market,account){
+function deleteMarket(market, account) {
   let id = market.id;
-    let newAccounts = accounts.map(x => {
-      if (x.slug === account) {
-        return { ...x, market: x.market.filter(x => x !== id) };
-      }
-      return x;
-    });
-    accounts = newAccounts;
-    return new Promise((resolve, reject) => {
-      resolve(accounts);
-    });
+  let newAccounts = accounts.map(x => {
+    if (x.slug === account) {
+      return { ...x, market: x.market.filter(x => x !== id) };
+    }
+    return x;
+  });
+  accounts = newAccounts;
+  return new Promise((resolve, reject) => {
+    resolve(accounts);
+  });
 }
 export const adapter = {
   getAccounts,

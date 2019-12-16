@@ -595,11 +595,10 @@ function ListView({
   let [selectedCoinMarkets, setSelectedCoinMarkets] = useState([]);
 
   useEffect(() => {
-    if(selectedCoin){
+    if (selectedCoin) {
       cachedAlternateMarket(selectedCoin).then(x => {
         console.log(x);
       });
-
     }
   }, [selectedCoin]);
   function coinButton(coin) {

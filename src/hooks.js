@@ -173,9 +173,9 @@ export function useGetData(market) {
         // return {text:result.text.replace(/\n/g, "\n\n")};
       })
       .catch(error => {
-        console.log("Thid")
+        console.log("Thid");
         setLoader(false);
-        throw error
+        throw error;
       });
   }
   function getData(mk) {
@@ -269,6 +269,13 @@ export function useGetData(market) {
   }
   return { data, analyzeMarket, analyzeLoader, setLoader, transactionLoader };
 }
+export function setStorage(key, value) {
+  if (value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  } else {
+    localStorage.setItem(key, "");
+  }
+}
 export const useStorage = (key, adapter) => {
   let [allMarkets, setAllMarkets] = useState([]);
   useEffect(() => {
@@ -287,9 +294,7 @@ export const useStorage = (key, adapter) => {
       });
     }
   }
-  function setStorage(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
+
   function getStorage(key) {
     let result = localStorage.getItem(key);
     if (result) {
