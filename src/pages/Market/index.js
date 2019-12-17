@@ -304,7 +304,7 @@ export function DeleteAccountMarket({
   );
 }
 export function Market({ match, history }) {
-  let [isListMode, setListMode] = useState(true);
+  let [isListMode, setListMode] = useState(false);
   const toast = useToast();
   const pageProps = useAccountMarket(match.params.account);
   const { markets, loading, setMarkets, setRefresh } = pageProps;
@@ -452,20 +452,25 @@ export function Market({ match, history }) {
             id="email-alerts"
           />
         </Flex>
-        <MenuComponent
-          defaultText="Filter"
-          options={["All", "BTC", "USDT", "ETH ", "BNB"]}
-          value={filteredItem}
-          onMenuItemClick={x => {
-            setFilteredItem(x);
-          }}
-          menuProps={{ background: "teal" }}
-          buttonProps={{
-            variantColor: "teal",
-            variant: "solid",
-            marginRight: "4em"
-          }}
-        />
+        {!isListMode ? (
+          <MenuComponent
+            // display={isListMode? "none" :"inherit"}
+            defaultText="Filter"
+            options={["All", "BTC", "USDT", "ETH ", "BNB"]}
+            value={filteredItem}
+            onMenuItemClick={x => {
+              setFilteredItem(x);
+            }}
+            menuProps={{ background: "teal" }}
+            buttonProps={{
+              variantColor: "teal",
+              variant: "solid",
+              marginRight: "4em"
+            }}
+          />
+        ) : (
+          <Button variantColor="tomato" size="md" mr="4em" isDisabled></Button>
+        )}
         <ControlButton
           btnRef={btnRef}
           onClick={setRefresh}
@@ -517,7 +522,7 @@ export function Market({ match, history }) {
               />
             </Route>
             <Route exact path={`${match.url}/list-mode`}>
-              <ListView activeMarkets={markets} adapter={adapter} />
+              <ListView activeMarkets={markets} adapter={adapter} account={match.params.account}/>
             </Route>
           </RouterSwitch>
           {selectedMarkets.length > 1 ? null : (
@@ -584,7 +589,8 @@ function ListView({
   addOrRemoveMarkets,
   selectedMarkets,
   updated,
-  adapter
+  adapter,
+  account
 }) {
   let { getValue, setValue, cachedAlternateMarket, allMarkets } = useStorage(
     "all-markets",
@@ -593,16 +599,22 @@ function ListView({
   // console.log()
   let [selectedCoin, setSelectedCoin] = useState();
   let [selectedCoinMarkets, setSelectedCoinMarkets] = useState([]);
+  let [allMarket, setAllMarket] = useState([]);
+  let [selectedNonActive, setSelectedNonActive] = useState([]);
 
   useEffect(() => {
     if (selectedCoin) {
       cachedAlternateMarket(selectedCoin).then(x => {
-        console.log(x);
+        setAllMarket(x);
       });
     }
   }, [selectedCoin]);
   function coinButton(coin) {
     setSelectedCoin(coin);
+  }
+  function marketButton(x) {
+    setSelectedNonActive(x);
+    console.log(x);
   }
   function getCoin() {
     return activeMarkets.filter(
@@ -614,114 +626,153 @@ function ListView({
     let filteredmarket = activeMarkets.filter(x => x.coin === selectedCoin);
     return filteredmarket;
   }
+
+  function getUsdMarket() {
+    let usd = allMarket.filter(x => x.includes("USD"));
+    let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
+    let filteredUsd = usd.filter(x => !coinMarket.includes(x));
+    return filteredUsd;
+  }
+  function getNonUsdMarket() {
+    let nonUsd = allMarket.filter(x => !x.includes("USD"));
+    let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
+    let filteredNonUsd = nonUsd.filter(x => !coinMarket.includes(x));
+    return filteredNonUsd;
+  }
+
   let baseCoins = getCoin();
   return (
-    <Box display="flex">
-      <Box display="flex" flexDirection="column">
-        {baseCoins.map(x => (
-          <PseudoBox
-            value={x.coin}
-            as="button"
-            py="1em"
-            px="1em"
-            mx="1em"
-            my="0.2em"
-            border="1px solid"
-            boxShadow="md"
-            rounded="md"
-            _active={{ bg: "teal.700" }}
-            _hover={{
-              cursor: "pointer",
-              background: "teal",
-              color: "white",
-              borderColor: "white"
-            }}
-            key={x.coin}
-            background={selectedCoin === x.coin ? "teal" : "inherit"}
-            color={selectedCoin === x.coin ? "white" : "inherit"}
-            onClick={e => coinButton(x.coin)}
-          >
-            {x.coin}
-          </PseudoBox>
-        ))}
-      </Box>
-      {selectedCoin && (
-        <Box borderLeft="1px solid">
-          <Box borderBottom="1px solid">
-            <Text fontSize="20px" color="tomato" textAlign="center">
-              Active Market
-            </Text>
-
-            <Box display="flex" paddingBottom="10px">
-              <GridLayout
-                items={getMarketFromCoin()}
-                onSelect={addOrRemoveMarkets}
-                selectedMarkets={selectedMarkets}
-                update={updated}
-              />
-            </Box>
-          </Box>
-          <Box borderBottom="1px solid">
-            <Text fontSize="20px" color="tomato" textAlign="center">
-              Non-active USD Market
-            </Text>
-            <Box display="flex" paddingBottom="10px">
-              {["A", "B", "C", "D", "E"].map(x => (
-                <PseudoBox
-                  as="button"
-                  py="1em"
-                  px="1em"
-                  mx="1em"
-                  my="0.2em"
-                  border="1px solid"
-                  boxShadow="md"
-                  rounded="md"
-                  _hover={{
-                    cursor: "pointer",
-                    background: "teal",
-                    color: "white",
-                    borderColor: "white"
-                  }}
-                  key={x}
-                  // to={x)}
-                >
-                  {x}
-                </PseudoBox>
-              ))}
-            </Box>
-          </Box>
-          <Box>
-            <Text fontSize="20px" color="tomato" textAlign="center">
-              USD Market
-            </Text>
-            <Box display="flex">
-              {["Femi", "Bola", "Bukky"].map(x => (
-                <PseudoBox
-                  as="button"
-                  py="1em"
-                  px="1em"
-                  mx="1em"
-                  my="0.2em"
-                  border="1px solid"
-                  boxShadow="md"
-                  rounded="md"
-                  _hover={{
-                    cursor: "pointer",
-                    background: "teal",
-                    color: "white",
-                    borderColor: "white"
-                  }}
-                  key={x}
-                  // to={x)}
-                >
-                  {x}
-                </PseudoBox>
-              ))}
-            </Box>
-          </Box>
+    <>
+      <Box display="flex">
+        <Box display="flex" flexDirection="column">
+          {baseCoins.map(x => (
+            <PseudoBox
+              value={x.coin}
+              as="button"
+              py="1em"
+              px="1em"
+              mx="1em"
+              my="0.2em"
+              border="1px solid"
+              boxShadow="md"
+              rounded="md"
+              _active={{ bg: "teal.700" }}
+              _hover={{
+                cursor: "pointer",
+                background: "teal",
+                color: "white",
+                borderColor: "white"
+              }}
+              key={x.coin}
+              background={selectedCoin === x.coin ? "teal" : "inherit"}
+              color={selectedCoin === x.coin ? "white" : "inherit"}
+              onClick={e => coinButton(x.coin)}
+            >
+              {x.coin}
+            </PseudoBox>
+          ))}
         </Box>
+        {selectedCoin && (
+          <Box borderLeft="1px solid">
+            <Box borderBottom="1px solid">
+              <Text fontSize="20px" color="tomato" textAlign="center">
+                Active Market
+              </Text>
+
+              <Box display="flex">
+                <GridLayout
+                  items={getMarketFromCoin()}
+                  onSelect={addOrRemoveMarkets}
+                  selectedMarkets={selectedMarkets}
+                  update={updated}
+                />
+              </Box>
+            </Box>
+            <Box borderBottom="1px solid">
+              <Text fontSize="20px" color="tomato" textAlign="center">
+                Non-active USD Market
+              </Text>
+              <Box display="flex" paddingBottom="10px">
+                {getNonUsdMarket().map(x => (
+                  <PseudoBox
+                    background={selectedNonActive === x ? "teal" : "inherit"}
+                    as={Link}
+                    py="1em"
+                    px="1em"
+                    mx="1em"
+                    my="0.2em"
+                    border="1px solid"
+                    boxShadow="md"
+                    rounded="md"
+                    _hover={{
+                      cursor: "pointer",
+                      background: "teal",
+                      color: "white",
+                      borderColor: "white"
+                    }}
+                    key={x}
+                    
+                    to={`/${account}/markets/detail/${x.toLowerCase()}?market=true`}
+                    // to={`/markets/${x.toLowerCase()}`}
+                  >
+                    {x}
+                  </PseudoBox>
+                ))}
+              </Box>
+            </Box>
+            <Box>
+              <Text fontSize="20px" color="tomato" textAlign="center">
+                USD Market
+              </Text>
+
+              <Box display="flex">
+                {getUsdMarket().map(x => (
+                  <PseudoBox
+                    as="button"
+                    py="1em"
+                    px="1em"
+                    mx="1em"
+                    my="0.2em"
+                    border="1px solid"
+                    boxShadow="md"
+                    rounded="md"
+                    _hover={{
+                      cursor: "pointer",
+                      background: "teal",
+                      color: "white",
+                      borderColor: "white"
+                    }}
+                    key={x}
+                    background={selectedNonActive === x ? "teal" : "inherit"}
+                    onClick={e => marketButton(x)}
+                  >
+                    {x}
+                  </PseudoBox>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {selectedNonActive.length > 1 && (
+        <ControlButton
+          as={Link}
+          // to={`/${
+          //   match.params.account
+          // }/markets/detail/${selectedMarkets[0]
+          //   .toLowerCase()
+          //   .replace("/", "")}`}
+          // btnRef={btnRef}
+          icon={"external-link"}
+          variantColor="red"
+          style={{
+            right: "6em",
+            bottom: "2em"
+          }}
+        />
       )}
-    </Box>
+    </>
   );
 }
 const DetailView = ({

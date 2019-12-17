@@ -24,6 +24,7 @@ import { useAccountMarket, useStorage } from "../../hooks";
 import { XModal } from "../../components";
 import { supported_markets } from "../../data/prod";
 export function MarketAnalyzer({
+  location,
   textBlob,
   analyzeLoader,
   onsubmit,
@@ -33,7 +34,8 @@ export function MarketAnalyzer({
   defaultConfig = {},
   symbol,
   cachedAlternateMarket,
-  onEditSave
+  onEditSave,
+  fromMarketPage
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -42,6 +44,7 @@ export function MarketAnalyzer({
     onsubmit,
     onCreateMarket
   });
+
   function getValues(x) {
     let fields = [
       "coin",
@@ -94,7 +97,6 @@ export function MarketAnalyzer({
     return resultValue;
   }
   function onSave(accountSelected) {
-    debugger;
     let values = getValues(config);
     onCreateMarket(values, accountSelected)
       .then(() => {
@@ -102,10 +104,9 @@ export function MarketAnalyzer({
         //show toast
         //close modal
       })
-      .catch(error => {
-        debugger;
-      });
+      .catch(error => {});
   }
+
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <MarketDetailsForm
@@ -119,7 +120,9 @@ export function MarketAnalyzer({
           config,
           defaultConfig,
           account,
-          onEditSave
+          onEditSave,
+          fromMarketPage,
+          onCreateMarket
         }}
         defaultMarket={defaultConfig.coin || symbol}
       >
@@ -179,7 +182,8 @@ function useDetailForm({ defaultConfig, onsubmit }) {
   useEffect(() => {
     let newConfig = defaultConfig;
     if (newConfig.market) {
-      newConfig.buy_market = newConfig.market;
+      newConfig.buy_market = newConfig.market.toUpperCase();
+      newConfig.coin=newConfig.coin.toUpperCase();
     }
     setConfig({ ...config, ...newConfig });
   }, [defaultConfig.coin]);
@@ -196,6 +200,7 @@ function useDetailForm({ defaultConfig, onsubmit }) {
       value = str2bool(value);
     }
     let newConfig = { ...config, [input]: value };
+    console.log(newConfig);
     setConfig(newConfig);
   };
   function onSaveHandler(event) {
@@ -215,6 +220,7 @@ function useDetailForm({ defaultConfig, onsubmit }) {
     onSaveForm: onSaveHandler
   };
 }
+
 export function MarketDetailsForm({
   config,
   defaultConfig,
@@ -227,15 +233,22 @@ export function MarketDetailsForm({
   account,
   cachedAlternateMarket,
   handleChange,
-  onEditSave
+  onEditSave,
+  fromMarketPage,
+  onCreateMarket
 }) {
   const [supported_markets, loading] = useSupportedMarkets(
     defaultMarket,
     cachedAlternateMarket
   );
+
   function editFormHandler(e) {
-    onEditSave(defaultConfig, config, account);
-  }
+    if (!fromMarketPage) {
+      onEditSave(defaultConfig, config, account);
+    } else {
+      onCreateMarket(config, account)
+        }
+}
   return (
     <Box display="flex" flex={0.95} flexDirection="column">
       <Box flexWrap="wrap" display="flex">

@@ -69,6 +69,7 @@ export const AppProvider = ({ children, adapter }) => {
   }
   function deleteMarket(market, account) {
     return adapter.deleteMarket(market,account).then(newAccounts=>{
+      console.log(newAccounts);
       setAccounts(newAccounts)
     })
   }

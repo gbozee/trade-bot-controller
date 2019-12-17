@@ -219,7 +219,6 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
       history.push(`/${account}/markets`);
   }
   function onCreateMarket(values, accountSelected) {
-    console.log(accountSelected);
     return getFormResult(values, accountSelected)
       .then(savedMarketValue => {
         // clear the cache of the account markets.
@@ -230,9 +229,9 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
           storage.set(accountSelected, newAccountMarkets);
         }
         displayToast(`Market has been created `);
-        if (!account) {
+      
           history.push(`/${accountSelected}/markets`);
-        }
+        
       })
       .catch(error => {
         displayToast("An Error occurred", "warning");
@@ -268,7 +267,8 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
               onCreateMarket,
               cachedAlternateMarket,
               accounts,
-              account
+              account,
+              fromMarketPage
             }}
           />
         </Flex>
