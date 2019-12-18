@@ -52,7 +52,7 @@ function ListLayout({
 }
 
 function ListView({
-  activeMarkets = [],
+  activeMarkets: all_markets = [],
   addOrRemoveMarkets,
   selectedMarkets,
   updated,
@@ -62,12 +62,23 @@ function ListView({
   setRefresh,
   listModeUrl
 }) {
+  let [activeMarkets, setActiveMarkets] = useState(all_markets);
   let { storage, cachedAlternateMarket } = useStorage("all-markets", adapter);
   let { getFormResult } = useContext(AppContext);
   let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
   let [allMarket, setAllMarket] = useState([]);
   let [selectedNonActive, setSelectedNonActive] = useState();
 
+  useEffect(() => {
+    if (activeMarkets.length === 0) {
+      setActiveMarkets(all_markets);
+      if (!listModeUrl && all_markets.length > 0) {
+        let first = all_markets[0];
+        console.log(first);
+        setSelectedCoin(first.coin);
+      }
+    }
+  }, [all_markets.length]);
   useEffect(() => {
     if (selectedCoin) {
       cachedAlternateMarket(selectedCoin).then(x => {
@@ -116,10 +127,13 @@ function ListView({
     let filteredNonUsd = nonUsd.filter(x => !coinMarket.includes(x));
     return filteredNonUsd;
   }
-  function getFirstDollarMarket() {
+  function getFirstDollarMarket(full_market) {
     let d_markets = ["usdt", "tusd", "usds", "usdc", "busd", "pax"];
     let dollarMarkets = baseCoins().filter(x => {
       return d_markets.includes(x.buy_market.toLowerCase());
+    });
+    dollarMarkets = dollarMarkets.filter(x => {
+      return full_market.startsWith(x.coin.toUpperCase());
     });
     if (dollarMarkets.length > 0) {
       return dollarMarkets[0];
@@ -127,30 +141,33 @@ function ListView({
     return undefined;
   }
   function transferMarket() {
-    let foundActiveDollarMarket = getFirstDollarMarket();
+    let foundActiveDollarMarket = getFirstDollarMarket(selectedNonActive);
     if (foundActiveDollarMarket) {
-      console.log(baseCoins());
+      console.log(foundActiveDollarMarket);
       let buy_market = selectedNonActive.replace(
-        foundActiveDollarMarket.coin,
+        foundActiveDollarMarket.coin.toUpperCase(),
         ""
       );
+      console.log(buy_market);
       let config = { ...foundActiveDollarMarket, buy_market };
       console.log(config);
       onCreateMarket(config, account)
         .then(() => {
-          // history.push(`/${account}/markets/list-mode?coin=${config.coin}`);
-          setRefresh();
+          setActiveMarkets([...activeMarkets, config]);
+          // setSelectedCoin(config.coin);
         })
         .catch(error => {});
     } else {
     }
   }
-
+  function getAllCoins() {
+    return baseCoins().map(x => x.coin);
+  }
   return (
     <Box>
       <Box display="flex">
         <Box display="flex" flexDirection="column">
-          {baseCoins().map(x => (
+          {getAllCoins().map(x => (
             <PseudoBox
               value={x.coin}
               as="button"
@@ -168,12 +185,12 @@ function ListView({
                 color: "white",
                 borderColor: "white"
               }}
-              key={x.coin}
-              background={selectedCoin === x.coin ? "teal" : "inherit"}
-              color={selectedCoin === x.coin ? "white" : "inherit"}
-              onClick={e => coinButton(x.coin)}
+              key={x}
+              background={selectedCoin === x ? "teal" : "inherit"}
+              color={selectedCoin === x ? "white" : "inherit"}
+              onClick={e => setSelectedCoin(x)}
             >
-              {x.coin}
+              {x}
             </PseudoBox>
           ))}
         </Box>
