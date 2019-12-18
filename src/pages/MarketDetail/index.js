@@ -230,7 +230,7 @@ export const MarketDetail = ({ match, history, location: { search } }) => {
         }
         displayToast(`Market has been created `);
       
-          history.push(`/${accountSelected}/markets`);
+          history.push(`/${accountSelected}/markets?coin=${values.coin}`);
         
       })
       .catch(error => {

@@ -31,6 +31,7 @@ import { MarketWithStat } from "./Components";
 import { Link } from "react-router-dom";
 import { useAccountMarket, useStorage } from "../../hooks";
 import { useSerchInput } from "../../components/SearchInput";
+const queryString = require("query-string");
 const SidebarDrawer = ({
   isOpen,
   onClose,
@@ -129,7 +130,7 @@ function ConfigurationComponent({ params, onSubmit }) {
     ...formParams
   } = useFormState(undefined, onSubmit, false, true);
   return (
-    <>
+    <Box>
       <Flex direction="column">
         <Flex mt={5} mx={3}>
           <MenuComponent
@@ -191,7 +192,7 @@ function ConfigurationComponent({ params, onSubmit }) {
           Submit
         </Button>
       </Flex>
-    </>
+    </Box>
   );
 }
 function GridLayout({
@@ -202,7 +203,7 @@ function GridLayout({
   ...rest
 }) {
   return (
-    <>
+    <Box>
       <Grid
         pt={5}
         templateColumns={["repeat(2, 1fr)", "repeat(3,1fr)", "repeat(4,1fr)"]}
@@ -251,7 +252,7 @@ function GridLayout({
           })}
         </Stack>
       </Box> */}
-    </>
+    </Box>
   );
 }
 export function DeleteAccountMarket({
@@ -261,7 +262,8 @@ export function DeleteAccountMarket({
   btnRef,
   markets,
   deleteMarket,
-  match
+  match,
+  isListMode
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   function onDeleteHandler(e) {
@@ -284,7 +286,8 @@ export function DeleteAccountMarket({
           variantColor="blue"
           style={{
             right: "14em",
-            bottom: "2em"
+            bottom: "2em",
+            display: isListMode ? "none" : "inherit"
           }}
         />
       )}
@@ -303,17 +306,28 @@ export function DeleteAccountMarket({
     </Box>
   );
 }
-export function Market({ match, history }) {
-  let [isListMode, setListMode] = useState(false);
+export function Market({ match, history, location: { search } }) {
+  const queryString = require("query-string");
+  const parse = queryString.parse(search);
+  const listModeUrl = parse["coin"];
+  let [isListMode, setListMode] = useState(true);
   const toast = useToast();
   const pageProps = useAccountMarket(match.params.account);
   const { markets, loading, setMarkets, setRefresh } = pageProps;
   useEffect(() => {
+    let url = `${match.url}`;
     if (isListMode) {
-      history.push(`${match.url}/list-mode`);
-    } else {
-      history.push(`${match.url}`);
+      url += "/list-mode";
     }
+    if (search) {
+      url += search;
+    }
+    history.push(url);
+    // if (isListMode) {
+    //   history.push(`${match.url}/list-mode`);
+    // } else {
+    //   history.push(`${match.url}`);
+    // }
   }, [isListMode]);
   const {
     hiddenFields,
@@ -440,21 +454,20 @@ export function Market({ match, history }) {
   }
 
   return (
-    <Box className="App">
-      <NavigationBar title="Main Account Markets">
-        <Flex justify="center" align="center">
-          <FormLabel htmlFor="email-alerts">Toggle List Mode</FormLabel>
-          <Switch
-            onChange={e => {
-              setListMode(e.target.checked);
-            }}
-            isChecked={isListMode}
-            id="email-alerts"
-          />
-        </Flex>
-        {!isListMode ? (
+    <>
+      <Box className="App">
+        <NavigationBar title="Main Account Markets">
+          <Flex justify="center" align="center">
+            <FormLabel htmlFor="email-alerts">Toggle List Mode</FormLabel>
+            <Switch
+              onChange={e => {
+                setListMode(e.target.checked);
+              }}
+              isChecked={isListMode}
+              id="email-alerts"
+            />
+          </Flex>
           <MenuComponent
-            // display={isListMode? "none" :"inherit"}
             defaultText="Filter"
             options={["All", "BTC", "USDT", "ETH ", "BNB"]}
             value={filteredItem}
@@ -465,123 +478,135 @@ export function Market({ match, history }) {
             buttonProps={{
               variantColor: "teal",
               variant: "solid",
-              marginRight: "4em"
+              marginRight: "4em",
+              visibility: isListMode ? "hidden" : "visible"
             }}
           />
-        ) : (
-          <Button variantColor="tomato" size="md" mr="4em" isDisabled></Button>
-        )}
-        <ControlButton
-          btnRef={btnRef}
-          onClick={setRefresh}
-          icon={"repeat"}
-          variantColor="blue"
-          style={{
-            right: "1em",
-            position: "absolute"
-          }}
-        />
-        {isOpen && (
-          <SidebarDrawer
-            {...{
-              isOpen,
-              onClose,
-              markets,
-              account: match.params.account,
-              // btnRef,
-              hiddenFields,
-              market: newEditItem,
-              marketInfo: markets.find(x => x.market_label() === newEditItem),
-              formFields: getFormFields(),
-              onSubmit
+          <ControlButton
+            btnRef={btnRef}
+            onClick={setRefresh}
+            icon={"repeat"}
+            variantColor="blue"
+            style={{
+              right: "1em",
+              position: "absolute"
             }}
           />
-        )}
-      </NavigationBar>
-      <Box px={6} pt={3}>
-        <SubNavigationBar routes={routes} />
-      </Box>
-      {loading ? (
-        <Box display="flex" justifyContent="center" height="20em">
-          <Spinner alignSelf="center" />
-        </Box>
-      ) : (
-        <>
-          <RouterSwitch>
-            <Route exact path={`${match.url}`}>
-              <DetailView
-                {...{
-                  getFormFields,
-                  addOrRemoveMarkets,
-                  selectedMarkets,
-                  updated,
-                  markets,
-                  filteredItem,
-                  onSubmit
-                }}
-              />
-            </Route>
-            <Route exact path={`${match.url}/list-mode`}>
-              <ListView activeMarkets={markets} adapter={adapter} account={match.params.account}/>
-            </Route>
-          </RouterSwitch>
-          {selectedMarkets.length > 1 ? null : (
-            <>
-              <ControlButton
-                btnRef={btnRef}
-                onClick={selectedMarkets.length === 1 ? onOpen : onOpen}
-                icon={selectedMarkets.length === 1 ? "edit" : "add"}
-                variantColor="pink"
-                style={{
-                  right: "2em",
-                  bottom: "2em"
-                }}
-              />
-              {selectedMarkets.length === 1 && (
-                <ControlButton
-                  as={Link}
-                  to={`/${
-                    match.params.account
-                  }/markets/detail/${selectedMarkets[0]
-                    .toLowerCase()
-                    .replace("/", "")}`}
-                  btnRef={btnRef}
-                  icon={"calendar"}
-                  variantColor="teal"
-                  style={{
-                    right: "6em",
-                    bottom: "2em"
-                  }}
-                />
-              )}
-              {selectedMarkets.length === 1 && (
-                <ControlButton
-                  btnRef={btnRef}
-                  onClick={updatedMarket}
-                  icon={"repeat"}
-                  variantColor="red"
-                  style={{
-                    right: "10em",
-                    bottom: "2em"
-                  }}
-                />
-              )}
-              <DeleteAccountMarket
-                {...{
-                  deleteMarket,
-                  selectedMarkets,
-                  match,
-                  btnRef,
-                  markets,
-                  setSelectedMarkets,
-                  setRefresh
-                }}
-              />
-            </>
+          {isOpen && (
+            <SidebarDrawer
+              {...{
+                isOpen,
+                onClose,
+                markets,
+                account: match.params.account,
+                // btnRef,
+                hiddenFields,
+                market: newEditItem,
+                marketInfo: markets.find(x => x.market_label() === newEditItem),
+                formFields: getFormFields(),
+                onSubmit
+              }}
+            />
           )}
-        </>
-      )}
-    </Box>
+        </NavigationBar>
+        <Box px={6} pt={3}>
+          <SubNavigationBar routes={routes} />
+        </Box>
+        {loading ? (
+          <Box display="flex" justifyContent="center" height="20em">
+            <Spinner alignSelf="center" />
+          </Box>
+        ) : (
+          <>
+            <RouterSwitch>
+              <Route exact path={`${match.url}`}>
+                <DetailView
+                  {...{
+                    getFormFields,
+                    addOrRemoveMarkets,
+                    selectedMarkets,
+                    updated,
+                    markets,
+                    filteredItem,
+                    onSubmit
+                  }}
+                />
+              </Route>
+              <Route exact path={`${match.url}/list-mode`}>
+                <ListView
+                  {...{}}
+                  activeMarkets={markets}
+                  adapter={adapter}
+                  account={match.params.account}
+                  markets={markets}
+                  setRefresh={setRefresh}
+                  listModeUrl={listModeUrl}
+                  history={history}
+                />
+              </Route>
+            </RouterSwitch>
+            {selectedMarkets.length > 1 ? null : (
+              <>
+                <ControlButton
+                  btnRef={btnRef}
+                  onClick={selectedMarkets.length === 1 ? onOpen : onOpen}
+                  icon={selectedMarkets.length === 1 ? "edit" : "add"}
+                  variantColor="pink"
+                  style={{
+                    right: "2em",
+                    bottom: "2em",
+                    display: isListMode ? "none" : "inherit"
+                  }}
+                />
+                {selectedMarkets.length === 1 && (
+                  <ControlButton
+                    as={Link}
+                    to={`/${
+                      match.params.account
+                    }/markets/detail/${selectedMarkets[0]
+                      .toLowerCase()
+                      .replace("/", "")}`}
+                    btnRef={btnRef}
+                    icon={"calendar"}
+                    variantColor="teal"
+                    style={{
+                      right: "6em",
+                      bottom: "2em",
+                      display: isListMode ? "none" : "inherit"
+                    }}
+                  />
+                )}
+                {selectedMarkets.length === 1 && (
+                  <ControlButton
+                    btnRef={btnRef}
+                    onClick={updatedMarket}
+                    icon={"repeat"}
+                    variantColor="red"
+                    style={{
+                      right: "10em",
+                      bottom: "2em",
+                      display: isListMode ? "none" : "inherit"
+                    }}
+                  />
+                )}
+                <DeleteAccountMarket
+                  {...{
+                    deleteMarket,
+                    selectedMarkets,
+                    match,
+                    btnRef,
+                    markets,
+                    setSelectedMarkets,
+                    setRefresh,
+                    isListMode
+                  }}
+                />
+              </>
+            )}
+          </>
+        )}
+      </Box>
+    </>
   );
 }
 function ListView({
@@ -590,15 +615,17 @@ function ListView({
   selectedMarkets,
   updated,
   adapter,
-  account
+  account,
+  history,
+  setRefresh,
+  listModeUrl
 }) {
-  let { getValue, setValue, cachedAlternateMarket, allMarkets } = useStorage(
+  let { storage, cachedAlternateMarket, allMarkets } = useStorage(
     "all-markets",
     adapter
   );
-  // console.log()
-  let [selectedCoin, setSelectedCoin] = useState();
-  let [selectedCoinMarkets, setSelectedCoinMarkets] = useState([]);
+  let { getFormResult } = useContext(AppContext);
+  let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
   let [allMarket, setAllMarket] = useState([]);
   let [selectedNonActive, setSelectedNonActive] = useState([]);
 
@@ -611,12 +638,77 @@ function ListView({
   }, [selectedCoin]);
   function coinButton(coin) {
     setSelectedCoin(coin);
+    setSelectedNonActive(" ");
   }
+
+  function onCreateMarket(values, account) {
+    return getFormResult(values, account)
+      .then(savedMarketValue => {
+        let accountMarkets = storage.get(account);
+        if (accountMarkets) {
+          let newAccountMarkets = [...accountMarkets, savedMarketValue];
+          storage.set(account, newAccountMarkets);
+        }
+      })
+      .catch(error => {});
+  }
+
+  function ListLayout({
+    items,
+    onSelect = x => {},
+    selectedNonActive,
+    text = "text",
+    to = x => {}
+  }) {
+    return (
+      <Box
+        borderBottom="1px solid"
+        display={items.length < 1 ? "none" : "inherit"}
+      >
+        <Text fontSize="20px" color="tomato" textAlign="center">
+          {text}
+        </Text>
+        <Box display="flex" paddingBottom="10px">
+          {items.map(x => {
+            return (
+              <PseudoBox
+                background={selectedNonActive === x ? "teal" : "inherit"}
+                as={Link}
+                py="1em"
+                px="1em"
+                mx="1em"
+                my="0.2em"
+                border="1px solid"
+                boxShadow="md"
+                rounded="md"
+                _hover={{
+                  cursor: "pointer",
+                  background: "teal",
+                  color: "white",
+                  borderColor: "white"
+                }}
+                key={x}
+                to={to(x)}
+                background={selectedNonActive === x ? "teal" : "inherit"}
+                onClick={e => {
+                  onSelect(x);
+                }}
+              >
+                {x}
+              </PseudoBox>
+            );
+          })}
+        </Box>
+      </Box>
+    );
+  }
+
   function marketButton(x) {
     setSelectedNonActive(x);
-    console.log(x);
   }
-  function getCoin() {
+
+  //get all the coins in the market without duplicate
+  function baseCoins() {
     return activeMarkets.filter(
       (obj, index, self) =>
         index === self.findIndex(el => el["coin"] === obj["coin"])
@@ -640,12 +732,26 @@ function ListView({
     return filteredNonUsd;
   }
 
-  let baseCoins = getCoin();
+  function transferMarket() {
+    let usdMarkets = baseCoins().map(x => x);
+    let coin = selectedNonActive.slice(0, 3);
+    let market = selectedNonActive.slice(-4);
+    let config = usdMarkets.find(x => x.coin === coin);
+    config.coin = coin;
+    config.buy_market = market;
+    onCreateMarket(config, account)
+      .then(() => {
+        history.push(`/${account}/markets/list-mode?coin=${config.coin}`);
+        setRefresh();
+      })
+      .catch(error => {});
+  }
+
   return (
-    <>
+    <Box>
       <Box display="flex">
         <Box display="flex" flexDirection="column">
-          {baseCoins.map(x => (
+          {baseCoins().map(x => (
             <PseudoBox
               value={x.coin}
               as="button"
@@ -672,107 +778,65 @@ function ListView({
             </PseudoBox>
           ))}
         </Box>
-        {selectedCoin && (
-          <Box borderLeft="1px solid">
-            <Box borderBottom="1px solid">
-              <Text fontSize="20px" color="tomato" textAlign="center">
-                Active Market
-              </Text>
+        <Box>
+          {selectedCoin && (
+            <Box borderLeft="1px solid">
+              <Box borderBottom="1px solid">
+                <Text fontSize="20px" color="tomato" textAlign="center">
+                  Active Market
+                </Text>
 
-              <Box display="flex">
-                <GridLayout
-                  items={getMarketFromCoin()}
-                  onSelect={addOrRemoveMarkets}
-                  selectedMarkets={selectedMarkets}
-                  update={updated}
+                <Box display="flex">
+                  <GridLayout
+                    items={getMarketFromCoin()}
+                    onSelect={addOrRemoveMarkets}
+                    selectedMarkets={selectedMarkets}
+                    update={updated}
+                  />
+                </Box>
+              </Box>
+
+              <ListLayout
+                items={getNonUsdMarket()}
+                text="Non-active USD Markets"
+                to={x =>
+                  `/${account}/markets/detail/${x.toLowerCase()}?market=true`
+                }
+              />
+
+              <Box>
+                <ListLayout
+                  items={getUsdMarket()}
+                  text="USD Markets"
+                  onSelect={x => marketButton(x)}
+                  selectedNonActive={selectedNonActive}
                 />
               </Box>
             </Box>
-            <Box borderBottom="1px solid">
-              <Text fontSize="20px" color="tomato" textAlign="center">
-                Non-active USD Market
-              </Text>
-              <Box display="flex" paddingBottom="10px">
-                {getNonUsdMarket().map(x => (
-                  <PseudoBox
-                    background={selectedNonActive === x ? "teal" : "inherit"}
-                    as={Link}
-                    py="1em"
-                    px="1em"
-                    mx="1em"
-                    my="0.2em"
-                    border="1px solid"
-                    boxShadow="md"
-                    rounded="md"
-                    _hover={{
-                      cursor: "pointer",
-                      background: "teal",
-                      color: "white",
-                      borderColor: "white"
-                    }}
-                    key={x}
-                    
-                    to={`/${account}/markets/detail/${x.toLowerCase()}?market=true`}
-                    // to={`/markets/${x.toLowerCase()}`}
-                  >
-                    {x}
-                  </PseudoBox>
-                ))}
-              </Box>
-            </Box>
-            <Box>
-              <Text fontSize="20px" color="tomato" textAlign="center">
-                USD Market
-              </Text>
-
-              <Box display="flex">
-                {getUsdMarket().map(x => (
-                  <PseudoBox
-                    as="button"
-                    py="1em"
-                    px="1em"
-                    mx="1em"
-                    my="0.2em"
-                    border="1px solid"
-                    boxShadow="md"
-                    rounded="md"
-                    _hover={{
-                      cursor: "pointer",
-                      background: "teal",
-                      color: "white",
-                      borderColor: "white"
-                    }}
-                    key={x}
-                    background={selectedNonActive === x ? "teal" : "inherit"}
-                    onClick={e => marketButton(x)}
-                  >
-                    {x}
-                  </PseudoBox>
-                ))}
-              </Box>
-            </Box>
-          </Box>
+          )}
+        </Box>
+      </Box>
+      <Box>
+        {selectedNonActive.length > 1 && (
+          <ControlButton
+            as={Link}
+            // to={`/${
+            //   match.params.account
+            // }/markets/detail/${selectedMarkets[0]
+            //   .toLowerCase()
+            //   .replace("/", "")}`}
+            // btnRef={btnRef}
+            icon={"external-link"}
+            variantColor="red"
+            style={{
+              right: "6em",
+              bottom: "2em"
+            }}
+            onClick={transferMarket}
+          />
         )}
       </Box>
-
-      {selectedNonActive.length > 1 && (
-        <ControlButton
-          as={Link}
-          // to={`/${
-          //   match.params.account
-          // }/markets/detail/${selectedMarkets[0]
-          //   .toLowerCase()
-          //   .replace("/", "")}`}
-          // btnRef={btnRef}
-          icon={"external-link"}
-          variantColor="red"
-          style={{
-            right: "6em",
-            bottom: "2em"
-          }}
-        />
-      )}
-    </>
+    </Box>
   );
 }
 const DetailView = ({

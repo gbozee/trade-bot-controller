@@ -24,7 +24,6 @@ import { useAccountMarket, useStorage } from "../../hooks";
 import { XModal } from "../../components";
 import { supported_markets } from "../../data/prod";
 export function MarketAnalyzer({
-  location,
   textBlob,
   analyzeLoader,
   onsubmit,

@@ -58,7 +58,9 @@ export const AppProvider = ({ children, adapter }) => {
     return adapter
       .addNewMarket(config, account, getUniqueId())
       .then(({ accounts, dataToSave }) => {
+        console.log(accounts)
         setAccounts(accounts);
+        console.log(dataToSave);
         return {
           ...dataToSave,
           market_label: () => {
@@ -68,13 +70,12 @@ export const AppProvider = ({ children, adapter }) => {
       });
   }
   function deleteMarket(market, account) {
-    return adapter.deleteMarket(market,account).then(newAccounts=>{
+    return adapter.deleteMarket(market, account).then(newAccounts => {
       console.log(newAccounts);
-      setAccounts(newAccounts)
-    })
+      setAccounts(newAccounts);
+    });
   }
   function getFormResult(config, account, markets) {
-    // console.log(config);
     return addNewMarket(config, account);
   }
   function updateMarket(oldConfig, newConfig, account) {
