@@ -2,20 +2,11 @@ import React, { useState, useContext, useEffect } from "react";
 import {
   Box,
   Flex,
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   useDisclosure,
   Spinner,
-  Checkbox,
   useToast,
-  Text,
-  Grid,
   Switch,
-  FormLabel,
-  PseudoBox
+  FormLabel
 } from "@chakra-ui/core";
 import { Switch as RouterSwitch, Route } from "react-router-dom";
 import { AppContext } from "../../utils";
@@ -27,11 +18,11 @@ import {
   SearchInput
 } from "../../components";
 import { FormComponent, useFormState } from "./FormComponent";
-import { MarketWithStat } from "./Components";
+import { MenuComponent } from "./Components";
 import { Link } from "react-router-dom";
-import { useAccountMarket, useStorage } from "../../hooks";
-import { useSerchInput } from "../../components/SearchInput";
-const queryString = require("query-string");
+import { useAccountMarket } from "../../hooks";
+import DetailView from "./DetailView";
+import ListView from "./ListView";
 const SidebarDrawer = ({
   isOpen,
   onClose,
@@ -86,175 +77,7 @@ const SidebarDrawer = ({
     </XModal>
   );
 };
-const MenuComponent = ({
-  options = [],
-  defaultText = "Menu",
-  buttonProps = {},
-  menuProps = {},
-  renderItem = x => x,
-  onMenuItemClick = () => {},
-  withCheckbox = false,
-  isSelected = () => false
-}) => {
-  return (
-    <Menu>
-      <MenuButton as={Button} rightIcon="chevron-down" {...buttonProps}>
-        {defaultText}
-      </MenuButton>
-      <MenuList {...menuProps}>
-        {options.map((param, index) => {
-          let child = (
-            <MenuItem key={index} onClick={() => onMenuItemClick(param)}>
-              {renderItem(param)}
-            </MenuItem>
-          );
-          if (withCheckbox) {
-            return (
-              <Checkbox key={index} defaultIsChecked={isSelected(param)} ml={3}>
-                {child}
-              </Checkbox>
-            );
-          }
-          return child;
-        })}
-      </MenuList>
-    </Menu>
-  );
-};
-function ConfigurationComponent({ params, onSubmit }) {
-  let [selectedFields, setSelectedFields] = useState([]);
-  const {
-    displayText,
-    setDisplayText,
-    onSaveHandler,
-    ...formParams
-  } = useFormState(undefined, onSubmit, false, true);
-  return (
-    <Box>
-      <Flex direction="column">
-        <Flex mt={5} mx={3}>
-          <MenuComponent
-            withCheckbox
-            menuProps={{ display: "flex", flexDirection: "column" }}
-            defaultText="Configurations"
-            onMenuItemClick={item => {
-              setDisplayText(false);
-              if (selectedFields.includes(item.value)) {
-                setSelectedFields(selectedFields.filter(x => x !== item.value));
-              } else {
-                setSelectedFields([...selectedFields, item.value]);
-              }
-            }}
-            options={params.map(x => ({ name: x.label, value: x.name }))}
-            renderItem={x => x.name}
-            isSelected={item => {
-              return selectedFields.includes(item.value);
-            }}
-          />
-        </Flex>
-        <Flex
-          justifyContent={["space-between", "space-between", "flex-start"]}
-          flexGrow={0.3}
-          flexDirection={["column", "row"]}
-          // mx={3}
-          flexWrap="wrap"
-          my={5}
-        >
-          <FormComponent
-            componentProps={{ mb: 4 }}
-            formFields={params.filter(x => selectedFields.includes(x.name))}
-            {...formParams}
-            fieldsToUnhide={["pause", "profit_value"]}
-          />
-        </Flex>
-        {displayText ? (
-          <Box
-            bg="tomato"
-            w="50%"
-            p={4}
-            color="teal.900"
-            ml={40}
-            textAlign="center"
-            fontWeight="semibold"
-          >
-            Set values from the configurations
-          </Box>
-        ) : null}
-        <Button
-          position={["relative", "fixed"]}
-          style={{ bottom: "2em" }}
-          mt={["2em", "inherit"]}
-          variantColor="blue"
-          width="50%"
-          onClick={onSaveHandler}
-          mb={3}
-        >
-          Submit
-        </Button>
-      </Flex>
-    </Box>
-  );
-}
-function GridLayout({
-  update,
-  items,
-  onSelect,
-  selectedMarkets = [],
-  ...rest
-}) {
-  return (
-    <Box>
-      <Grid
-        pt={5}
-        templateColumns={["repeat(2, 1fr)", "repeat(3,1fr)", "repeat(4,1fr)"]}
-        gap={[1, 2, 3]}
-        maxHeight="400px"
-        {...rest}
-      >
-        {items.map(market => {
-          return (
-            <MarketWithStat
-              key={market.market_label()}
-              onSelect={() => {
-                onSelect(market.market_label());
-              }}
-              market={market}
-              selected={selectedMarkets.includes(market.market_label())}
-              update={update}
-            >
-              {market.market_label()}
-            </MarketWithStat>
-          );
-        })}
-      </Grid>
-      {/* <Box pt={5}>
-        <Stack
-          isInline
-          spacing={8}
-          justifyContent={["space-between", "space-between", "flex-start"]}
-          flexWrap="wrap"
-          maxHeight="400px"
-          overflowY="scroll"
-        >
-          {items.map(market => {
-            return (
-              <MarketWithStat
-                key={market.market_label()}
-                onSelect={() => {
-                 onSelect(market.market_label());
-                }}
-                market={market}
-                selected={selectedMarkets.includes(market.market_label())}
-              >
-                {market.market_label()}
-              </MarketWithStat>
-            );
-          })}
-        </Stack>
-      </Box> */}
-    </Box>
-  );
-}
+
 export function DeleteAccountMarket({
   selectedMarkets,
   setSelectedMarkets,
@@ -312,8 +135,9 @@ export function Market({ match, history, location: { search } }) {
   const listModeUrl = parse["coin"];
   let [isListMode, setListMode] = useState(true);
   const toast = useToast();
-  const pageProps = useAccountMarket(match.params.account);
-  const { markets, loading, setMarkets, setRefresh } = pageProps;
+  const { markets, loading, setMarkets, setRefresh } = useAccountMarket(
+    match.params.account
+  );
   useEffect(() => {
     let url = `${match.url}`;
     if (isListMode) {
@@ -323,11 +147,6 @@ export function Market({ match, history, location: { search } }) {
       url += search;
     }
     history.push(url);
-    // if (isListMode) {
-    //   history.push(`${match.url}/list-mode`);
-    // } else {
-    //   history.push(`${match.url}`);
-    // }
   }, [isListMode]);
   const {
     hiddenFields,
@@ -344,8 +163,6 @@ export function Market({ match, history, location: { search } }) {
   let [newEditItem, setNewEditItem] = useState();
   let [filteredItem, setFilteredItem] = useState(" ");
   let [updated, setUpdated] = useState(false);
-  let [marketCoin, setMarketCoin] = useState([]);
-  let [selected, setSelected] = useState();
   function addOrRemoveMarkets(_market) {
     if (selectedMarkets.includes(_market)) {
       let filtered = selectedMarkets.filter(x => x !== _market);
@@ -534,8 +351,9 @@ export function Market({ match, history, location: { search } }) {
               </Route>
               <Route exact path={`${match.url}/list-mode`}>
                 <ListView
-                  {...{}}
+                  selectedMarkets={selectedMarkets}
                   activeMarkets={markets}
+                  addOrRemoveMarkets={addOrRemoveMarkets}
                   adapter={adapter}
                   account={match.params.account}
                   markets={markets}
@@ -609,274 +427,3 @@ export function Market({ match, history, location: { search } }) {
     </>
   );
 }
-function ListView({
-  activeMarkets = [],
-  addOrRemoveMarkets,
-  selectedMarkets,
-  updated,
-  adapter,
-  account,
-  history,
-  setRefresh,
-  listModeUrl
-}) {
-  let { storage, cachedAlternateMarket, allMarkets } = useStorage(
-    "all-markets",
-    adapter
-  );
-  let { getFormResult } = useContext(AppContext);
-  let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
-  let [allMarket, setAllMarket] = useState([]);
-  let [selectedNonActive, setSelectedNonActive] = useState([]);
-
-  useEffect(() => {
-    if (selectedCoin) {
-      cachedAlternateMarket(selectedCoin).then(x => {
-        setAllMarket(x);
-      });
-    }
-  }, [selectedCoin]);
-  function coinButton(coin) {
-    setSelectedCoin(coin);
-    setSelectedNonActive(" ");
-  }
-
-  function onCreateMarket(values, account) {
-    return getFormResult(values, account)
-      .then(savedMarketValue => {
-        let accountMarkets = storage.get(account);
-        if (accountMarkets) {
-          let newAccountMarkets = [...accountMarkets, savedMarketValue];
-          storage.set(account, newAccountMarkets);
-        }
-      })
-      .catch(error => {});
-  }
-
-  function ListLayout({
-    items,
-    onSelect = x => {},
-    selectedNonActive,
-    text = "text",
-    to = x => {}
-  }) {
-    return (
-      <Box
-        borderBottom="1px solid"
-        display={items.length < 1 ? "none" : "inherit"}
-      >
-        <Text fontSize="20px" color="tomato" textAlign="center">
-          {text}
-        </Text>
-        <Box display="flex" paddingBottom="10px">
-          {items.map(x => {
-            return (
-              <PseudoBox
-                background={selectedNonActive === x ? "teal" : "inherit"}
-                as={Link}
-                py="1em"
-                px="1em"
-                mx="1em"
-                my="0.2em"
-                border="1px solid"
-                boxShadow="md"
-                rounded="md"
-                _hover={{
-                  cursor: "pointer",
-                  background: "teal",
-                  color: "white",
-                  borderColor: "white"
-                }}
-                key={x}
-                to={to(x)}
-                background={selectedNonActive === x ? "teal" : "inherit"}
-                onClick={e => {
-                  onSelect(x);
-                }}
-              >
-                {x}
-              </PseudoBox>
-            );
-          })}
-        </Box>
-      </Box>
-    );
-  }
-
-  function marketButton(x) {
-    setSelectedNonActive(x);
-  }
-
-  //get all the coins in the market without duplicate
-  function baseCoins() {
-    return activeMarkets.filter(
-      (obj, index, self) =>
-        index === self.findIndex(el => el["coin"] === obj["coin"])
-    );
-  }
-  function getMarketFromCoin() {
-    let filteredmarket = activeMarkets.filter(x => x.coin === selectedCoin);
-    return filteredmarket;
-  }
-
-  function getUsdMarket() {
-    let usd = allMarket.filter(x => x.includes("USD"));
-    let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
-    let filteredUsd = usd.filter(x => !coinMarket.includes(x));
-    return filteredUsd;
-  }
-  function getNonUsdMarket() {
-    let nonUsd = allMarket.filter(x => !x.includes("USD"));
-    let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
-    let filteredNonUsd = nonUsd.filter(x => !coinMarket.includes(x));
-    return filteredNonUsd;
-  }
-
-  function transferMarket() {
-    let usdMarkets = baseCoins().map(x => x);
-    let coin = selectedNonActive.slice(0, 3);
-    let market = selectedNonActive.slice(-4);
-    let config = usdMarkets.find(x => x.coin === coin);
-    config.coin = coin;
-    config.buy_market = market;
-    onCreateMarket(config, account)
-      .then(() => {
-        history.push(`/${account}/markets/list-mode?coin=${config.coin}`);
-        setRefresh();
-      })
-      .catch(error => {});
-  }
-
-  return (
-    <Box>
-      <Box display="flex">
-        <Box display="flex" flexDirection="column">
-          {baseCoins().map(x => (
-            <PseudoBox
-              value={x.coin}
-              as="button"
-              py="1em"
-              px="1em"
-              mx="1em"
-              my="0.2em"
-              border="1px solid"
-              boxShadow="md"
-              rounded="md"
-              _active={{ bg: "teal.700" }}
-              _hover={{
-                cursor: "pointer",
-                background: "teal",
-                color: "white",
-                borderColor: "white"
-              }}
-              key={x.coin}
-              background={selectedCoin === x.coin ? "teal" : "inherit"}
-              color={selectedCoin === x.coin ? "white" : "inherit"}
-              onClick={e => coinButton(x.coin)}
-            >
-              {x.coin}
-            </PseudoBox>
-          ))}
-        </Box>
-        <Box>
-          {selectedCoin && (
-            <Box borderLeft="1px solid">
-              <Box borderBottom="1px solid">
-                <Text fontSize="20px" color="tomato" textAlign="center">
-                  Active Market
-                </Text>
-
-                <Box display="flex">
-                  <GridLayout
-                    items={getMarketFromCoin()}
-                    onSelect={addOrRemoveMarkets}
-                    selectedMarkets={selectedMarkets}
-                    update={updated}
-                  />
-                </Box>
-              </Box>
-
-              <ListLayout
-                items={getNonUsdMarket()}
-                text="Non-active USD Markets"
-                to={x =>
-                  `/${account}/markets/detail/${x.toLowerCase()}?market=true`
-                }
-              />
-
-              <Box>
-                <ListLayout
-                  items={getUsdMarket()}
-                  text="USD Markets"
-                  onSelect={x => marketButton(x)}
-                  selectedNonActive={selectedNonActive}
-                />
-              </Box>
-            </Box>
-          )}
-        </Box>
-      </Box>
-      <Box>
-        {selectedNonActive.length > 1 && (
-          <ControlButton
-            as={Link}
-            // to={`/${
-            //   match.params.account
-            // }/markets/detail/${selectedMarkets[0]
-            //   .toLowerCase()
-            //   .replace("/", "")}`}
-            // btnRef={btnRef}
-            icon={"external-link"}
-            variantColor="red"
-            style={{
-              right: "6em",
-              bottom: "2em"
-            }}
-            onClick={transferMarket}
-          />
-        )}
-      </Box>
-    </Box>
-  );
-}
-const DetailView = ({
-  markets,
-  filteredItem = " ",
-  addOrRemoveMarkets,
-  selectedMarkets,
-  updated,
-  getFormFields,
-  onSubmit
-}) => {
-  function getFilterItem() {
-    if (filteredItem === "All" || filteredItem === " ") {
-      return markets;
-    } else {
-      let filteredmarket = markets.filter(x => x.buy_market === filteredItem);
-      return filteredmarket;
-    }
-  }
-  return (
-    <Flex
-      flexDirection="column"
-      justifyContent={["space-between", "inherit"]}
-      mx={3}
-      minHeight="90vh"
-    >
-      {/*Grid layout for markets */}
-      <GridLayout
-        items={getFilterItem()}
-        onSelect={addOrRemoveMarkets}
-        selectedMarkets={selectedMarkets}
-        update={updated}
-        overflowY="scroll"
-      />
-      {selectedMarkets.length > 1 ? (
-        <ConfigurationComponent
-          params={getFormFields("bulk")}
-          onSubmit={onSubmit}
-        />
-      ) : null}
-    </Flex>
-  );
-};
