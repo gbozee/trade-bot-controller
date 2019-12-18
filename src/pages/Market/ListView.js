@@ -92,13 +92,19 @@ function ListView({
   }
 
   function onCreateMarket(values, account) {
+    console.log("oncreate");
+    console.log(values);
+    console.log(account);
     return getFormResult(values, account)
       .then(savedMarketValue => {
+        console.log({ account });
         let accountMarkets = storage.get(account);
         if (accountMarkets) {
           let newAccountMarkets = [...accountMarkets, savedMarketValue];
           storage.set(account, newAccountMarkets);
+          setActiveMarkets(newAccountMarkets);
         }
+        return savedMarketValue;
       })
       .catch(error => {});
   }
@@ -112,7 +118,10 @@ function ListView({
   }
   function getMarketFromCoin() {
     let filteredmarket = activeMarkets.filter(x => x.coin === selectedCoin);
-    return filteredmarket;
+    return filteredmarket.map(o => ({
+      ...o,
+      market_label: () => `${o.coin}/${o.buy_market}`
+    }));
   }
 
   function getUsdMarket() {
@@ -129,7 +138,7 @@ function ListView({
   }
   function getFirstDollarMarket(full_market) {
     let d_markets = ["usdt", "tusd", "usds", "usdc", "busd", "pax"];
-    let dollarMarkets = baseCoins().filter(x => {
+    let dollarMarkets = activeMarkets.filter(x => {
       return d_markets.includes(x.buy_market.toLowerCase());
     });
     dollarMarkets = dollarMarkets.filter(x => {
@@ -152,8 +161,7 @@ function ListView({
       let config = { ...foundActiveDollarMarket, buy_market };
       console.log(config);
       onCreateMarket(config, account)
-        .then(() => {
-          setActiveMarkets([...activeMarkets, config]);
+        .then(v => {
           // setSelectedCoin(config.coin);
         })
         .catch(error => {});

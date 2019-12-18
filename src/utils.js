@@ -58,7 +58,7 @@ export const AppProvider = ({ children, adapter }) => {
     return adapter
       .addNewMarket(config, account, getUniqueId())
       .then(({ accounts, dataToSave }) => {
-        console.log(accounts)
+        console.log(accounts);
         setAccounts(accounts);
         console.log(dataToSave);
         return {
