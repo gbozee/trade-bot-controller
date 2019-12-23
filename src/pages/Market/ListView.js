@@ -1,6 +1,6 @@
 import { ControlButton } from "../../components";
 import { Box, Text, PseudoBox } from "@chakra-ui/core";
-import { GridLayout } from "./Components";
+import { GridLayout, MarketWithStat } from "./Components";
 import React, { useContext, useState, useEffect } from "react";
 import { useStorage } from "../../hooks";
 import { AppContext } from "../../utils";
@@ -21,6 +21,19 @@ function ListLayout({
       </Text>
       <Box display="flex" paddingBottom="10px">
         {items.map(x => {
+          let market_label = `${}/${}`
+          return (
+            <MarketWithStat
+              key={market_label}
+              onSelect={() => {
+                onSelect(market_label);
+              }}
+              market={{coin:"",prices:0}}
+              // selected={selectedMarkets.includes(market.market_label())}
+            >
+              {market_label}
+            </MarketWithStat>
+          );
           return (
             <PseudoBox
               background={selectedNonActive === x ? "teal" : "inherit"}
@@ -52,35 +65,35 @@ function ListLayout({
 }
 
 function ListView({
-  activeMarkets: all_markets = [],
+  activeMarkets = [],
   addOrRemoveMarkets,
   selectedMarkets,
   updated,
   adapter,
+  onCreateMarket,
   account,
   history,
   setRefresh,
   listModeUrl,
   setSelectedMarkets,
-  setListMode,
+  setListMode
 }) {
-  let [activeMarkets, setActiveMarkets] = useState(all_markets);
-  let { storage, cachedAlternateMarket } = useStorage("all-markets", adapter);
-  let { getFormResult,usd_markets } = useContext(AppContext);
+  // let [activeMarkets, setActiveMarkets] = useState(all_markets);
+  let { cachedAlternateMarket } = useStorage("all-markets", adapter);
+  let { usd_markets } = useContext(AppContext);
   let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
   let [allMarket, setAllMarket] = useState([]);
   let [selectedNonActive, setSelectedNonActive] = useState();
 
   useEffect(() => {
-    if (activeMarkets.length === 0) {
-      setActiveMarkets(all_markets);
+    // if (activeMarkets.length === 0) {
+    //   setActiveMarkets(all_markets);
+    // }
+    if (!listModeUrl && activeMarkets.length > 0) {
+      let first = activeMarkets[0];
+      setSelectedCoin(first.coin);
     }
-      if (!listModeUrl && all_markets.length > 0) {
-        let first = all_markets[0];
-        setSelectedCoin(first.coin);
- 
-    }
-  }, [all_markets.length]);
+  }, [activeMarkets.length]);
   useEffect(() => {
     if (selectedCoin) {
       cachedAlternateMarket(selectedCoin).then(x => {
@@ -88,29 +101,6 @@ function ListView({
       });
     }
   }, [selectedCoin]);
-
-
-
-
-
-
-  function onCreateMarket(values, account) {
-    console.log("oncreate");
-    console.log(values);
-    console.log(account);
-    return getFormResult(values, account)
-      .then(savedMarketValue => {
-        console.log({ account });
-        let accountMarkets = storage.get(account);
-        if (accountMarkets) {
-          let newAccountMarkets = [...accountMarkets, savedMarketValue];
-          storage.set(account, newAccountMarkets);
-          setActiveMarkets(newAccountMarkets);
-        }
-        return savedMarketValue;
-      })
-      .catch(error => {});
-  }
 
   //get all the coins in the market without duplicate
   function baseCoins() {
@@ -145,9 +135,8 @@ function ListView({
     });
     dollarMarkets = dollarMarkets.filter(x => {
       return full_market.startsWith(x.coin.toUpperCase());
-
     });
-  
+
     if (dollarMarkets.length > 0) {
       return dollarMarkets[0];
     }
@@ -164,13 +153,13 @@ function ListView({
       console.log(buy_market);
       let config = { ...foundActiveDollarMarket, buy_market };
       console.log(config);
-      onCreateMarket(config, account)
+      onCreateMarket(config)
         .then(v => {
           // setSelectedCoin(config.coin);
         })
         .catch(error => {});
     } else {
-      setListMode(false)
+      setListMode(false);
     }
   }
   function getAllCoins() {
@@ -244,7 +233,6 @@ function ListView({
                 }}
                 selectedNonActive={selectedNonActive}
               />
-              
             </Box>
           )}
         </Box>
@@ -267,8 +255,6 @@ function ListView({
 }
 
 export default ListView;
-
-
 
 // if there is no dollar market
 // let the onselect work for both the detail and listmode view

@@ -347,8 +347,10 @@ export function useAccountMarket(account) {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState();
-  const { getMarket, adapter } = useContext(AppContext);
-  const { getValue, setValue } = useStorage(account);
+  const { getMarket, adapter, getFormResult, deleteMarket } = useContext(
+    AppContext
+  );
+  const { getValue, setValue, storage } = useStorage(account);
   const { extractCoinFromSymbol } = useStorage("all-markets", adapter);
   const [url, setUrl] = useState({});
   useEffect(() => {
@@ -419,6 +421,38 @@ export function useAccountMarket(account) {
       buy_amount: 10.1
     };
   }
+  function onCreateMarket(values) {
+    console.log("oncreate");
+    console.log(values);
+    console.log(account);
+    return getFormResult(values, account)
+      .then(savedMarketValue => {
+        console.log({ account });
+        let accountMarkets = storage.get(account);
+        if (accountMarkets) {
+          let newAccountMarkets = [...accountMarkets, savedMarketValue];
+          storage.set(account, newAccountMarkets);
+          setMarkets(newAccountMarkets);
+        }
+        return savedMarketValue;
+      })
+      .catch(error => {});
+  }
+  function deleteSavedMarket(marketToDelete) {
+    let market = markets
+      .filter(x => `${x.coin}/${x.buy_market}` === marketToDelete)
+      .map(x => x);
+    console.log(market);
+    if (market) {
+      return deleteMarket(market[0], account).then(x => {
+        // remove the market from local storage
+        setMarkets(
+          markets.filter(x => `${x.coin}/${x.buy_market}` !== marketToDelete)
+        );
+        return {};
+      });
+    }
+  }
   return {
     markets: markets.map(x => ({
       ...x,
@@ -429,6 +463,8 @@ export function useAccountMarket(account) {
     getSpecificMarket,
     setMarkets,
     loading,
-    setRefresh: refreshLoader
+    onCreateMarket,
+    setRefresh: refreshLoader,
+    deleteSavedMarket
   };
 }

@@ -78,34 +78,8 @@ const SidebarDrawer = ({
   );
 };
 
-export function DeleteAccountMarket({
-  selectedMarkets,
-  setSelectedMarkets,
-  setRefresh,
-  btnRef,
-  markets,
-  deleteMarket,
-  match,
-  isListMode,
-  setListMode
-}) {
+export function DeleteAccountMarket({ selectedMarkets, onDelete, btnRef }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  function onDeleteHandler(e) {
-    let market = markets
-      .filter(x => x.market_label() === selectedMarkets[0])
-      .map(x => x);
-    console.log(market);
-    if(market){
-      deleteMarket(market[0], match.params.account)
-      .then()
-      onClose();
-      console.log(markets)
-      setSelectedMarkets([]);
-      // setListMode(false);
-      // setRefresh();
-    
-    }
-  }
   return (
     <Box>
       {selectedMarkets.length === 1 && (
@@ -116,14 +90,14 @@ export function DeleteAccountMarket({
           variantColor="blue"
           style={{
             right: "14em",
-            bottom: "2em",
-           }}
+            bottom: "2em"
+          }}
         />
       )}
       <XModal
         isOpen={isOpen}
         onClose={onClose}
-        onSubmit={onDeleteHandler}
+        onSubmit={() => onDelete(onClose)}
         ButtonTitle="Confirm"
         title
         submitButtonProps={{ variantColor: "red" }}
@@ -141,9 +115,14 @@ export function Market({ match, history, location: { search } }) {
   const listModeUrl = parse["coin"];
   let [isListMode, setListMode] = useState(true);
   const toast = useToast();
-  const { markets, loading, setMarkets, setRefresh } = useAccountMarket(
-    match.params.account
-  );
+  const {
+    markets,
+    loading,
+    setMarkets,
+    setRefresh,
+    onCreateMarket,
+    deleteSavedMarket
+  } = useAccountMarket(match.params.account);
   useEffect(() => {
     let url = `${match.url}`;
     if (isListMode) {
@@ -158,7 +137,6 @@ export function Market({ match, history, location: { search } }) {
     hiddenFields,
     getFormFields,
     getFormResult,
-    deleteMarket,
     bulkUpdateMarkets,
     updateMarket,
     adapter
@@ -360,6 +338,7 @@ export function Market({ match, history, location: { search } }) {
                 <ListView
                   selectedMarkets={selectedMarkets}
                   activeMarkets={markets}
+                  onCreateMarket={onCreateMarket}
                   addOrRemoveMarkets={addOrRemoveMarkets}
                   adapter={adapter}
                   account={match.params.account}
@@ -381,7 +360,7 @@ export function Market({ match, history, location: { search } }) {
                   variantColor="pink"
                   style={{
                     right: "2em",
-                    bottom: "2em",
+                    bottom: "2em"
                   }}
                 />
                 {selectedMarkets.length === 1 && (
@@ -397,7 +376,7 @@ export function Market({ match, history, location: { search } }) {
                     variantColor="teal"
                     style={{
                       right: "6em",
-                      bottom: "2em",
+                      bottom: "2em"
                     }}
                   />
                 )}
@@ -409,21 +388,21 @@ export function Market({ match, history, location: { search } }) {
                     variantColor="red"
                     style={{
                       right: "10em",
-                      bottom: "2em",
+                      bottom: "2em"
                     }}
                   />
                 )}
                 <DeleteAccountMarket
                   {...{
-                    deleteMarket,
+                    onDelete: _onClose => {
+                      console.log(selectedMarkets[0]);
+                      deleteSavedMarket(selectedMarkets[0]).then(x => {
+                        _onClose();
+                        setSelectedMarkets([]);
+                      });
+                    },
                     selectedMarkets,
-                    match,
-                    btnRef,
-                    markets,
-                    setSelectedMarkets,
-                    setRefresh,
-                    isListMode,
-                    setListMode,
+                    btnRef
                   }}
                 />
               </>
