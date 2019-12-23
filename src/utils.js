@@ -95,6 +95,7 @@ export const AppProvider = ({ children, adapter }) => {
     //   resolve();
     // });
   }
+  let usd_markets = ["usdt", "tusd", "usds", "usdc", "busd", "pax"];
   const appValue = {
     // markets: markets,
     getMarket,
@@ -109,7 +110,8 @@ export const AppProvider = ({ children, adapter }) => {
     bulkUpdateMarkets,
     adapter,
     updateMarket,
-    deleteMarket
+    deleteMarket,
+    usd_markets
   };
   return <AppContext.Provider value={appValue}>{children}</AppContext.Provider>;
 };

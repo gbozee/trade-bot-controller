@@ -86,7 +86,8 @@ export function DeleteAccountMarket({
   markets,
   deleteMarket,
   match,
-  isListMode
+  isListMode,
+  setListMode
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   function onDeleteHandler(e) {
@@ -94,10 +95,16 @@ export function DeleteAccountMarket({
       .filter(x => x.market_label() === selectedMarkets[0])
       .map(x => x);
     console.log(market);
-    deleteMarket(market[0], match.params.account);
-    onClose();
-    setSelectedMarkets([]);
-    setRefresh();
+    if(market){
+      deleteMarket(market[0], match.params.account)
+      .then()
+      onClose();
+      console.log(markets)
+      setSelectedMarkets([]);
+      // setListMode(false);
+      // setRefresh();
+    
+    }
   }
   return (
     <Box>
@@ -110,8 +117,7 @@ export function DeleteAccountMarket({
           style={{
             right: "14em",
             bottom: "2em",
-            display: isListMode ? "none" : "inherit"
-          }}
+           }}
         />
       )}
       <XModal
@@ -279,6 +285,7 @@ export function Market({ match, history, location: { search } }) {
             <Switch
               onChange={e => {
                 setListMode(e.target.checked);
+                // setRefresh();
               }}
               isChecked={isListMode}
               id="email-alerts"
@@ -360,6 +367,8 @@ export function Market({ match, history, location: { search } }) {
                   setRefresh={setRefresh}
                   listModeUrl={listModeUrl}
                   history={history}
+                  setSelectedMarkets={setSelectedMarkets}
+                  setListMode={setListMode}
                 />
               </Route>
             </RouterSwitch>
@@ -373,7 +382,6 @@ export function Market({ match, history, location: { search } }) {
                   style={{
                     right: "2em",
                     bottom: "2em",
-                    display: isListMode ? "none" : "inherit"
                   }}
                 />
                 {selectedMarkets.length === 1 && (
@@ -390,7 +398,6 @@ export function Market({ match, history, location: { search } }) {
                     style={{
                       right: "6em",
                       bottom: "2em",
-                      display: isListMode ? "none" : "inherit"
                     }}
                   />
                 )}
@@ -403,7 +410,6 @@ export function Market({ match, history, location: { search } }) {
                     style={{
                       right: "10em",
                       bottom: "2em",
-                      display: isListMode ? "none" : "inherit"
                     }}
                   />
                 )}
@@ -416,7 +422,8 @@ export function Market({ match, history, location: { search } }) {
                     markets,
                     setSelectedMarkets,
                     setRefresh,
-                    isListMode
+                    isListMode,
+                    setListMode,
                   }}
                 />
               </>

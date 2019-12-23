@@ -304,15 +304,18 @@ function getAllAssets(account = "main_account", key = "asset") {
 }
 function deleteMarket(market, account) {
   return new Promise((resolve, reject) => {
-    let id = market.id;
-    let newAccounts = accounts.map(x => {
-      if (x.slug === account) {
-        return { ...x, market: x.market.filter(x => x !== id) };
-      }
-      return x;
-    });
-    accounts = newAccounts;
-    resolve(accounts);
+    if(market){
+      
+      let id = market.id;
+      let newAccounts = accounts.map(x => {
+        if (x.slug === account) {
+          return { ...x, market: x.market.filter(x => x !== id) };
+        }
+        return x;
+      });
+      accounts = newAccounts;
+      resolve(accounts);
+    }
   });
 }
 export const adapter = {

@@ -60,11 +60,13 @@ function ListView({
   account,
   history,
   setRefresh,
-  listModeUrl
+  listModeUrl,
+  setSelectedMarkets,
+  setListMode,
 }) {
   let [activeMarkets, setActiveMarkets] = useState(all_markets);
   let { storage, cachedAlternateMarket } = useStorage("all-markets", adapter);
-  let { getFormResult } = useContext(AppContext);
+  let { getFormResult,usd_markets } = useContext(AppContext);
   let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
   let [allMarket, setAllMarket] = useState([]);
   let [selectedNonActive, setSelectedNonActive] = useState();
@@ -72,11 +74,11 @@ function ListView({
   useEffect(() => {
     if (activeMarkets.length === 0) {
       setActiveMarkets(all_markets);
+    }
       if (!listModeUrl && all_markets.length > 0) {
         let first = all_markets[0];
-        console.log(first);
         setSelectedCoin(first.coin);
-      }
+ 
     }
   }, [all_markets.length]);
   useEffect(() => {
@@ -86,10 +88,11 @@ function ListView({
       });
     }
   }, [selectedCoin]);
-  function coinButton(coin) {
-    setSelectedCoin(coin);
-    setSelectedNonActive(undefined);
-  }
+
+
+
+
+
 
   function onCreateMarket(values, account) {
     console.log("oncreate");
@@ -137,13 +140,14 @@ function ListView({
     return filteredNonUsd;
   }
   function getFirstDollarMarket(full_market) {
-    let d_markets = ["usdt", "tusd", "usds", "usdc", "busd", "pax"];
     let dollarMarkets = activeMarkets.filter(x => {
-      return d_markets.includes(x.buy_market.toLowerCase());
+      return usd_markets.includes(x.buy_market.toLowerCase());
     });
     dollarMarkets = dollarMarkets.filter(x => {
       return full_market.startsWith(x.coin.toUpperCase());
+
     });
+  
     if (dollarMarkets.length > 0) {
       return dollarMarkets[0];
     }
@@ -166,6 +170,7 @@ function ListView({
         })
         .catch(error => {});
     } else {
+      setListMode(false)
     }
   }
   function getAllCoins() {
@@ -215,6 +220,7 @@ function ListView({
                   onSelect={addOrRemoveMarkets}
                   selectedMarkets={selectedMarkets}
                   update={updated}
+                  // isListMode={}
                 />
               </Box>
 
@@ -234,9 +240,11 @@ function ListView({
                 onSelect={x => {
                   console.log(x);
                   setSelectedNonActive(x);
+                  setSelectedMarkets([]);
                 }}
                 selectedNonActive={selectedNonActive}
               />
+              
             </Box>
           )}
         </Box>
@@ -259,3 +267,9 @@ function ListView({
 }
 
 export default ListView;
+
+
+
+// if there is no dollar market
+// let the onselect work for both the detail and listmode view
+//sent the usd markets list to the utils
