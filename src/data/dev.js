@@ -1,5 +1,4 @@
 import { setStorage } from "../hooks";
-
 export let configs = [
   {
     id: 1,
@@ -305,7 +304,6 @@ function getAllAssets(account = "main_account", key = "asset") {
 function deleteMarket(market, account) {
   return new Promise((resolve, reject) => {
     if(market){
-      
       let id = market.id;
       let newAccounts = accounts.map(x => {
         if (x.slug === account) {

@@ -7,10 +7,11 @@ import { AppContext } from "../../utils";
 
 function ListLayout({
   items,
-  onSelect = x => {},
-  selectedNonActive,
-  text = "text"
+  onSelect = x => { },
+  text = "text",
+  selectedMarkets = []
 }) {
+  console.log(selectedMarkets)
   return (
     <Box
       borderBottom="1px solid"
@@ -19,24 +20,24 @@ function ListLayout({
       <Text fontSize="20px" color="tomato" textAlign="center">
         {text}
       </Text>
-      <Box display="flex" paddingBottom="10px">
+      <Box display="flex" paddingBottom="10px"
+      >
         {items.map(x => {
-          let market_label = `${}/${}`
+          let market = `${x.coin}${x.buy_market}`
           return (
             <MarketWithStat
-              key={market_label}
+              key={x.market_label()}
               onSelect={() => {
-                onSelect(market_label);
+                onSelect(market);
               }}
-              market={{coin:"",prices:0}}
-              // selected={selectedMarkets.includes(market.market_label())}
+              market={{ coin: x.coin, prices: 0, buy_market: x.buy_market, price_places: ".2f" }}
+              selected={selectedMarkets.includes(x.market_label())}
             >
-              {market_label}
+              {x.market_label()}
             </MarketWithStat>
           );
           return (
             <PseudoBox
-              background={selectedNonActive === x ? "teal" : "inherit"}
               py="1em"
               px="1em"
               mx="1em"
@@ -63,7 +64,6 @@ function ListLayout({
     </Box>
   );
 }
-
 function ListView({
   activeMarkets = [],
   addOrRemoveMarkets,
@@ -73,7 +73,6 @@ function ListView({
   onCreateMarket,
   account,
   history,
-  setRefresh,
   listModeUrl,
   setSelectedMarkets,
   setListMode
@@ -84,7 +83,6 @@ function ListView({
   let [selectedCoin, setSelectedCoin] = useState(listModeUrl);
   let [allMarket, setAllMarket] = useState([]);
   let [selectedNonActive, setSelectedNonActive] = useState();
-
   useEffect(() => {
     // if (activeMarkets.length === 0) {
     //   setActiveMarkets(all_markets);
@@ -101,7 +99,6 @@ function ListView({
       });
     }
   }, [selectedCoin]);
-
   //get all the coins in the market without duplicate
   function baseCoins() {
     return activeMarkets.filter(
@@ -116,18 +113,25 @@ function ListView({
       market_label: () => `${o.coin}/${o.buy_market}`
     }));
   }
-
   function getUsdMarket() {
     let usd = allMarket.filter(x => x.includes("USD"));
     let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
     let filteredUsd = usd.filter(x => !coinMarket.includes(x));
-    return filteredUsd;
+    let filteredUsdMarket = filteredUsd.map(x => ({ coin: selectedCoin, buy_market: x.replace(selectedCoin, "") }));
+    return filteredUsdMarket.map(o => ({
+      ...o,
+      market_label: () => `${o.coin}/${o.buy_market}`
+    }));;
   }
   function getNonUsdMarket() {
     let nonUsd = allMarket.filter(x => !x.includes("USD"));
     let coinMarket = getMarketFromCoin().map(x => `${x.coin}${x.buy_market}`);
     let filteredNonUsd = nonUsd.filter(x => !coinMarket.includes(x));
-    return filteredNonUsd;
+    let filteredNonUsdMarket = filteredNonUsd.map(x => ({ coin: selectedCoin, buy_market: x.replace(selectedCoin, "") }));
+    return filteredNonUsdMarket.map(o => ({
+      ...o,
+      market_label: () => `${o.coin}/${o.buy_market}`
+    }));
   }
   function getFirstDollarMarket(full_market) {
     let dollarMarkets = activeMarkets.filter(x => {
@@ -136,7 +140,6 @@ function ListView({
     dollarMarkets = dollarMarkets.filter(x => {
       return full_market.startsWith(x.coin.toUpperCase());
     });
-
     if (dollarMarkets.length > 0) {
       return dollarMarkets[0];
     }
@@ -155,9 +158,9 @@ function ListView({
       console.log(config);
       onCreateMarket(config)
         .then(v => {
-          // setSelectedCoin(config.coin);
+          setSelectedCoin(config.coin);
         })
-        .catch(error => {});
+        .catch(error => { });
     } else {
       setListMode(false);
     }
@@ -190,7 +193,11 @@ function ListView({
               key={x}
               background={selectedCoin === x ? "teal" : "inherit"}
               color={selectedCoin === x ? "white" : "inherit"}
-              onClick={e => setSelectedCoin(x)}
+              // onClick={e => setSelectedCoin(x)}
+              onClick={e => {
+                setSelectedCoin(x)
+                setSelectedNonActive();
+              }}
             >
               {x}
             </PseudoBox>
@@ -203,18 +210,17 @@ function ListView({
                 <Text fontSize="20px" color="tomato" textAlign="center">
                   Active Market
                 </Text>
-
                 <GridLayout
                   items={getMarketFromCoin()}
                   onSelect={addOrRemoveMarkets}
                   selectedMarkets={selectedMarkets}
                   update={updated}
-                  // isListMode={}
+                // isListMode={}
                 />
               </Box>
-
               <ListLayout
                 items={getNonUsdMarket()}
+                selectedMarkets={selectedMarkets}
                 text="Non-active USD Markets"
                 onSelect={x => {
                   history.push(
@@ -222,9 +228,9 @@ function ListView({
                   );
                 }}
               />
-
               <ListLayout
                 items={getUsdMarket()}
+                selectedMarkets={selectedMarkets}
                 text="USD Markets"
                 onSelect={x => {
                   console.log(x);
@@ -253,9 +259,7 @@ function ListView({
     </Box>
   );
 }
-
 export default ListView;
-
 // if there is no dollar market
 // let the onselect work for both the detail and listmode view
 //sent the usd markets list to the utils

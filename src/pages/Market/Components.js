@@ -41,7 +41,13 @@ export const MarketWithStat = ({
   market,
   update
 }) => {
-  let full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
+  let full_market
+  if (market){
+   full_market = `${market.coin.toUpperCase()}${market.buy_market.toUpperCase()}`;
+}
+else{
+  full_market=`${market.coin}${market.buy_market}`
+}
   let places = market.price_places;
   const { prices, percent } = useWebSockets(
     `${full_market}`,
@@ -131,7 +137,6 @@ export const MarketWithStat = ({
     </MarketPopover>
   );
 };
-
 export function GridLayout({
   update,
   items,
@@ -167,7 +172,6 @@ export function GridLayout({
     </Box>
   );
 }
-
 export const MenuComponent = ({
   options = [],
   defaultText = "Menu",
